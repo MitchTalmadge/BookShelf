@@ -1,0 +1,17 @@
+#+----------------------------------------------------------+
+#| Plugin: BookShelf                                        |
+#| Created by: Pew446                                       |
+#| DevBukkit: http://dev.bukkit.org/server-mods/bookshelf/  |
+#+----------------------------------------------------------+
+
+rows: 2
+
+shelf_title: "BookShelf"
+
+permissions:
+    allow_book: true
+    allow_book_and_quill: true
+    allow_signed: true
+    allow_maps: true
+    allow_enchanted_book: true
+ 

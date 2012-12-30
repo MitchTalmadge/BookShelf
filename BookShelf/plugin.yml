@@ -1,0 +1,35 @@
+name: BookShelf
+main: me.Pew446.BookShelf.BookShelf
+version: 1.4
+description: Allows players to store books in bookshelves.
+commands:
+   bookshelf:
+      description: Sets target bookshelf to never run out of books.
+      usage: /<command>
+      aliases: ['bs']
+      permission: bookshelf
+      permission-message: You don't have permission for that command!
+permissions:
+    bookshelf.*:
+        description: Gives all permissions of BookShelf.
+        children:
+            bookshelf.bs: true
+    bookshelf.bs:
+        description: Allows player to make bookshelf never stop giving books.
+        default: op
+    bookshelf.book:
+        description: Allows player to add plain books to shelves.
+        default: true
+    bookshelf.baq:
+        description: Allows player to add book and quills to shelves.
+        default: true
+    bookshelf.signed:
+        description: Allows player to add signed books to shelves.
+        default: true
+    bookshelf.maps:
+        description: Allows player to add maps to shelves.
+        default: true
+    bookshelf.enchanted_book:
+        description: Allows player to add enchanted books to shelves.
+        default: true
+    

@@ -219,8 +219,11 @@ public class BookListener implements Listener {
 		return null;
 	}
 	@EventHandler
-	public void onAdd(InventoryCloseEvent j)
+	public void onAdd(InventoryCloseEvent u)
 	{
+		final InventoryCloseEvent j = u;
+		plugin.getServer().getScheduler().runTaskAsynchronously(plugin,  new Runnable() {
+			   public void run() {
 		if(map.containsValue(j.getInventory().getHolder())){
 			Location loc = getKey(map,j.getInventory().getHolder());
 			ItemStack[] cont = j.getInventory().getContents();
@@ -321,6 +324,9 @@ public class BookListener implements Listener {
 			}
 		}
 	}
+		});
+	}
+		
 	@EventHandler
 	public void onBreak(BlockBreakEvent j)
 	{

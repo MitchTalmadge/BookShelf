@@ -59,146 +59,152 @@ public class BookListener implements Listener {
 		Player p = j.getPlayer();
 		if(j.getClickedBlock() != null)
 		{
-			if(j.getClickedBlock().getType() == Material.BOOKSHELF && j.getAction() == Action.RIGHT_CLICK_BLOCK && !j.getPlayer().isSneaking() && !loading)
+			if(j.getClickedBlock().getType() == Material.BOOKSHELF)
 			{
-				Location loc = j.getClickedBlock().getLocation();
-				if(j.getBlockFace() == BlockFace.NORTH || j.getBlockFace() == BlockFace.EAST || j.getBlockFace() == BlockFace.SOUTH || j.getBlockFace() == BlockFace.WEST)
+				if(!j.getPlayer().isSneaking())
 				{
-					r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-					try {
-						if(!r.next())
-						{
-							r.close();
-							BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0);");
-						}
-						else
-						{
-							r.close();
-						}
-					} catch (SQLException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					if(!map.containsKey(j.getClickedBlock().getLocation()))
+					if(j.getAction() == Action.RIGHT_CLICK_BLOCK && !loading)
 					{
-						Inventory inv = Bukkit.createInventory(p, plugin.getConfig().getInt("rows")*9, plugin.getConfig().getString("shelf_title"));
-						Block cl = j.getClickedBlock();
-						int x = cl.getX();
-						int y = cl.getY();
-						int z = cl.getZ();
-						map.put(cl.getLocation(), inv.getHolder());
-						map2.put(cl.getLocation(), inv);
-						
-						r = BookShelf.mysql.query("SELECT COUNT(*) FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
-						try {
-							if(!r.next())
-							{
-								r.close();
-								p.openInventory(inv);
-								if(!map3.containsKey(loc))
-									map3.put(loc, true);
-								return;
-							}
-							else
-							{
-								r.close();
-								r = BookShelf.mysql.query("SELECT * FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
-								ArrayList<String> auth = new ArrayList<String>();
-								ArrayList<String> titl = new ArrayList<String>();
-								ArrayList<Integer> type = new ArrayList<Integer>();
-								ArrayList<Integer> id = new ArrayList<Integer>();
-								ArrayList<Integer> loca = new ArrayList<Integer>();
-								ArrayList<Integer> amt = new ArrayList<Integer>();
-		 						while(r.next())
+						Location loc = j.getClickedBlock().getLocation();
+						if(j.getBlockFace() == BlockFace.NORTH || j.getBlockFace() == BlockFace.EAST || j.getBlockFace() == BlockFace.SOUTH || j.getBlockFace() == BlockFace.WEST)
+						{
+							r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							try {
+								if(!r.next())
 								{
-									auth.add(r.getString("author"));
-									titl.add(r.getString("title"));
-									id.add(r.getInt("id"));
-									type.add(r.getInt("type"));
-									loca.add(r.getInt("loc"));
-									amt.add(r.getInt("amt"));
+									r.close();
+									BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0);");
 								}
-								r.close();
-								ArrayList<String> pages = new ArrayList<String>();
-								for(int i=0;i<id.size();i++)
+								else
 								{
-									if(type.get(i) == Material.BOOK.getId())
+									r.close();
+								}
+							} catch (SQLException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							if(!map.containsKey(j.getClickedBlock().getLocation()))
+							{
+								Inventory inv = Bukkit.createInventory(p, plugin.getConfig().getInt("rows")*9, plugin.getConfig().getString("shelf_title"));
+								Block cl = j.getClickedBlock();
+								int x = cl.getX();
+								int y = cl.getY();
+								int z = cl.getZ();
+								map.put(cl.getLocation(), inv.getHolder());
+								map2.put(cl.getLocation(), inv);
+								
+								r = BookShelf.mysql.query("SELECT COUNT(*) FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
+								try {
+									if(!r.next())
 									{
-										inv.setItem(loca.get(i), new ItemStack(Material.BOOK, amt.get(i)));
-									}
-									else if(type.get(i) == Material.MAP.getId())
-									{
-										r = BookShelf.mysql.query("SELECT * FROM maps WHERE id="+id.get(i)+";");
-										while(r.next())
-										{
-											mapdur = r.getShort("durability");
-										}
 										r.close();
-										inv.setItem(loca.get(i), generateItemStack(3));
-									}
-									else if(type.get(i) == Material.ENCHANTED_BOOK.getId())
-									{
-										r = BookShelf.mysql.query("SELECT * FROM enchant WHERE id="+id.get(i)+";");
-										String enchant = "";
-										while(r.next())
-										{
-											enchant = r.getString("type");
-											elvl = r.getInt("level");
-										}
-										r.close();
-										etype = Enchantment.getByName(enchant);
-										inv.setItem(loca.get(i), generateItemStack(2));
+										p.openInventory(inv);
+										if(!map3.containsKey(loc))
+											map3.put(loc, true);
+										return;
 									}
 									else
 									{
-										r = BookShelf.mysql.query("SELECT * FROM pages WHERE id="+id.get(i)+";");
-										while(r.next())
+										r.close();
+										r = BookShelf.mysql.query("SELECT * FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
+										ArrayList<String> auth = new ArrayList<String>();
+										ArrayList<String> titl = new ArrayList<String>();
+										ArrayList<Integer> type = new ArrayList<Integer>();
+										ArrayList<Integer> id = new ArrayList<Integer>();
+										ArrayList<Integer> loca = new ArrayList<Integer>();
+										ArrayList<Integer> amt = new ArrayList<Integer>();
+				 						while(r.next())
 										{
-											pages.add(r.getString("text"));
+											auth.add(r.getString("author"));
+											titl.add(r.getString("title"));
+											id.add(r.getInt("id"));
+											type.add(r.getInt("type"));
+											loca.add(r.getInt("loc"));
+											amt.add(r.getInt("amt"));
 										}
 										r.close();
-										String[] thepages = new String[pages.size()];
-										thepages = pages.toArray(thepages);
-										if(type.get(i) == Material.WRITTEN_BOOK.getId())
+										ArrayList<String> pages = new ArrayList<String>();
+										for(int i=0;i<id.size();i++)
 										{
-											Book(titl.get(i), auth.get(i), thepages);
-											inv.setItem(loca.get(i), generateItemStack(0));
-											pages.clear();
+											if(type.get(i) == Material.BOOK.getId())
+											{
+												inv.setItem(loca.get(i), new ItemStack(Material.BOOK, amt.get(i)));
+											}
+											else if(type.get(i) == Material.MAP.getId())
+											{
+												r = BookShelf.mysql.query("SELECT * FROM maps WHERE id="+id.get(i)+";");
+												while(r.next())
+												{
+													mapdur = r.getShort("durability");
+												}
+												r.close();
+												inv.setItem(loca.get(i), generateItemStack(3));
+											}
+											else if(type.get(i) == Material.ENCHANTED_BOOK.getId())
+											{
+												r = BookShelf.mysql.query("SELECT * FROM enchant WHERE id="+id.get(i)+";");
+												String enchant = "";
+												while(r.next())
+												{
+													enchant = r.getString("type");
+													elvl = r.getInt("level");
+												}
+												r.close();
+												etype = Enchantment.getByName(enchant);
+												inv.setItem(loca.get(i), generateItemStack(2));
+											}
+											else
+											{
+												r = BookShelf.mysql.query("SELECT * FROM pages WHERE id="+id.get(i)+";");
+												while(r.next())
+												{
+													pages.add(r.getString("text"));
+												}
+												r.close();
+												String[] thepages = new String[pages.size()];
+												thepages = pages.toArray(thepages);
+												if(type.get(i) == Material.WRITTEN_BOOK.getId())
+												{
+													Book(titl.get(i), auth.get(i), thepages);
+													inv.setItem(loca.get(i), generateItemStack(0));
+													pages.clear();
+												}
+												else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
+												{
+													Book("null", "null", thepages);
+													inv.setItem(loca.get(i), generateItemStack(1));
+													pages.clear();
+												}
+											}
 										}
-										else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
-										{
-											Book("null", "null", thepages);
-											inv.setItem(loca.get(i), generateItemStack(1));
-											pages.clear();
-										}
+										auth.clear();
+										titl.clear();
+										type.clear();
+										id.clear();
+										loca.clear();
+										amt.clear();
+										p.openInventory(inv);
+										if(!map3.containsKey(loc))
+											map3.put(loc, true);
 									}
+								} catch (SQLException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
 								}
-								auth.clear();
-								titl.clear();
-								type.clear();
-								id.clear();
-								loca.clear();
-								amt.clear();
-								p.openInventory(inv);
-								if(!map3.containsKey(loc))
-									map3.put(loc, true);
 							}
-						} catch (SQLException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-					else
-					{
-						Inventory inv = map2.get(j.getClickedBlock().getLocation());
-						Player player = (Player) inv.getHolder();
-						if(player.getName() == p.getName())
-						{
-							j.setCancelled(true);
-						}
-						else
-						{
-							p.openInventory(inv);
+							else
+							{
+								Inventory inv = map2.get(j.getClickedBlock().getLocation());
+								Player player = (Player) inv.getHolder();
+								if(player.getName() == p.getName())
+								{
+									j.setCancelled(true);
+								}
+								else
+								{
+									p.openInventory(inv);
+								}
+							}
 						}
 					}
 				}

@@ -48,6 +48,7 @@ public class BookListener implements Listener {
     private Enchantment etype;
     private short mapdur = 0;
     private int elvl = 0;
+    private boolean loading = false;
     HashMap<Location, InventoryHolder> map = new HashMap<Location, InventoryHolder>();
     HashMap<Location, Inventory> map2 = new HashMap<Location, Inventory>();
     HashMap<Location, Boolean> map3 = new HashMap<Location, Boolean>();
@@ -58,7 +59,7 @@ public class BookListener implements Listener {
 		Player p = j.getPlayer();
 		if(j.getClickedBlock() != null)
 		{
-			if(j.getClickedBlock().getType() == Material.BOOKSHELF && j.getAction() == Action.RIGHT_CLICK_BLOCK)
+			if(j.getClickedBlock().getType() == Material.BOOKSHELF && j.getAction() == Action.RIGHT_CLICK_BLOCK && !j.getPlayer().isSneaking() && !loading)
 			{
 				Location loc = j.getClickedBlock().getLocation();
 				if(j.getBlockFace() == BlockFace.NORTH || j.getBlockFace() == BlockFace.EAST || j.getBlockFace() == BlockFace.SOUTH || j.getBlockFace() == BlockFace.WEST)
@@ -225,6 +226,7 @@ public class BookListener implements Listener {
 		plugin.getServer().getScheduler().runTaskAsynchronously(plugin,  new Runnable() {
 			   public void run() {
 		if(map.containsValue(j.getInventory().getHolder())){
+			loading = true;
 			Location loc = getKey(map,j.getInventory().getHolder());
 			ItemStack[] cont = j.getInventory().getContents();
 			int x = loc.getBlockX();
@@ -322,6 +324,7 @@ public class BookListener implements Listener {
 					}
 				}
 			}
+			loading=false;
 		}
 	}
 		});

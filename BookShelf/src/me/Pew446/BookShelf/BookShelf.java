@@ -66,27 +66,22 @@ public class BookShelf extends JavaPlugin{
         if(mysql.checkTable("items") == false)
         {
         	mysql.createTable("CREATE TABLE items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, type INT, loc INT, amt INT);");
-        	BookShelf.mysql.commit();
         }
         if(mysql.checkTable("pages") == false)
         {
         	mysql.createTable("CREATE TABLE pages (id INT, text STRING);");
-        	BookShelf.mysql.commit();
         }
         if(mysql.checkTable("copy") == false)
         {
         	mysql.createTable("CREATE TABLE copy (x INT, y INT, z INT, bool INT);");
-        	BookShelf.mysql.commit();
         }
         if(mysql.checkTable("enchant") == false)
         {
         	mysql.createTable("CREATE TABLE enchant (id INT, type STRING, level INT);");
-        	BookShelf.mysql.commit();
         }
         if(mysql.checkTable("maps") == false)
         {
         	mysql.createTable("CREATE TABLE maps (id INT, durability SMALLINT);");
-        	BookShelf.mysql.commit();
         }
         System.out.println("BookShelf Database Loaded.");
 	}	
@@ -105,14 +100,12 @@ public class BookShelf extends JavaPlugin{
 							re.close();
 							p.sendMessage("The bookshelf you are looking at is now limited.");
 							mysql.query("UPDATE copy SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-							BookShelf.mysql.commit();
 						}
 						else
 						{
 							re.close();
 							p.sendMessage("The bookshelf you are looking at is now unlimited.");
 							mysql.query("UPDATE copy SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-							BookShelf.mysql.commit();
 						}
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block

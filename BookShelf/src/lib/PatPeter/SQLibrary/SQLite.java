@@ -63,13 +63,22 @@ public class SQLite extends Database {
 			try {
 			  this.connection = DriverManager.getConnection("jdbc:sqlite:" +
 					  	   sqlFile.getAbsolutePath());
-			  this.connection.setAutoCommit(false);
 			  return this.connection;
 			} catch (SQLException e) {
 			  this.writeError("SQLite exception on initialize " + e, true);
 			}
 		}
 		return null;
+	}
+	public void setCommit(boolean set)
+	{
+		try {
+			DriverManager.getConnection("jdbc:sqlite:" +
+				  	   sqlFile.getAbsolutePath()).setAutoCommit(set);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	@Override
 	public void close() {

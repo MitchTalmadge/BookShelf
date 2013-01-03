@@ -74,6 +74,7 @@ public class BookListener implements Listener {
 								{
 									r.close();
 									BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0);");
+									BookShelf.mysql.commit();
 								}
 								else
 								{
@@ -259,6 +260,7 @@ public class BookListener implements Listener {
 								if(map3.get(loc))
 								{
 									BookShelf.mysql.query("DELETE FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
+									BookShelf.mysql.commit();
 									for(int i=0;i<cont.length;i++)
 									{
 										if(cont[i] != null)
@@ -315,6 +317,7 @@ public class BookListener implements Listener {
 											}
 										}
 									}
+									BookShelf.mysql.commit();
 									map3.remove(loc);
 								}
 							}
@@ -407,6 +410,7 @@ public class BookListener implements Listener {
 					else if(type.get(i) == Material.BOOK.getId())
 					{
 						BookShelf.mysql.query("DELETE FROM items WHERE id=" + id.get(i) + ";");
+						BookShelf.mysql.commit();
 						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.BOOK, amt.get(i)));
 					}
 					else
@@ -445,6 +449,7 @@ public class BookListener implements Listener {
 						}
 						BookShelf.mysql.query("DELETE FROM items WHERE id=" + id.get(i) + ";");
 						BookShelf.mysql.query("DELETE FROM pages WHERE id=" + id.get(i) + ";");
+						BookShelf.mysql.commit();
 					}
 				}
 			} catch (SQLException e) {
@@ -453,6 +458,7 @@ public class BookListener implements Listener {
 			}
 			Location loc = j.getBlock().getLocation();
 			BookShelf.mysql.query("DELETE FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			BookShelf.mysql.commit();
 		}
 	}
 	@EventHandler
@@ -598,6 +604,7 @@ public class BookListener implements Listener {
 				{
 					Location loc = j.getBlock().getLocation();
 					BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+					BookShelf.mysql.commit();
 					return;
 				}
 				j.setBuild(false);
@@ -607,6 +614,7 @@ public class BookListener implements Listener {
 			{
 				Location loc = j.getBlock().getLocation();
 				BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+				BookShelf.mysql.commit();
 			}
 		}
 		if(j.getBlockAgainst().getType() == Material.BOOKSHELF)

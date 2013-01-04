@@ -1,5 +1,6 @@
 package me.Pew446.BookShelf;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+
+
 import me.Pew446.BookShelf.BookShelf;
 import net.minecraft.server.v1_4_6.EntityItem;
 public class BookListener implements Listener {
@@ -228,9 +231,11 @@ public class BookListener implements Listener {
 	@EventHandler
 	public void onAdd(InventoryCloseEvent u)
 	{
+		
 		final InventoryCloseEvent j = u;
 		plugin.getServer().getScheduler().runTaskAsynchronously(plugin,  new Runnable() {
 			   public void run() {
+				   PreparedStatement ps = null;
 		if(map.containsValue(j.getInventory().getHolder())){
 			loading = true;
 			Location loc = getKey(map,j.getInventory().getHolder());
@@ -272,7 +277,12 @@ public class BookListener implements Listener {
 												int type = cont[i].getTypeId(); 
 												if(cont[i].getType() == Material.BOOK_AND_QUILL)
 												{
-													BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+",1);");
+													ps = BookShelf.mysql.prepare("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES (?,?,?, 'null', 'null',?,?,1);");
+													ps.setInt(1, x);
+													ps.setInt(2, y);
+													ps.setInt(3, z);
+													ps.setInt(4, type);
+													ps.setInt(5, i);
 												}
 												else
 												{

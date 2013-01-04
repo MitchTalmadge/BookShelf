@@ -143,6 +143,7 @@ public class SQLite extends Database {
 	}
 
 	@Override
+	public
 	PreparedStatement prepare(String query) {
 		try
 	    {

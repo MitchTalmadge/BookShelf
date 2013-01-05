@@ -1,6 +1,6 @@
 name: BookShelf
 main: me.Pew446.BookShelf.BookShelf
-version: 1.5
+version: 1.6
 description: Allows players to store books in bookshelves.
 commands:
    bookshelf:
@@ -30,6 +30,12 @@ permissions:
         description: Allows player to add maps to shelves.
         default: true
     bookshelf.enchanted_book:
+        description: Allows player to add enchanted books to shelves.
+        default: true
+    bookshelf.records:
+        description: Allows player to add enchanted books to shelves.
+        default: true
+    bookshelf.paper:
         description: Allows player to add enchanted books to shelves.
         default: true
     

@@ -70,7 +70,7 @@ public class BookShelf extends JavaPlugin{
 				mysql.query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
 				mysql.query("CREATE TABLE IF NOT EXISTS enchant (id INT, type STRING, level INT);");
 				mysql.query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
-			} catch (SQLException e) {
+        	} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

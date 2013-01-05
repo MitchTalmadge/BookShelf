@@ -50,7 +50,7 @@ public class BookShelf extends JavaPlugin{
 	}
 	public void sqlConnection() 
 	{
-		mysql = new SQLite(logger, "BookShelf", "Shelves", this.getDataFolder().getAbsolutePath());
+		mysql = new SQLite(logger, "BookShelf", this.getDataFolder().getAbsolutePath(), "Shelves");
 		try 
 		{
 			mysql.open();
@@ -61,28 +61,20 @@ public class BookShelf extends JavaPlugin{
 			getPluginLoader().disablePlugin(this);
 	    }
 	}
-	public void sqlDoesDatabaseExist() 
+	public void sqlDoesDatabaseExist()
 	{
-        if(mysql.checkTable("items") == false)
-        {
-        	mysql.createTable("CREATE TABLE items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, type INT, loc INT, amt INT);");
-        }
-        if(mysql.checkTable("pages") == false)
-        {
-        	mysql.createTable("CREATE TABLE pages (id INT, text STRING);");
-        }
-        if(mysql.checkTable("copy") == false)
-        {
-        	mysql.createTable("CREATE TABLE copy (x INT, y INT, z INT, bool INT);");
-        }
-        if(mysql.checkTable("enchant") == false)
-        {
-        	mysql.createTable("CREATE TABLE enchant (id INT, type STRING, level INT);");
-        }
-        if(mysql.checkTable("maps") == false)
-        {
-        	mysql.createTable("CREATE TABLE maps (id INT, durability SMALLINT);");
-        }
+
+        	try {
+        		mysql.query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, type INT, loc INT, amt INT);");
+				mysql.query("CREATE TABLE IF NOT EXISTS pages (id INT, text STRING);");
+				mysql.query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
+				mysql.query("CREATE TABLE IF NOT EXISTS enchant (id INT, type STRING, level INT);");
+				mysql.query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	
         System.out.println("BookShelf Database Loaded.");
 	}	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
@@ -93,8 +85,8 @@ public class BookShelf extends JavaPlugin{
 				Location loc = p.getTargetBlock(null, 10).getLocation();
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
-					ResultSet re = mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 					try {
+					ResultSet re = mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(re.getInt("bool") == 1)
 						{
 							re.close();

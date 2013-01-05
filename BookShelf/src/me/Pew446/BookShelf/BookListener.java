@@ -1,6 +1,5 @@
 package me.Pew446.BookShelf;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -71,8 +70,8 @@ public class BookListener implements Listener {
 						Location loc = j.getClickedBlock().getLocation();
 						if(j.getBlockFace() == BlockFace.NORTH || j.getBlockFace() == BlockFace.EAST || j.getBlockFace() == BlockFace.SOUTH || j.getBlockFace() == BlockFace.WEST)
 						{
-							r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							try {
+								r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 								if(!r.next())
 								{
 									r.close();
@@ -96,8 +95,9 @@ public class BookListener implements Listener {
 								map.put(cl.getLocation(), inv.getHolder());
 								map2.put(cl.getLocation(), inv);
 								
-								r = BookShelf.mysql.query("SELECT COUNT(*) FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
+								
 								try {
+									r = BookShelf.mysql.query("SELECT COUNT(*) FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
 									if(!r.next())
 									{
 										r.close();
@@ -235,7 +235,6 @@ public class BookListener implements Listener {
 		final InventoryCloseEvent j = u;
 		plugin.getServer().getScheduler().runTaskAsynchronously(plugin,  new Runnable() {
 			   public void run() {
-				   PreparedStatement ps = null;
 		if(map.containsValue(j.getInventory().getHolder())){
 			loading = true;
 			Location loc = getKey(map,j.getInventory().getHolder());
@@ -256,15 +255,16 @@ public class BookListener implements Listener {
 					}
 					else
 					{
-						r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						
 						try {
+							r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							BookShelf.mysql.getConnection().setAutoCommit(false);
 							if(r.getInt("bool") == 0)
 							{
 								r.close();
 								if(map3.get(loc))
 								{
 									BookShelf.mysql.query("DELETE FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
-									BookShelf.mysql.setCommit(false);
 									for(int i=0;i<cont.length;i++)
 									{
 										if(cont[i] != null)
@@ -277,12 +277,7 @@ public class BookListener implements Listener {
 												int type = cont[i].getTypeId(); 
 												if(cont[i].getType() == Material.BOOK_AND_QUILL)
 												{
-													ps = BookShelf.mysql.prepare("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES (?,?,?, 'null', 'null',?,?,1);");
-													ps.setInt(1, x);
-													ps.setInt(2, y);
-													ps.setInt(3, z);
-													ps.setInt(4, type);
-													ps.setInt(5, i);
+													BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+",'null','null',"+type+","+i+",1);");
 												}
 												else
 												{
@@ -326,8 +321,8 @@ public class BookListener implements Listener {
 											}
 										}
 									}
-									BookShelf.mysql.commit();
-									BookShelf.mysql.setCommit(true);
+									BookShelf.mysql.getConnection().commit();
+									BookShelf.mysql.getConnection().setAutoCommit(true);
 									map3.remove(loc);
 								}
 							}
@@ -363,8 +358,9 @@ public class BookListener implements Listener {
 		}
 		if(j.getBlock().getType() == Material.BOOKSHELF)
 		{
-			r = BookShelf.mysql.query("SELECT * FROM items WHERE x=" + j.getBlock().getX() + " AND y=" + j.getBlock().getY() + " AND z=" + j.getBlock().getZ() + ";");
+			
 			try {
+				r = BookShelf.mysql.query("SELECT * FROM items WHERE x=" + j.getBlock().getX() + " AND y=" + j.getBlock().getY() + " AND z=" + j.getBlock().getZ() + ";");
 				ArrayList<String> auth = new ArrayList<String>();
 				ArrayList<String> titl = new ArrayList<String>();
 				ArrayList<Integer> type = new ArrayList<Integer>();
@@ -465,7 +461,12 @@ public class BookListener implements Listener {
 				e.printStackTrace();
 			}
 			Location loc = j.getBlock().getLocation();
-			BookShelf.mysql.query("DELETE FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			try {
+				BookShelf.mysql.query("DELETE FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	@EventHandler
@@ -610,7 +611,12 @@ public class BookListener implements Listener {
 				if(j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.UP || j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.DOWN)
 				{
 					Location loc = j.getBlock().getLocation();
-					BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+					try {
+						BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					return;
 				}
 				j.setBuild(false);
@@ -619,7 +625,12 @@ public class BookListener implements Listener {
 			else
 			{
 				Location loc = j.getBlock().getLocation();
-				BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+				try {
+					BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		if(j.getBlockAgainst().getType() == Material.BOOKSHELF)
@@ -639,8 +650,9 @@ public class BookListener implements Listener {
 			if(j.getItemDrop().getItemStack().getType() == Material.BOOK || j.getItemDrop().getItemStack().getType() == Material.WRITTEN_BOOK || j.getItemDrop().getItemStack().getType() == Material.BOOK_AND_QUILL)
 			{
 				Location loc = p.getTargetBlock(null, 10).getLocation();
-				r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+				
 				try {
+					r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 					if(r.getInt("bool") == 1)
 					{
 						j.setCancelled(true);
@@ -657,8 +669,9 @@ public class BookListener implements Listener {
 	int getidxyz(int x, int y, int z)
 	{
 		int last = -1;
-		r = BookShelf.mysql.query("SELECT * FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + " ORDER BY id DESC LIMIT 1;");
+		
 		try {
+			r = BookShelf.mysql.query("SELECT * FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + " ORDER BY id DESC LIMIT 1;");
 			last = r.getInt("id");
 			r.close();
 		} catch (SQLException e) {

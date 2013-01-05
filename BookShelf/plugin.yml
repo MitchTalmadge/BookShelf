@@ -1,6 +1,6 @@
 name: BookShelf
 main: me.Pew446.BookShelf.BookShelf
-version: 1.4
+version: 1.5
 description: Allows players to store books in bookshelves.
 commands:
    bookshelf:

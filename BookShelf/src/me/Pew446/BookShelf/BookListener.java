@@ -633,6 +633,10 @@ public class BookListener implements Listener {
 				}
 			}
 		}
+		else if(j.getBlock().getType() == Material.WALL_SIGN)
+		{
+			return;
+		}
 		if(j.getBlockAgainst().getType() == Material.BOOKSHELF)
 		{
 			if(j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.UP || j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.DOWN)

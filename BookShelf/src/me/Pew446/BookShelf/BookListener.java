@@ -51,9 +51,8 @@ public class BookListener implements Listener {
     private short mapdur = 0;
     private int elvl = 0;
     private boolean loading = false;
-    HashMap<Location, InventoryHolder> map = new HashMap<Location, InventoryHolder>();
-    HashMap<Location, Inventory> map2 = new HashMap<Location, Inventory>();
-    HashMap<Location, Boolean> map3 = new HashMap<Location, Boolean>();
+    HashMap<Location, Inventory> map = new HashMap<Location, Inventory>();
+    HashMap<Location, InventoryHolder> map2 = new HashMap<Location, InventoryHolder>();
     static ResultSet r;
 	@EventHandler
 	public void onClick(PlayerInteractEvent j)
@@ -129,8 +128,8 @@ public class BookListener implements Listener {
 							int x = cl.getX();
 							int y = cl.getY();
 							int z = cl.getZ();
-							map.put(cl.getLocation(), inv.getHolder());
-							map2.put(cl.getLocation(), inv);
+							map.put(cl.getLocation(), inv);
+							map2.put(cl.getLocation(), inv.getHolder());
 							
 							
 							try {
@@ -139,8 +138,6 @@ public class BookListener implements Listener {
 								{
 									r.close();
 									p.openInventory(inv);
-									if(!map3.containsKey(loc))
-										map3.put(loc, true);
 									return;
 								}
 								else
@@ -276,8 +273,6 @@ public class BookListener implements Listener {
 									loca.clear();
 									amt.clear();
 									p.openInventory(inv);
-									if(!map3.containsKey(loc))
-										map3.put(loc, true);
 								}
 							} catch (SQLException e) {
 								// TODO Auto-generated catch block
@@ -286,8 +281,10 @@ public class BookListener implements Listener {
 						}
 						else
 						{
-							Inventory inv = map2.get(j.getClickedBlock().getLocation());
-							Player player = (Player) inv.getHolder();
+							Inventory inv = map.get(j.getClickedBlock().getLocation());
+							if(inv.getViewers().isEmpty())
+								return;
+							Player player = (Player) inv.getViewers().get(0);
 							if(player.getName() == p.getName())
 							{
 								j.setCancelled(true);
@@ -303,13 +300,13 @@ public class BookListener implements Listener {
 		}
 	}
 	@SuppressWarnings("rawtypes")
-	public Location getKey(HashMap map, InventoryHolder inv) 
+	public Location getKey(HashMap map, InventoryHolder inventoryHolder) 
 	{
 		Set key = map.keySet();
 		for (Iterator i = key.iterator(); i.hasNext();) 
 			{
 				Location next = (Location) i.next();
-				if (map.get(next).equals(inv)) 
+				if (map.get(next).equals(inventoryHolder)) 
 				{
 					return next;
 				}
@@ -321,127 +318,119 @@ public class BookListener implements Listener {
 	{
 		
 		final InventoryCloseEvent j = u;
-		plugin.getServer().getScheduler().runTaskAsynchronously(plugin,  new Runnable() {
-			   public void run() {
-		if(map.containsValue(j.getInventory().getHolder())){
-			loading = true;
-			Location loc = getKey(map,j.getInventory().getHolder());
-			ItemStack[] cont = j.getInventory().getContents();
-			int x = loc.getBlockX();
-			int y = loc.getBlockY();
-			int z = loc.getBlockZ();
-			if(j.getInventory().getHolder() instanceof Player)
-			{
-				Player player = (Player) j.getInventory().getHolder();
-				if(j.getPlayer().getName() == player.getName())
-				{
-					map.remove(loc);
-					j.getInventory().getViewers().remove(j.getInventory().getHolder());
-					if(!j.getInventory().getViewers().isEmpty())
-					{
-						map.put(loc, (Player) j.getInventory().getViewers().iterator().next());
-					}
-					else
-					{
-						
-						try {
-							r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-							BookShelf.mysql.getConnection().setAutoCommit(false);
-							if(r.getInt("bool") == 0)
+		 if(!map2.containsValue(j.getInventory().getHolder()))
+		 {
+			 return;
+		 }
+		 if(j.getViewers().size() > 1)
+		 {
+			 return;
+		 }
+		 if(j.getViewers().get(0) != j.getPlayer())
+		 {
+			 return;
+		 }
+		plugin.getServer().getScheduler().runTaskAsynchronously(plugin,  new Runnable() 
+		{
+			   public void run() 
+			   {
+				    Location loc = getKey(map2, j.getInventory().getHolder());
+				    map.remove(loc);
+					map2.remove(loc);
+					ItemStack[] cont = j.getInventory().getContents();
+					int x = loc.getBlockX();
+					int y = loc.getBlockY();
+					int z = loc.getBlockZ();
+					loading = true;
+					try {
+						r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						BookShelf.mysql.getConnection().setAutoCommit(false);
+						if(r.getInt("bool") == 0)
+						{
+						r.close();
+							BookShelf.mysql.query("DELETE FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
+							for(int i=0;i<cont.length;i++)
 							{
-								r.close();
-								if(map3.get(loc))
+								if(cont[i] != null)
 								{
-									BookShelf.mysql.query("DELETE FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
-									for(int i=0;i<cont.length;i++)
+									if(cont[i].getType() == Material.BOOK_AND_QUILL || cont[i].getType() == Material.WRITTEN_BOOK)
 									{
-										if(cont[i] != null)
+										Book(cont[i]);
+										String title = getTitle().replaceAll("'", "''");
+										String author = getAuthor().replaceAll("'", "''");
+										int type = cont[i].getTypeId(); 
+										if(cont[i].getType() == Material.BOOK_AND_QUILL)
 										{
-											if(cont[i].getType() == Material.BOOK_AND_QUILL || cont[i].getType() == Material.WRITTEN_BOOK)
-											{
-												Book(cont[i]);
-												String title = getTitle().replaceAll("'", "''");
-												String author = getAuthor().replaceAll("'", "''");
-												int type = cont[i].getTypeId(); 
-												if(cont[i].getType() == Material.BOOK_AND_QUILL)
-												{
-													BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+",'null','null',"+type+","+i+",1);");
-												}
-												else
-												{
-													BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+",'"+author+"','"+title+"',"+type+","+i+",1);");	
-												}
-												int id = getidxyz(x,y,z);
-												BookShelf.mysql.query("DELETE FROM pages WHERE id="+id+";");
-												for(int k=0;k<getPages().length;k++)
-												{
-													BookShelf.mysql.query("INSERT INTO pages (id, text) VALUES ("+id+",'"+getPages()[k].replaceAll("'", "''")+"');");
-												}
-											}
-											else if(cont[i].getType() == Material.BOOK 
-													| cont[i].getType() == Material.RECORD_3 
-													| cont[i].getType() == Material.RECORD_4 
-													| cont[i].getType() == Material.RECORD_5 
-													| cont[i].getType() == Material.RECORD_6 
-													| cont[i].getType() == Material.RECORD_7 
-													| cont[i].getType() == Material.RECORD_8 
-													| cont[i].getType() == Material.RECORD_9 
-													| cont[i].getType() == Material.RECORD_10 
-													| cont[i].getType() == Material.RECORD_11 
-													| cont[i].getType() == Material.RECORD_12
-													| cont[i].getType().getId() == 2257
-													| cont[i].getType().getId() == 2256
-													| cont[i].getType() == Material.PAPER)
-											{
-												int type = cont[i].getTypeId(); 
-												BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
-											}
-											else if(cont[i].getType() == Material.ENCHANTED_BOOK)
-											{
-												int type = cont[i].getTypeId(); 
-												BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
-												int id = getidxyz(x,y,z);
-												EnchantmentStorageMeta book = (EnchantmentStorageMeta)cont[i].getItemMeta();
-												Map<Enchantment, Integer> enchants = book.getStoredEnchants();
-												Enchantment enchant = null;
-												for ( Enchantment key : enchants.keySet() ) {
-												    enchant = key;
-												}
-												Integer lvl = book.getStoredEnchantLevel(enchant);
-												String type2 = enchant.getName();
-												BookShelf.mysql.query("INSERT INTO enchant (id, type, level) VALUES ("+id+",'"+type2+"','"+lvl+"');");
-											}
-											else if(cont[i].getType() == Material.MAP)
-											{
-												int type = cont[i].getTypeId();
-												ItemStack map = cont[i];
-												int dur = map.getDurability();
-												BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
-												int id = getidxyz(x,y,z);
-												BookShelf.mysql.query("INSERT INTO maps (id, durability) VALUES ("+id+",'"+dur+"');");
-											}
+											BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+",'null','null',"+type+","+i+",1);");
+										}
+										else
+										{
+											BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+",'"+author+"','"+title+"',"+type+","+i+",1);");	
+										}
+										int id = getidxyz(x,y,z);
+										BookShelf.mysql.query("DELETE FROM pages WHERE id="+id+";");
+										for(int k=0;k<getPages().length;k++)
+										{
+											BookShelf.mysql.query("INSERT INTO pages (id, text) VALUES ("+id+",'"+getPages()[k].replaceAll("'", "''")+"');");
 										}
 									}
-									BookShelf.mysql.getConnection().commit();
-									BookShelf.mysql.getConnection().setAutoCommit(true);
-									map3.remove(loc);
+									else if(cont[i].getType() == Material.BOOK 
+											| cont[i].getType() == Material.RECORD_3 
+											| cont[i].getType() == Material.RECORD_4 
+											| cont[i].getType() == Material.RECORD_5 
+											| cont[i].getType() == Material.RECORD_6 
+											| cont[i].getType() == Material.RECORD_7 
+											| cont[i].getType() == Material.RECORD_8 
+											| cont[i].getType() == Material.RECORD_9 
+											| cont[i].getType() == Material.RECORD_10 
+											| cont[i].getType() == Material.RECORD_11 
+											| cont[i].getType() == Material.RECORD_12
+											| cont[i].getType().getId() == 2257
+											| cont[i].getType().getId() == 2256
+											| cont[i].getType() == Material.PAPER)
+									{
+										int type = cont[i].getTypeId(); 
+										BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
+									}
+									else if(cont[i].getType() == Material.ENCHANTED_BOOK)
+									{
+										int type = cont[i].getTypeId(); 
+										BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
+										int id = getidxyz(x,y,z);
+										EnchantmentStorageMeta book = (EnchantmentStorageMeta)cont[i].getItemMeta();
+										Map<Enchantment, Integer> enchants = book.getStoredEnchants();
+										Enchantment enchant = null;
+										for ( Enchantment key : enchants.keySet() ) {
+										    enchant = key;
+										}
+										Integer lvl = book.getStoredEnchantLevel(enchant);
+										String type2 = enchant.getName();
+										BookShelf.mysql.query("INSERT INTO enchant (id, type, level) VALUES ("+id+",'"+type2+"','"+lvl+"');");
+									}
+									else if(cont[i].getType() == Material.MAP)
+									{
+										int type = cont[i].getTypeId();
+										ItemStack mapp = cont[i];
+										int dur = mapp.getDurability();
+										BookShelf.mysql.query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
+										int id = getidxyz(x,y,z);
+										BookShelf.mysql.query("INSERT INTO maps (id, durability) VALUES ("+id+",'"+dur+"');");
+									}
 								}
 							}
-							else
-							{
-								r.close();
+							BookShelf.mysql.getConnection().commit();
+							BookShelf.mysql.getConnection().setAutoCommit(true);
 							}
-						} catch (SQLException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						else
+						{
+							r.close();
 						}
-						map2.remove(loc);
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-				}
-			}
-			loading=false;
-		}
-	}
+				    loading=false;
+			   }
 		});
 	}
 		
@@ -450,7 +439,7 @@ public class BookListener implements Listener {
 	{
 		if(map.containsKey(j.getBlock().getLocation()))
 		{
-			Inventory inv = map2.get(j.getBlock().getLocation());
+			Inventory inv = map.get(j.getBlock().getLocation());
 			List<HumanEntity> viewers = inv.getViewers();
 			for(int i = 0;i<viewers.size();i++)
 			{

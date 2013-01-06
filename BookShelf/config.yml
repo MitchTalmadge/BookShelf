@@ -8,6 +8,7 @@ rows: 2
 
 shelf_title: "BookShelf"
 default_openable: true
+top-bottom_access: false
 
 permissions:
     allow_book: true

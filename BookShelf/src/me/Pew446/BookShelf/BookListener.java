@@ -72,223 +72,229 @@ public class BookListener implements Listener {
 					if(j.getAction() == Action.RIGHT_CLICK_BLOCK && !loading)
 					{
 						Location loc = j.getClickedBlock().getLocation();
-						if(j.getBlockFace() == BlockFace.NORTH || j.getBlockFace() == BlockFace.EAST || j.getBlockFace() == BlockFace.SOUTH || j.getBlockFace() == BlockFace.WEST)
+						if(!plugin.getConfig().getBoolean("top-bottom_access"))
 						{
-							try {
-								r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-								if(!r.next())
-								{
-									r.close();
-									BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0);");
-								}
-								else
-								{
-									r.close();
-								}
-								r = BookShelf.mysql.query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-								if(!r.next())
-								{
-									int def = 1;
-									r.close();
-									if(plugin.getConfig().getBoolean("default_openable"))
-									{
-										def = 1;
-									}
-									else
-									{
-										def = 0;
-									}
-									BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
-									if(def == 0)
-										return;
-								}
-								else
-								{
-									boolean open = r.getBoolean("bool");
-									r.close();
-									if(!open)
-									{
-										return;
-									}
-								}
-							} catch (SQLException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-							if(!map.containsKey(j.getClickedBlock().getLocation()))
+							if(j.getBlockFace() == BlockFace.UP 
+									| j.getBlockFace() == BlockFace.DOWN)
 							{
-								Inventory inv = Bukkit.createInventory(p, plugin.getConfig().getInt("rows")*9, plugin.getConfig().getString("shelf_title"));
-								Block cl = j.getClickedBlock();
-								int x = cl.getX();
-								int y = cl.getY();
-								int z = cl.getZ();
-								map.put(cl.getLocation(), inv.getHolder());
-								map2.put(cl.getLocation(), inv);
-								
-								
-								try {
-									r = BookShelf.mysql.query("SELECT COUNT(*) FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
-									if(!r.next())
-									{
-										r.close();
-										p.openInventory(inv);
-										if(!map3.containsKey(loc))
-											map3.put(loc, true);
-										return;
-									}
-									else
-									{
-										r.close();
-										r = BookShelf.mysql.query("SELECT * FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
-										ArrayList<String> auth = new ArrayList<String>();
-										ArrayList<String> titl = new ArrayList<String>();
-										ArrayList<Integer> type = new ArrayList<Integer>();
-										ArrayList<Integer> id = new ArrayList<Integer>();
-										ArrayList<Integer> loca = new ArrayList<Integer>();
-										ArrayList<Integer> amt = new ArrayList<Integer>();
-				 						while(r.next())
-										{
-											auth.add(r.getString("author"));
-											titl.add(r.getString("title"));
-											id.add(r.getInt("id"));
-											type.add(r.getInt("type"));
-											loca.add(r.getInt("loc"));
-											amt.add(r.getInt("amt"));
-										}
-										r.close();
-										ArrayList<String> pages = new ArrayList<String>();
-										for(int i=0;i<id.size();i++)
-										{
-											if(type.get(i) == Material.BOOK.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.BOOK, amt.get(i)));
-											}
-											else if(type.get(i) == Material.RECORD_3.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.RECORD_3, amt.get(i)));
-											}
-											else if(type.get(i) == Material.RECORD_4.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.RECORD_4, amt.get(i)));
-											}
-											else if(type.get(i) == Material.RECORD_5.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.RECORD_5, amt.get(i)));
-											}
-											else if(type.get(i) == Material.RECORD_6.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.RECORD_6, amt.get(i)));
-											}
-											else if(type.get(i) == Material.RECORD_7.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.RECORD_7, amt.get(i)));
-											}
-											else if(type.get(i) == Material.RECORD_8.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.RECORD_8, amt.get(i)));
-											}
-											else if(type.get(i) == Material.RECORD_9.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.RECORD_9, amt.get(i)));
-											}
-											else if(type.get(i) == Material.RECORD_10.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.RECORD_10, amt.get(i)));
-											}
-											else if(type.get(i) == Material.RECORD_11.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.RECORD_11, amt.get(i)));
-											}
-											else if(type.get(i) == Material.RECORD_12.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.RECORD_12, amt.get(i)));
-											}
-											else if(type.get(i) == 2257)
-											{
-												inv.setItem(loca.get(i), new ItemStack(2257, amt.get(i)));
-											}
-											else if(type.get(i) == 2256)
-											{
-												inv.setItem(loca.get(i), new ItemStack(2256, amt.get(i)));
-											}
-											else if(type.get(i) == Material.PAPER.getId())
-											{
-												inv.setItem(loca.get(i), new ItemStack(Material.PAPER, amt.get(i)));
-											}
-											else if(type.get(i) == Material.MAP.getId())
-											{
-												r = BookShelf.mysql.query("SELECT * FROM maps WHERE id="+id.get(i)+";");
-												while(r.next())
-												{
-													mapdur = r.getShort("durability");
-												}
-												r.close();
-												inv.setItem(loca.get(i), generateItemStack(3));
-											}
-											else if(type.get(i) == Material.ENCHANTED_BOOK.getId())
-											{
-												r = BookShelf.mysql.query("SELECT * FROM enchant WHERE id="+id.get(i)+";");
-												String enchant = "";
-												while(r.next())
-												{
-													enchant = r.getString("type");
-													elvl = r.getInt("level");
-												}
-												r.close();
-												etype = Enchantment.getByName(enchant);
-												inv.setItem(loca.get(i), generateItemStack(2));
-											}
-											else
-											{
-												r = BookShelf.mysql.query("SELECT * FROM pages WHERE id="+id.get(i)+";");
-												while(r.next())
-												{
-													pages.add(r.getString("text"));
-												}
-												r.close();
-												String[] thepages = new String[pages.size()];
-												thepages = pages.toArray(thepages);
-												if(type.get(i) == Material.WRITTEN_BOOK.getId())
-												{
-													Book(titl.get(i), auth.get(i), thepages);
-													inv.setItem(loca.get(i), generateItemStack(0));
-													pages.clear();
-												}
-												else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
-												{
-													Book("null", "null", thepages);
-													inv.setItem(loca.get(i), generateItemStack(1));
-													pages.clear();
-												}
-											}
-										}
-										auth.clear();
-										titl.clear();
-										type.clear();
-										id.clear();
-										loca.clear();
-										amt.clear();
-										p.openInventory(inv);
-										if(!map3.containsKey(loc))
-											map3.put(loc, true);
-									}
-								} catch (SQLException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
+								return;
+							}
+						}
+
+						try {
+							r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							if(!r.next())
+							{
+								r.close();
+								BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0);");
 							}
 							else
 							{
-								Inventory inv = map2.get(j.getClickedBlock().getLocation());
-								Player player = (Player) inv.getHolder();
-								if(player.getName() == p.getName())
+								r.close();
+							}
+							r = BookShelf.mysql.query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							if(!r.next())
+							{
+								int def = 1;
+								r.close();
+								if(plugin.getConfig().getBoolean("default_openable"))
 								{
-									j.setCancelled(true);
+									def = 1;
 								}
 								else
 								{
-									p.openInventory(inv);
+									def = 0;
 								}
+								BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
+								if(def == 0)
+									return;
+							}
+							else
+							{
+								boolean open = r.getBoolean("bool");
+								r.close();
+								if(!open)
+								{
+									return;
+								}
+							}
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						if(!map.containsKey(j.getClickedBlock().getLocation()))
+						{
+							Inventory inv = Bukkit.createInventory(p, plugin.getConfig().getInt("rows")*9, plugin.getConfig().getString("shelf_title"));
+							Block cl = j.getClickedBlock();
+							int x = cl.getX();
+							int y = cl.getY();
+							int z = cl.getZ();
+							map.put(cl.getLocation(), inv.getHolder());
+							map2.put(cl.getLocation(), inv);
+							
+							
+							try {
+								r = BookShelf.mysql.query("SELECT COUNT(*) FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
+								if(!r.next())
+								{
+									r.close();
+									p.openInventory(inv);
+									if(!map3.containsKey(loc))
+										map3.put(loc, true);
+									return;
+								}
+								else
+								{
+									r.close();
+									r = BookShelf.mysql.query("SELECT * FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
+									ArrayList<String> auth = new ArrayList<String>();
+									ArrayList<String> titl = new ArrayList<String>();
+									ArrayList<Integer> type = new ArrayList<Integer>();
+									ArrayList<Integer> id = new ArrayList<Integer>();
+									ArrayList<Integer> loca = new ArrayList<Integer>();
+									ArrayList<Integer> amt = new ArrayList<Integer>();
+				 					while(r.next())
+									{
+										auth.add(r.getString("author"));
+										titl.add(r.getString("title"));
+										id.add(r.getInt("id"));
+										type.add(r.getInt("type"));
+										loca.add(r.getInt("loc"));
+										amt.add(r.getInt("amt"));
+									}
+									r.close();
+									ArrayList<String> pages = new ArrayList<String>();
+									for(int i=0;i<id.size();i++)
+									{
+										if(type.get(i) == Material.BOOK.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.BOOK, amt.get(i)));
+										}
+										else if(type.get(i) == Material.RECORD_3.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_3, amt.get(i)));
+										}
+										else if(type.get(i) == Material.RECORD_4.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_4, amt.get(i)));
+										}
+										else if(type.get(i) == Material.RECORD_5.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_5, amt.get(i)));
+										}
+										else if(type.get(i) == Material.RECORD_6.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_6, amt.get(i)));
+										}
+										else if(type.get(i) == Material.RECORD_7.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_7, amt.get(i)));
+										}
+										else if(type.get(i) == Material.RECORD_8.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_8, amt.get(i)));
+										}
+										else if(type.get(i) == Material.RECORD_9.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_9, amt.get(i)));
+										}
+										else if(type.get(i) == Material.RECORD_10.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_10, amt.get(i)));
+										}
+										else if(type.get(i) == Material.RECORD_11.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_11, amt.get(i)));
+										}
+										else if(type.get(i) == Material.RECORD_12.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_12, amt.get(i)));
+										}
+										else if(type.get(i) == 2257)
+										{
+											inv.setItem(loca.get(i), new ItemStack(2257, amt.get(i)));
+										}
+										else if(type.get(i) == 2256)
+										{
+											inv.setItem(loca.get(i), new ItemStack(2256, amt.get(i)));
+										}
+										else if(type.get(i) == Material.PAPER.getId())
+										{
+											inv.setItem(loca.get(i), new ItemStack(Material.PAPER, amt.get(i)));
+										}
+										else if(type.get(i) == Material.MAP.getId())
+										{
+											r = BookShelf.mysql.query("SELECT * FROM maps WHERE id="+id.get(i)+";");
+											while(r.next())
+											{
+												mapdur = r.getShort("durability");
+											}
+											r.close();
+											inv.setItem(loca.get(i), generateItemStack(3));
+										}
+										else if(type.get(i) == Material.ENCHANTED_BOOK.getId())
+										{
+											r = BookShelf.mysql.query("SELECT * FROM enchant WHERE id="+id.get(i)+";");
+											String enchant = "";
+											while(r.next())
+											{
+												enchant = r.getString("type");
+												elvl = r.getInt("level");
+											}
+											r.close();
+											etype = Enchantment.getByName(enchant);
+											inv.setItem(loca.get(i), generateItemStack(2));
+										}
+										else
+										{
+											r = BookShelf.mysql.query("SELECT * FROM pages WHERE id="+id.get(i)+";");
+											while(r.next())
+											{
+												pages.add(r.getString("text"));
+											}
+											r.close();
+											String[] thepages = new String[pages.size()];
+											thepages = pages.toArray(thepages);
+											if(type.get(i) == Material.WRITTEN_BOOK.getId())
+											{
+												Book(titl.get(i), auth.get(i), thepages);
+												inv.setItem(loca.get(i), generateItemStack(0));
+												pages.clear();
+											}
+											else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
+											{
+												Book("null", "null", thepages);
+												inv.setItem(loca.get(i), generateItemStack(1));
+												pages.clear();
+											}
+										}
+									}
+									auth.clear();
+									titl.clear();
+									type.clear();
+									id.clear();
+									loca.clear();
+									amt.clear();
+									p.openInventory(inv);
+									if(!map3.containsKey(loc))
+										map3.put(loc, true);
+								}
+							} catch (SQLException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						else
+						{
+							Inventory inv = map2.get(j.getClickedBlock().getLocation());
+							Player player = (Player) inv.getHolder();
+							if(player.getName() == p.getName())
+							{
+								j.setCancelled(true);
+							}
+							else
+							{
+								p.openInventory(inv);
 							}
 						}
 					}
@@ -906,8 +912,13 @@ public class BookListener implements Listener {
 		}
 		if(j.getBlockAgainst().getType() == Material.BOOKSHELF)
 		{
-			if(j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.UP || j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.DOWN)
-				return;
+			if(j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.UP | j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.DOWN)
+			{
+				if(!plugin.getConfig().getBoolean("top-bottom_access"))
+				{
+					return;
+				}
+			}
 			j.setBuild(false);
 			j.setCancelled(true);
 		}

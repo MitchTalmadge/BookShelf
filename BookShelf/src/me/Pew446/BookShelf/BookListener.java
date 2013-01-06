@@ -65,6 +65,10 @@ public class BookListener implements Listener {
 			{
 				if(!j.getPlayer().isSneaking())
 				{
+					if(j.getPlayer().getItemInHand().getType() == Material.BOOKSHELF)
+					{
+						return;
+					}
 					if(j.getAction() == Action.RIGHT_CLICK_BLOCK && !loading)
 					{
 						Location loc = j.getClickedBlock().getLocation();
@@ -856,29 +860,24 @@ public class BookListener implements Listener {
 		{
 			if(j.getBlockAgainst().getType() == Material.BOOKSHELF)
 			{
-				if(j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.UP || j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.DOWN)
-				{
-					Location loc = j.getBlock().getLocation();
-					try {
-						BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
-						int def = 1;
-						if(plugin.getConfig().getBoolean("default_openable"))
-						{
-							def = 1;
-						}
-						else
-						{
-							def = 0;
-						}
-						BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+				Location loc = j.getBlock().getLocation();
+				try {
+					BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+					int def = 1;
+					if(plugin.getConfig().getBoolean("default_openable"))
+					{
+						def = 1;
 					}
-					return;
+					else
+					{
+						def = 0;
+					}
+					BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				j.setBuild(false);
-				j.setCancelled(true);
+				return;
 			}
 			else
 			{
@@ -919,7 +918,23 @@ public class BookListener implements Listener {
 		Player p = j.getPlayer();
 		if(p.getTargetBlock(null, 10).getType() == Material.BOOKSHELF)
 		{
-			if(j.getItemDrop().getItemStack().getType() == Material.BOOK || j.getItemDrop().getItemStack().getType() == Material.WRITTEN_BOOK || j.getItemDrop().getItemStack().getType() == Material.BOOK_AND_QUILL || j.getItemDrop().getItemStack().getType() == Material.ENCHANTED_BOOK || j.getItemDrop().getItemStack().getType() == Material.MAP || j.getItemDrop().getItemStack().getType() == Material.PAPER)
+			if(j.getItemDrop().getItemStack().getType() == Material.BOOK 
+					| j.getItemDrop().getItemStack().getType() == Material.WRITTEN_BOOK 
+					| j.getItemDrop().getItemStack().getType() == Material.BOOK_AND_QUILL 
+					| j.getItemDrop().getItemStack().getType() == Material.ENCHANTED_BOOK 
+					| j.getItemDrop().getItemStack().getType() == Material.MAP 
+					| j.getItemDrop().getItemStack().getType() == Material.PAPER
+					| j.getItemDrop().getItemStack().getType() == Material.RECORD_4
+					| j.getItemDrop().getItemStack().getType() == Material.RECORD_5
+					| j.getItemDrop().getItemStack().getType() == Material.RECORD_6
+					| j.getItemDrop().getItemStack().getType() == Material.RECORD_7
+					| j.getItemDrop().getItemStack().getType() == Material.RECORD_8
+					| j.getItemDrop().getItemStack().getType() == Material.RECORD_9
+					| j.getItemDrop().getItemStack().getType() == Material.RECORD_10
+					| j.getItemDrop().getItemStack().getType() == Material.RECORD_11
+					| j.getItemDrop().getItemStack().getType() == Material.RECORD_12
+					| j.getItemDrop().getItemStack().getTypeId() == 2257
+					| j.getItemDrop().getItemStack().getTypeId() == 2256)
 			{
 				Location loc = p.getTargetBlock(null, 10).getLocation();
 				

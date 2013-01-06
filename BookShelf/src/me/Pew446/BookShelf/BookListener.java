@@ -81,6 +81,21 @@ public class BookListener implements Listener {
 								{
 									r.close();
 								}
+								r = BookShelf.mysql.query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								if(!r.next())
+								{
+									r.close();
+									BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+plugin.getConfig().getBoolean("default_openable")+");");
+								}
+								else
+								{
+									boolean open = r.getBoolean("bool");
+									r.close();
+									if(!open)
+									{
+										return;
+									}
+								}
 							} catch (SQLException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
@@ -835,6 +850,7 @@ public class BookListener implements Listener {
 					Location loc = j.getBlock().getLocation();
 					try {
 						BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+						BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+plugin.getConfig().getBoolean("default_openable")+");");
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -849,6 +865,7 @@ public class BookListener implements Listener {
 				Location loc = j.getBlock().getLocation();
 				try {
 					BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+					BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+plugin.getConfig().getBoolean("default_openable")+");");
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

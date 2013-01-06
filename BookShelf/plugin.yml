@@ -3,11 +3,17 @@ main: me.Pew446.BookShelf.BookShelf
 version: 1.6
 description: Allows players to store books in bookshelves.
 commands:
-   bookshelf:
+   unlimited:
       description: Sets target bookshelf to never run out of books.
       usage: /<command>
-      aliases: ['bs']
-      permission: bookshelf
+      aliases: ['bsu']
+      permission: bookshelf.unlimited
+      permission-message: You don't have permission for that command!
+   toggle:
+      description: Toggles target bookshelf enabled/disabled.
+      usage: /<command>
+      aliases: ['bst']
+      permission: bookshelf.toggle
       permission-message: You don't have permission for that command!
 permissions:
     bookshelf.*:

@@ -68,6 +68,7 @@ public class BookShelf extends JavaPlugin{
         		mysql.query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, type INT, loc INT, amt INT);");
 				mysql.query("CREATE TABLE IF NOT EXISTS pages (id INT, text STRING);");
 				mysql.query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
+				mysql.query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
 				mysql.query("CREATE TABLE IF NOT EXISTS enchant (id INT, type STRING, level INT);");
 				mysql.query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
         	} catch (SQLException e) {

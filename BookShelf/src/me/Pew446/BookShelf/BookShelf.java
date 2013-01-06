@@ -78,10 +78,12 @@ public class BookShelf extends JavaPlugin{
         	
         System.out.println("BookShelf Database Loaded.");
 	}	
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
-		if(cmd.getName().equalsIgnoreCase("bookshelf") || cmd.getName().equalsIgnoreCase("bs")){ // If the player typed /basic then do the following...
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
+	{
+		if(cmd.getName().equalsIgnoreCase("unlimited") || cmd.getName().equalsIgnoreCase("bsu"))
+		{
 			Player p = Bukkit.getPlayer(sender.getName());
-			if(p.hasPermission("bookshelf"))
+			if(p.hasPermission("bookshelf.unlimited"))
 			{
 				Location loc = p.getTargetBlock(null, 10).getLocation();
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
@@ -99,6 +101,44 @@ public class BookShelf extends JavaPlugin{
 							re.close();
 							p.sendMessage("The bookshelf you are looking at is now unlimited.");
 							mysql.query("UPDATE copy SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						}
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				else
+				{
+					p.sendMessage("Please look at a bookshelf when using this command");
+				}
+			}
+			else
+			{
+				p.sendMessage("You don't have permission to use this command!");
+			}
+			return true;
+		}
+		else if(cmd.getName().equalsIgnoreCase("toggle") || cmd.getName().equalsIgnoreCase("bst"))
+		{
+			Player p = Bukkit.getPlayer(sender.getName());
+			if(p.hasPermission("bookshelf.toggle"))
+			{
+				Location loc = p.getTargetBlock(null, 10).getLocation();
+				if(loc.getBlock().getType() == Material.BOOKSHELF)
+				{
+					try {
+					ResultSet re = mysql.query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						if(re.getInt("bool") == 1)
+						{
+							re.close();
+							p.sendMessage("The bookshelf you are looking at is now disabled.");
+							mysql.query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						}
+						else
+						{
+							re.close();
+							p.sendMessage("The bookshelf you are looking at is now enabled.");
+							mysql.query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block

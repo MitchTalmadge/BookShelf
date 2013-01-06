@@ -765,19 +765,6 @@ public class BookListener implements Listener {
 			{
 				return;
 			}
-			if(plugin.getConfig().getBoolean("villager_trading.allow_maps") == false)
-			{
-				if(j.getCurrentItem().getType() == Material.MAP)
-				{
-					j.setCancelled(true);
-					return;
-				}
-				else if(j.getCursor().getType() == Material.MAP)
-				{
-					j.setCancelled(true);
-					return;
-				}
-			}
 			if(plugin.getConfig().getBoolean("villager_trading.allow_book") == false)
 			{
 				if(j.getCurrentItem().getType() == Material.BOOK)
@@ -786,19 +773,6 @@ public class BookListener implements Listener {
 					return;
 				}
 				else if(j.getCursor().getType() == Material.BOOK)
-				{
-					j.setCancelled(true);
-					return;
-				}
-			}
-			if(plugin.getConfig().getBoolean("villager_trading.allow_enchanted_book") == false)
-			{
-				if(j.getCurrentItem().getType() == Material.ENCHANTED_BOOK)
-				{
-					j.setCancelled(true);
-					return;
-				}
-				else if(j.getCursor().getType() == Material.ENCHANTED_BOOK)
 				{
 					j.setCancelled(true);
 					return;
@@ -825,41 +799,6 @@ public class BookListener implements Listener {
 					return;
 				}
 				else if(j.getCursor().getType() == Material.WRITTEN_BOOK)
-				{
-					j.setCancelled(true);
-					return;
-				}
-			}
-			if(plugin.getConfig().getBoolean("villager_trading.allow_records") == false)
-			{
-				if(j.getCurrentItem().getType() == Material.RECORD_3 
-						| j.getCurrentItem().getType() == Material.RECORD_4
-						| j.getCurrentItem().getType() == Material.RECORD_5
-						| j.getCurrentItem().getType() == Material.RECORD_6
-						| j.getCurrentItem().getType() == Material.RECORD_7
-						| j.getCurrentItem().getType() == Material.RECORD_8
-						| j.getCurrentItem().getType() == Material.RECORD_9
-						| j.getCurrentItem().getType() == Material.RECORD_10
-						| j.getCurrentItem().getType() == Material.RECORD_11
-						| j.getCurrentItem().getType() == Material.RECORD_12
-						| j.getCurrentItem().getType().getId() == 2257
-						| j.getCurrentItem().getType().getId() == 2256)
-				{
-					j.setCancelled(true);
-					return;
-				}
-				else if(j.getCursor().getType() == Material.RECORD_3 
-						| j.getCursor().getType() == Material.RECORD_4
-						| j.getCursor().getType() == Material.RECORD_5
-						| j.getCursor().getType() == Material.RECORD_6
-						| j.getCursor().getType() == Material.RECORD_7
-						| j.getCursor().getType() == Material.RECORD_8
-						| j.getCursor().getType() == Material.RECORD_9
-						| j.getCursor().getType() == Material.RECORD_10
-						| j.getCursor().getType() == Material.RECORD_11
-						| j.getCursor().getType() == Material.RECORD_12
-						| j.getCursor().getType().getId() == 2257
-						| j.getCursor().getType().getId() == 2256)
 				{
 					j.setCancelled(true);
 					return;

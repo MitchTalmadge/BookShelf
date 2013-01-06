@@ -23,8 +23,5 @@ villager_trading:
     allow_book: true
     allow_book_and_quill: true
     allow_signed: true
-    allow_maps: true
-    allow_enchanted_book: true
-    allow_records: true
     allow_paper: true
  

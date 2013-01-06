@@ -657,17 +657,6 @@ public class BookListener implements Listener {
 					return;
 				}
 			}
-			else
-			{
-				if(j.getCurrentItem().getType() == Material.MAP)
-				{
-					return;
-				}
-				else if(j.getCursor().getType() == Material.MAP)
-				{
-					return;
-				}
-			}
 			if(plugin.getConfig().getBoolean("permissions.allow_book") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.book"))
 			{
 				if(j.getCurrentItem().getType() == Material.BOOK)
@@ -678,17 +667,6 @@ public class BookListener implements Listener {
 				else if(j.getCursor().getType() == Material.BOOK)
 				{
 					j.setCancelled(true);
-					return;
-				}
-			}
-			else
-			{
-				if(j.getCurrentItem().getType() == Material.BOOK)
-				{
-					return;
-				}
-				else if(j.getCursor().getType() == Material.BOOK)
-				{
 					return;
 				}
 			}
@@ -705,17 +683,6 @@ public class BookListener implements Listener {
 					return;
 				}
 			}
-			else
-			{
-				if(j.getCurrentItem().getType() == Material.ENCHANTED_BOOK)
-				{
-					return;
-				}
-				else if(j.getCursor().getType() == Material.ENCHANTED_BOOK)
-				{
-					return;
-				}
-			}
 			if(plugin.getConfig().getBoolean("permissions.allow_book_and_quill") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.baq"))
 			{
 				if(j.getCurrentItem().getType() == Material.BOOK_AND_QUILL)
@@ -729,17 +696,6 @@ public class BookListener implements Listener {
 					return;
 				}
 			}
-			else
-			{
-				if(j.getCurrentItem().getType() == Material.BOOK_AND_QUILL)
-				{
-					return;
-				}
-				else if(j.getCursor().getType() == Material.BOOK_AND_QUILL)
-				{
-					return;
-				}
-			}
 			if(plugin.getConfig().getBoolean("permissions.allow_signed") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.signed"))
 			{
 				if(j.getCurrentItem().getType() == Material.WRITTEN_BOOK)
@@ -750,17 +706,6 @@ public class BookListener implements Listener {
 				else if(j.getCursor().getType() == Material.WRITTEN_BOOK)
 				{
 					j.setCancelled(true);
-					return;
-				}
-			}
-			else
-			{
-				if(j.getCurrentItem().getType() == Material.WRITTEN_BOOK)
-				{
-					return;
-				}
-				else if(j.getCursor().getType() == Material.WRITTEN_BOOK)
-				{
 					return;
 				}
 			}
@@ -799,7 +744,93 @@ public class BookListener implements Listener {
 					return;
 				}
 			}
-			else
+			if(plugin.getConfig().getBoolean("permissions.allow_paper") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.paper"))
+			{
+				if(j.getCurrentItem().getType() == Material.PAPER)
+				{
+					j.setCancelled(true);
+					return;
+				}
+				else if(j.getCursor().getType() == Material.PAPER)
+				{
+					j.setCancelled(true);
+					return;
+				}
+			}
+			j.setCancelled(true);
+		}
+		else if(j.getInventory().getTitle() == "mob.villager")
+		{
+			if(j.getCurrentItem() == null)
+			{
+				return;
+			}
+			if(plugin.getConfig().getBoolean("villager_trading.allow_maps") == false)
+			{
+				if(j.getCurrentItem().getType() == Material.MAP)
+				{
+					j.setCancelled(true);
+					return;
+				}
+				else if(j.getCursor().getType() == Material.MAP)
+				{
+					j.setCancelled(true);
+					return;
+				}
+			}
+			if(plugin.getConfig().getBoolean("villager_trading.allow_book") == false)
+			{
+				if(j.getCurrentItem().getType() == Material.BOOK)
+				{
+					j.setCancelled(true);
+					return;
+				}
+				else if(j.getCursor().getType() == Material.BOOK)
+				{
+					j.setCancelled(true);
+					return;
+				}
+			}
+			if(plugin.getConfig().getBoolean("villager_trading.allow_enchanted_book") == false)
+			{
+				if(j.getCurrentItem().getType() == Material.ENCHANTED_BOOK)
+				{
+					j.setCancelled(true);
+					return;
+				}
+				else if(j.getCursor().getType() == Material.ENCHANTED_BOOK)
+				{
+					j.setCancelled(true);
+					return;
+				}
+			}
+			if(plugin.getConfig().getBoolean("villager_trading.allow_book_and_quill") == false)
+			{
+				if(j.getCurrentItem().getType() == Material.BOOK_AND_QUILL)
+				{
+					j.setCancelled(true);
+					return;
+				}
+				else if(j.getCursor().getType() == Material.BOOK_AND_QUILL)
+				{
+					j.setCancelled(true);
+					return;
+				}
+			}
+			if(plugin.getConfig().getBoolean("villager_trading.allow_signed") == false)
+			{
+				if(j.getCurrentItem().getType() == Material.WRITTEN_BOOK)
+				{
+					j.setCancelled(true);
+					return;
+				}
+				else if(j.getCursor().getType() == Material.WRITTEN_BOOK)
+				{
+					j.setCancelled(true);
+					return;
+				}
+			}
+			if(plugin.getConfig().getBoolean("villager_trading.allow_records") == false)
 			{
 				if(j.getCurrentItem().getType() == Material.RECORD_3 
 						| j.getCurrentItem().getType() == Material.RECORD_4
@@ -814,6 +845,7 @@ public class BookListener implements Listener {
 						| j.getCurrentItem().getType().getId() == 2257
 						| j.getCurrentItem().getType().getId() == 2256)
 				{
+					j.setCancelled(true);
 					return;
 				}
 				else if(j.getCursor().getType() == Material.RECORD_3 
@@ -829,10 +861,11 @@ public class BookListener implements Listener {
 						| j.getCursor().getType().getId() == 2257
 						| j.getCursor().getType().getId() == 2256)
 				{
+					j.setCancelled(true);
 					return;
 				}
 			}
-			if(plugin.getConfig().getBoolean("permissions.allow_paper") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.paper"))
+			if(plugin.getConfig().getBoolean("villager_trading.allow_paper") == false)
 			{
 				if(j.getCurrentItem().getType() == Material.PAPER)
 				{
@@ -845,18 +878,6 @@ public class BookListener implements Listener {
 					return;
 				}
 			}
-			else
-			{
-				if(j.getCurrentItem().getType() == Material.PAPER)
-				{
-					return;
-				}
-				else if(j.getCursor().getType() == Material.PAPER)
-				{
-					return;
-				}
-			}
-			j.setCancelled(true);
 		}
 	}
 	@EventHandler

@@ -478,6 +478,7 @@ public class BookListener implements Listener {
 				r.close();
 				ArrayList<String> pages = new ArrayList<String>();
 				String enchant = "";
+				BookShelf.mysql.getConnection().setAutoCommit(false);
 				for(int i=0;i<id.size();i++)
 				{
 					if(type.get(i) == Material.ENCHANTED_BOOK.getId())
@@ -489,6 +490,7 @@ public class BookListener implements Listener {
 							elvl = r.getInt("level");
 						}
 						r.close();
+						BookShelf.mysql.query("DELETE FROM items WHERE id=" + id.get(i) + ";");
 						etype = Enchantment.getByName(enchant);
 						Location loc = j.getBlock().getLocation();
 						Random gen = new Random();
@@ -506,6 +508,7 @@ public class BookListener implements Listener {
 							mapdur = r.getShort("durability");
 						}
 						r.close();
+						BookShelf.mysql.query("DELETE FROM items WHERE id=" + id.get(i) + ";");
 						Location loc = j.getBlock().getLocation();
 						Random gen = new Random();
 						double xs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
@@ -622,6 +625,8 @@ public class BookListener implements Listener {
 						BookShelf.mysql.query("DELETE FROM pages WHERE id=" + id.get(i) + ";");
 					}
 				}
+				BookShelf.mysql.getConnection().commit();
+				BookShelf.mysql.getConnection().setAutoCommit(true);
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

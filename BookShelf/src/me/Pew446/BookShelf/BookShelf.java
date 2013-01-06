@@ -80,7 +80,7 @@ public class BookShelf extends JavaPlugin{
 	}	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
-		if(cmd.getName().equalsIgnoreCase("unlimited") || cmd.getName().equalsIgnoreCase("bsu"))
+		if(cmd.getName().equalsIgnoreCase("bsunlimited") || cmd.getName().equalsIgnoreCase("bsu"))
 		{
 			Player p = Bukkit.getPlayer(sender.getName());
 			if(p.hasPermission("bookshelf.unlimited"))
@@ -128,7 +128,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			return true;
 		}
-		else if(cmd.getName().equalsIgnoreCase("toggle") || cmd.getName().equalsIgnoreCase("bst"))
+		else if(cmd.getName().equalsIgnoreCase("bstoggle") || cmd.getName().equalsIgnoreCase("bst"))
 		{
 			Player p = Bukkit.getPlayer(sender.getName());
 			if(p.hasPermission("bookshelf.toggle"))
@@ -179,6 +179,20 @@ public class BookShelf extends JavaPlugin{
 				{
 					p.sendMessage("Please look at a bookshelf when using this command");
 				}
+			}
+			else
+			{
+				p.sendMessage("You don't have permission to use this command!");
+			}
+			return true;
+		}
+		else if(cmd.getName().equalsIgnoreCase("bsreload") || cmd.getName().equalsIgnoreCase("bsr"))
+		{
+			Player p = Bukkit.getPlayer(sender.getName());
+			if(p.isOp() | p.hasPermission("bookshelf.reload"))
+			{
+				this.reloadConfig();
+				p.sendMessage("BookShelf config sucessfully reloaded.");
 			}
 			else
 			{

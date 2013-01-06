@@ -4,17 +4,23 @@ version: 1.6
 description: Allows players to store books in bookshelves.
 author: Pew446
 commands:
-   unlimited:
+   bsunlimited:
       description: Sets target bookshelf to never run out of books.
       usage: /<command>
       aliases: ['bsu']
       permission: bookshelf.unlimited
       permission-message: You don't have permission for that command!
-   toggle:
+   bstoggle:
       description: Toggles target bookshelf enabled/disabled.
       usage: /<command>
       aliases: ['bst']
       permission: bookshelf.toggle
+      permission-message: You don't have permission for that command!
+   bsreload:
+      description: Reloads the BookShelf configuration file.
+      usage: /<command>
+      aliases: ['bsr']
+      permission: bookshelf.reload
       permission-message: You don't have permission for that command!
 permissions:
     bookshelf.*:

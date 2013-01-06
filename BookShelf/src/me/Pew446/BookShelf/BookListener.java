@@ -85,7 +85,8 @@ public class BookListener implements Listener {
 								if(!r.next())
 								{
 									r.close();
-									BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+plugin.getConfig().getBoolean("default_openable")+");");
+									BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getBoolean("default_openable")+"');");
+									return;
 								}
 								else
 								{

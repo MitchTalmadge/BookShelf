@@ -126,8 +126,13 @@ public class BookShelf extends JavaPlugin{
 				Location loc = p.getTargetBlock(null, 10).getLocation();
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
-					try {
-					ResultSet re = mysql.query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+					try 
+					{
+						ResultSet re = mysql.query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						if(!re.next())
+						{
+							BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getBoolean("default_openable")+"');");
+						}
 						if(re.getInt("bool") == 1)
 						{
 							re.close();

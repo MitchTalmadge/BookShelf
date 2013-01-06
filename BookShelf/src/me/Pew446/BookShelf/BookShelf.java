@@ -14,7 +14,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import net.milkbowl.vault.economy.*;
 
 public class BookShelf extends JavaPlugin{
 	static FileConfiguration config;
@@ -22,6 +25,7 @@ public class BookShelf extends JavaPlugin{
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public final BookListener BookListener = new BookListener(this);
 	public static SQLite mysql;
+	public static Economy economy = null;
 	static ResultSet r;
 	
 	@Override
@@ -43,11 +47,20 @@ public class BookShelf extends JavaPlugin{
 		saveDefaultConfig();
 		sqlConnection();
 		sqlDoesDatabaseExist();
+		setupEconomy();
 		getServer().getPluginManager().registerEvents(this.BookListener, this);
 		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled.");
 		
 	}
+	private boolean setupEconomy()
+	{
+		RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+	    if (economyProvider != null) {
+	       economy = economyProvider.getProvider();
+	    }
+	    return (economy != null);
+    }
 	public void sqlConnection() 
 	{
 		mysql = new SQLite(logger, "BookShelf", this.getDataFolder().getAbsolutePath(), "Shelves");

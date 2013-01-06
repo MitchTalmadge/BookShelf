@@ -3,6 +3,7 @@ main: me.Pew446.BookShelf.BookShelf
 version: 1.6
 description: Allows players to store books in bookshelves.
 author: Pew446
+softdepend: [Vault]
 commands:
    bsunlimited:
       description: Sets target bookshelf to never run out of books.

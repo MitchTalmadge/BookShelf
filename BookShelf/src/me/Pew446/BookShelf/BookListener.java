@@ -128,11 +128,16 @@ public class BookListener implements Listener {
 							int x = cl.getX();
 							int y = cl.getY();
 							int z = cl.getZ();
-							map.put(cl.getLocation(), inv);
-							map2.put(cl.getLocation(), inv.getHolder());
 							
 							
 							try {
+								r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+x+" AND y="+y+" AND z="+z+";");
+								if(!r.getBoolean("bool"))
+								{
+									map.put(cl.getLocation(), inv);
+									map2.put(cl.getLocation(), inv.getHolder());
+								}
+								r.close();
 								r = BookShelf.mysql.query("SELECT COUNT(*) FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
 								if(!r.next())
 								{

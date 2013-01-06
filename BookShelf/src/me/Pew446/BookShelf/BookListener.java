@@ -740,7 +740,48 @@ public class BookListener implements Listener {
 						| j.getCursor().getType().getId() == 2257
 						| j.getCursor().getType().getId() == 2256)
 				{
-					j.setCancelled(true);
+					if(j.getCurrentItem().getType() != Material.MAP
+							& j.getCurrentItem().getType() != Material.BOOK
+							& j.getCurrentItem().getType() != Material.ENCHANTED_BOOK
+							& j.getCurrentItem().getType() != Material.BOOK_AND_QUILL
+							& j.getCurrentItem().getType() != Material.WRITTEN_BOOK
+							& j.getCurrentItem().getType() != Material.RECORD_3
+							& j.getCurrentItem().getType() != Material.RECORD_4
+							& j.getCurrentItem().getType() != Material.RECORD_5
+							& j.getCurrentItem().getType() != Material.RECORD_6
+							& j.getCurrentItem().getType() != Material.RECORD_7
+							& j.getCurrentItem().getType() != Material.RECORD_8
+							& j.getCurrentItem().getType() != Material.RECORD_9
+							& j.getCurrentItem().getType() != Material.RECORD_10
+							& j.getCurrentItem().getType() != Material.RECORD_11
+							& j.getCurrentItem().getType() != Material.RECORD_12
+							& j.getCurrentItem().getType().getId() != 2257
+							& j.getCurrentItem().getType().getId() != 2256)
+					{
+						j.setCancelled(true);
+						return;
+					}
+					if(j.getCursor().getType() != Material.MAP
+							& j.getCursor().getType() != Material.BOOK
+							& j.getCursor().getType() != Material.ENCHANTED_BOOK
+							& j.getCursor().getType() != Material.BOOK_AND_QUILL
+							& j.getCursor().getType() != Material.WRITTEN_BOOK
+							& j.getCursor().getType() != Material.RECORD_3
+							& j.getCursor().getType() != Material.RECORD_4
+							& j.getCursor().getType() != Material.RECORD_5
+							& j.getCursor().getType() != Material.RECORD_6
+							& j.getCursor().getType() != Material.RECORD_7
+							& j.getCursor().getType() != Material.RECORD_8
+							& j.getCursor().getType() != Material.RECORD_9
+							& j.getCursor().getType() != Material.RECORD_10
+							& j.getCursor().getType() != Material.RECORD_11
+							& j.getCursor().getType() != Material.RECORD_12
+							& j.getCursor().getType().getId() != 2257
+							& j.getCursor().getType().getId() != 2256)
+					{
+						j.setCancelled(true);
+						return;
+					}
 					return;
 				}
 			}

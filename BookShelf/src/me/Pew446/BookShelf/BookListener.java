@@ -84,9 +84,19 @@ public class BookListener implements Listener {
 								r = BookShelf.mysql.query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 								if(!r.next())
 								{
+									int def = 1;
 									r.close();
-									BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getBoolean("default_openable")+"');");
-									return;
+									if(plugin.getConfig().getBoolean("default_openable"))
+									{
+										def = 1;
+									}
+									else
+									{
+										def = 0;
+									}
+									BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
+									if(def == 0)
+										return;
 								}
 								else
 								{
@@ -851,7 +861,16 @@ public class BookListener implements Listener {
 					Location loc = j.getBlock().getLocation();
 					try {
 						BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
-						BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+plugin.getConfig().getBoolean("default_openable")+");");
+						int def = 1;
+						if(plugin.getConfig().getBoolean("default_openable"))
+						{
+							def = 1;
+						}
+						else
+						{
+							def = 0;
+						}
+						BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -866,7 +885,16 @@ public class BookListener implements Listener {
 				Location loc = j.getBlock().getLocation();
 				try {
 					BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
-					BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+plugin.getConfig().getBoolean("default_openable")+");");
+					int def = 1;
+					if(plugin.getConfig().getBoolean("default_openable"))
+					{
+						def = 1;
+					}
+					else
+					{
+						def = 0;
+					}
+					BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -891,7 +919,7 @@ public class BookListener implements Listener {
 		Player p = j.getPlayer();
 		if(p.getTargetBlock(null, 10).getType() == Material.BOOKSHELF)
 		{
-			if(j.getItemDrop().getItemStack().getType() == Material.BOOK || j.getItemDrop().getItemStack().getType() == Material.WRITTEN_BOOK || j.getItemDrop().getItemStack().getType() == Material.BOOK_AND_QUILL)
+			if(j.getItemDrop().getItemStack().getType() == Material.BOOK || j.getItemDrop().getItemStack().getType() == Material.WRITTEN_BOOK || j.getItemDrop().getItemStack().getType() == Material.BOOK_AND_QUILL || j.getItemDrop().getItemStack().getType() == Material.ENCHANTED_BOOK || j.getItemDrop().getItemStack().getType() == Material.MAP || j.getItemDrop().getItemStack().getType() == Material.PAPER)
 			{
 				Location loc = p.getTargetBlock(null, 10).getLocation();
 				

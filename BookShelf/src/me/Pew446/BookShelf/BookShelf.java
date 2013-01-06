@@ -89,7 +89,17 @@ public class BookShelf extends JavaPlugin{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
 					try {
-					ResultSet re = mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						ResultSet re = mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						if(!re.next())
+						{
+							BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+							re.close();
+						}
+						else
+						{
+							re.close();
+						}
+						re = mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(re.getInt("bool") == 1)
 						{
 							re.close();
@@ -131,8 +141,23 @@ public class BookShelf extends JavaPlugin{
 						ResultSet re = mysql.query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!re.next())
 						{
-							BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getBoolean("default_openable")+"');");
+							int def = 1;
+							if(getConfig().getBoolean("default_openable"))
+							{
+								def = 1;
+							}
+							else
+							{
+								def = 0;
+							}
+							BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
+							re.close();
 						}
+						else
+						{
+							re.close();
+						}
+						re = mysql.query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(re.getInt("bool") == 1)
 						{
 							re.close();

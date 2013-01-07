@@ -341,9 +341,19 @@ public class BookShelf extends JavaPlugin{
 						e.printStackTrace();
 					}
 					String name1 = "";
-					for(int i = 0;i<args.length;i++)
+					if(economy != null)
 					{
-						name1 += args[i].replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+" ";
+						for(int i = 0;i<args.length;i++)
+						{
+							name1 += args[i].replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+" ";
+						}
+					}
+					else
+					{
+						for(int i = 0;i<args.length;i++)
+						{
+							name1 += args[i]+" ";
+						}
 					}
 					name1.trim();
 					if(name1.length() > 32)

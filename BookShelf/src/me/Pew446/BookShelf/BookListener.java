@@ -105,10 +105,15 @@ public class BookListener implements Listener {
 								}
 								else
 								{
-									if(r.getBoolean("bool"))
+									if(r.getBoolean("bool") & BookShelf.economy != null)
 									{
 										r.close();
 										BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shop_name").replace("%$", plugin.getConfig().getInt("economy.default_price")+" "+BookShelf.economy.currencyNamePlural())+"');");
+									}
+									else
+									{
+										r.close();
+										BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shop_name")+"');");
 									}
 								}
 							}

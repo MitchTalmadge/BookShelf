@@ -108,7 +108,7 @@ public class BookListener implements Listener {
 									if(r.getBoolean("bool"))
 									{
 										r.close();
-										BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shop_name").replaceAll("%$", plugin.getConfig().getInt("economy.default_price")+" "+BookShelf.economy.currencyNamePlural())+"');");
+										BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shop_name").replace("%$", plugin.getConfig().getInt("economy.default_price")+" "+BookShelf.economy.currencyNamePlural())+"');");
 									}
 								}
 							}
@@ -671,6 +671,7 @@ public class BookListener implements Listener {
 				BookShelf.mysql.query("DELETE FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 				BookShelf.mysql.query("DELETE FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 				BookShelf.mysql.query("DELETE FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+				BookShelf.mysql.query("DELETE FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 				BookShelf.mysql.getConnection().commit();
 				BookShelf.mysql.getConnection().setAutoCommit(true);
 			} catch (SQLException e) {
@@ -688,7 +689,7 @@ public class BookListener implements Listener {
 		Location loc = map3.get((Player)j.getWhoClicked());
 		try
 		{
-			r = BookShelf.mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+     		r = BookShelf.mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 			name = r.getString("name");
 			r.close();
 		} catch (SQLException e1)
@@ -696,26 +697,28 @@ public class BookListener implements Listener {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		if(j.getInventory().getTitle() == name)
+		if(j.getInventory().getTitle().equals(name))
 		{	
 			try {
 				r = BookShelf.mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 				if(r.getInt("bool") == 1 & BookShelf.economy != null)
 				{
+					int price = r.getInt("price");
+					r.close();
 					int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
 					if(j.getRawSlot() <= slotamt)
 					{
 						if(j.getCurrentItem().getType() == Material.AIR)
 							j.setCancelled(true);
 						double money = BookShelf.economy.getBalance(j.getWhoClicked().getName());
-						int price = r.getInt("price");
+						Player p = (Player)j.getWhoClicked();
 						if(money >= price)
 						{
 							BookShelf.economy.withdrawPlayer(j.getWhoClicked().getName(), price);
-							Player p = (Player)j.getWhoClicked();
-							p.sendMessage("Balance: "+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
+							p.sendMessage("Your money: "+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
 							return;
 						}
+						p.sendMessage("Not enough! You have: "+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
 						j.setCancelled(true);
 					}
 					else

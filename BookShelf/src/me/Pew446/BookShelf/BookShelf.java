@@ -241,7 +241,10 @@ public class BookShelf extends JavaPlugin{
 				}
 				else
 				{
-					price = Integer.parseInt(args[0]);
+					if(args[0].length() > 9)
+						price = config.getInt("economy.default_price");
+					else
+						price = Integer.parseInt(args[0]);
 				}
 				if(economy == null)
 				{
@@ -286,12 +289,12 @@ public class BookShelf extends JavaPlugin{
 							re = mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							if(!re.next())
 							{
-								BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shop_name").replaceAll("%$", price+" "+BookShelf.economy.currencyNamePlural())+"');");
+								BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shop_name").replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+"');");
 								re.close();
 							}
 							else
 							{
-								mysql.query("UPDATE names SET name='"+config.getString("default_shop_name").replaceAll("%$", price+" "+BookShelf.economy.currencyNamePlural())+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								mysql.query("UPDATE names SET name='"+config.getString("default_shop_name").replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 								re.close();
 							}
 							p.sendMessage("The bookshelf you are looking at is now a shop selling at "+price+" "+economy.currencyNamePlural()+" each.");
@@ -318,6 +321,7 @@ public class BookShelf extends JavaPlugin{
 			Player p = Bukkit.getPlayer(sender.getName());
 			if(p.hasPermission("bookshelf.name"))
 			{
+				Location loc = p.getTargetBlock(null, 10).getLocation();
 				String name;
 				if(!(args.length >= 1))
 				{
@@ -325,9 +329,32 @@ public class BookShelf extends JavaPlugin{
 				}
 				else
 				{
-					name = args[0];
+					int price = 0;
+					try
+					{
+						ResultSet re = mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						price = re.getInt("price");
+						re.close();
+					} catch (SQLException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					String name1 = "";
+					for(int i = 0;i<args.length;i++)
+					{
+						name1 += args[i].replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+" ";
+					}
+					name1.trim();
+					if(name1.length() > 32)
+					{
+						name = name1.substring(0, 31);
+					}
+					else
+					{
+						name = name1;
+					}
 				}
-				Location loc = p.getTargetBlock(null, 10).getLocation();
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
 					try {

@@ -53,6 +53,7 @@ public class BookListener implements Listener {
     private boolean loading = false;
     HashMap<Location, Inventory> map = new HashMap<Location, Inventory>();
     HashMap<Location, InventoryHolder> map2 = new HashMap<Location, InventoryHolder>();
+    HashMap<Player, Location> map3 = new HashMap<Player, Location>();
     static ResultSet r;
 	@EventHandler
 	public void onClick(PlayerInteractEvent j)
@@ -79,13 +80,23 @@ public class BookListener implements Listener {
 								return;
 							}
 						}
-
+						
 						try {
 							r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							if(!r.next())
 							{
 								r.close();
 								BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0);");
+							}
+							else
+							{
+								r.close();
+							}
+							r = BookShelf.mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							if(!r.next())
+							{
+								r.close();
+								BookShelf.mysql.query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0,10);");
 							}
 							else
 							{
@@ -128,7 +139,7 @@ public class BookListener implements Listener {
 							int x = cl.getX();
 							int y = cl.getY();
 							int z = cl.getZ();
-							
+							map3.put(j.getPlayer(), loc);
 							
 							try {
 								r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+x+" AND y="+y+" AND z="+z+";");
@@ -290,6 +301,7 @@ public class BookListener implements Listener {
 							if(inv.getViewers().isEmpty())
 								return;
 							Player player = (Player) inv.getViewers().get(0);
+							map3.put(j.getPlayer(), loc);
 							if(player.getName() == p.getName())
 							{
 								j.setCancelled(true);
@@ -342,6 +354,7 @@ public class BookListener implements Listener {
 				    Location loc = getKey(map2, j.getInventory().getHolder());
 				    map.remove(loc);
 					map2.remove(loc);
+					map3.remove(j.getPlayer());
 					ItemStack[] cont = j.getInventory().getContents();
 					int x = loc.getBlockX();
 					int y = loc.getBlockY();
@@ -639,84 +652,164 @@ public class BookListener implements Listener {
 	{
 		if(j.getInventory().getTitle() == plugin.getConfig().getString("shelf_title"))
 		{
-			Location loc = j.getWhoClicked().getTargetBlock(null, 10).getLocation();
+			Location loc = map3.get((Player)j.getWhoClicked());
 			try {
-				r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-				if(r.getInt("bool") == 0)
+				r = BookShelf.mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+				if(r.getInt("bool") == 1 & BookShelf.economy != null)
+				{
+					int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
+					if(j.getRawSlot() <= slotamt)
+					{
+						if(j.getCurrentItem().getType() == Material.AIR)
+							j.setCancelled(true);
+						double money = BookShelf.economy.getBalance(j.getWhoClicked().getName());
+						int price = r.getInt("price");
+						if(money >= price)
+						{
+							BookShelf.economy.withdrawPlayer(j.getWhoClicked().getName(), price);
+							Player p = (Player)j.getWhoClicked();
+							p.sendMessage("Balance: "+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
+							return;
+						}
+						j.setCancelled(true);
+					}
+					else
+					{
+						if(j.getCurrentItem().getType() == Material.AIR)
+							return;
+						j.setCancelled(true);
+					}
+				}
+				else
 				{
 					r.close();
-					if(j.getCurrentItem() == null)
+					r = BookShelf.mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+					if(r.getInt("bool") == 0)
 					{
-						return;
-					}
-					if(plugin.getConfig().getBoolean("permissions.allow_maps") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.maps"))
-					{
-						if(j.getCurrentItem().getType() == Material.MAP)
+						r.close();
+						if(j.getCurrentItem() == null)
 						{
-							j.setCancelled(true);
 							return;
 						}
-						else if(j.getCursor().getType() == Material.MAP)
+						if(plugin.getConfig().getBoolean("permissions.allow_maps") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.maps"))
 						{
-							j.setCancelled(true);
-							return;
+							if(j.getCurrentItem().getType() == Material.MAP)
+							{
+								j.setCancelled(true);
+								return;
+							}
+							else if(j.getCursor().getType() == Material.MAP)
+							{
+								j.setCancelled(true);
+								return;
+							}
 						}
-					}
-					if(plugin.getConfig().getBoolean("permissions.allow_book") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.book"))
-					{
-						if(j.getCurrentItem().getType() == Material.BOOK)
+						if(plugin.getConfig().getBoolean("permissions.allow_book") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.book"))
 						{
-							j.setCancelled(true);
-							return;
+							if(j.getCurrentItem().getType() == Material.BOOK)
+							{
+								j.setCancelled(true);
+								return;
+							}
+							else if(j.getCursor().getType() == Material.BOOK)
+							{
+								j.setCancelled(true);
+								return;
+							}
 						}
-						else if(j.getCursor().getType() == Material.BOOK)
+						if(plugin.getConfig().getBoolean("permissions.allow_enchanted_book") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.enchanted_book"))
 						{
-							j.setCancelled(true);
-							return;
+							if(j.getCurrentItem().getType() == Material.ENCHANTED_BOOK)
+							{
+								j.setCancelled(true);
+								return;
+							}
+							else if(j.getCursor().getType() == Material.ENCHANTED_BOOK)
+							{
+								j.setCancelled(true);
+								return;
+							}
 						}
-					}
-					if(plugin.getConfig().getBoolean("permissions.allow_enchanted_book") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.enchanted_book"))
-					{
-						if(j.getCurrentItem().getType() == Material.ENCHANTED_BOOK)
+						if(plugin.getConfig().getBoolean("permissions.allow_book_and_quill") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.baq"))
 						{
-							j.setCancelled(true);
-							return;
+							if(j.getCurrentItem().getType() == Material.BOOK_AND_QUILL)
+							{
+								j.setCancelled(true);
+								return;
+							}
+							else if(j.getCursor().getType() == Material.BOOK_AND_QUILL)
+							{
+								j.setCancelled(true);
+								return;
+							}
 						}
-						else if(j.getCursor().getType() == Material.ENCHANTED_BOOK)
+						if(plugin.getConfig().getBoolean("permissions.allow_signed") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.signed"))
 						{
-							j.setCancelled(true);
-							return;
+							if(j.getCurrentItem().getType() == Material.WRITTEN_BOOK)
+							{
+								j.setCancelled(true);
+								return;
+							}
+							else if(j.getCursor().getType() == Material.WRITTEN_BOOK)
+							{
+								j.setCancelled(true);
+								return;
+							}
 						}
-					}
-					if(plugin.getConfig().getBoolean("permissions.allow_book_and_quill") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.baq"))
-					{
-						if(j.getCurrentItem().getType() == Material.BOOK_AND_QUILL)
+						if(plugin.getConfig().getBoolean("permissions.allow_records") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.records"))
 						{
-							j.setCancelled(true);
-							return;
+							if(j.getCurrentItem().getType() == Material.RECORD_3 
+									| j.getCurrentItem().getType() == Material.RECORD_4
+									| j.getCurrentItem().getType() == Material.RECORD_5
+									| j.getCurrentItem().getType() == Material.RECORD_6
+									| j.getCurrentItem().getType() == Material.RECORD_7
+									| j.getCurrentItem().getType() == Material.RECORD_8
+									| j.getCurrentItem().getType() == Material.RECORD_9
+									| j.getCurrentItem().getType() == Material.RECORD_10
+									| j.getCurrentItem().getType() == Material.RECORD_11
+									| j.getCurrentItem().getType() == Material.RECORD_12
+									| j.getCurrentItem().getType().getId() == 2257
+									| j.getCurrentItem().getType().getId() == 2256)
+							{
+								j.setCancelled(true);
+								return;
+							}
+							else if(j.getCursor().getType() == Material.RECORD_3 
+									| j.getCursor().getType() == Material.RECORD_4
+									| j.getCursor().getType() == Material.RECORD_5
+									| j.getCursor().getType() == Material.RECORD_6
+									| j.getCursor().getType() == Material.RECORD_7
+									| j.getCursor().getType() == Material.RECORD_8
+									| j.getCursor().getType() == Material.RECORD_9
+									| j.getCursor().getType() == Material.RECORD_10
+									| j.getCursor().getType() == Material.RECORD_11
+									| j.getCursor().getType() == Material.RECORD_12
+									| j.getCursor().getType().getId() == 2257
+									| j.getCursor().getType().getId() == 2256)
+							{
+								j.setCancelled(true);
+								return;
+							}
 						}
-						else if(j.getCursor().getType() == Material.BOOK_AND_QUILL)
+						if(plugin.getConfig().getBoolean("permissions.allow_paper") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.paper"))
 						{
-							j.setCancelled(true);
-							return;
+							if(j.getCurrentItem().getType() == Material.PAPER)
+							{
+								j.setCancelled(true);
+								return;
+							}
+							else if(j.getCursor().getType() == Material.PAPER)
+							{
+								j.setCancelled(true);
+								return;
+							}
 						}
-					}
-					if(plugin.getConfig().getBoolean("permissions.allow_signed") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.signed"))
-					{
-						if(j.getCurrentItem().getType() == Material.WRITTEN_BOOK)
-						{
-							j.setCancelled(true);
-							return;
-						}
-						else if(j.getCursor().getType() == Material.WRITTEN_BOOK)
-						{
-							j.setCancelled(true);
-							return;
-						}
-					}
-					if(plugin.getConfig().getBoolean("permissions.allow_records") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.records"))
-					{
-						if(j.getCurrentItem().getType() == Material.RECORD_3 
+						if(j.getCurrentItem().getType() == Material.MAP
+								| j.getCurrentItem().getType() == Material.BOOK
+								| j.getCurrentItem().getType() == Material.ENCHANTED_BOOK
+								| j.getCurrentItem().getType() == Material.BOOK_AND_QUILL
+								| j.getCurrentItem().getType() == Material.WRITTEN_BOOK
+								| j.getCurrentItem().getType() == Material.RECORD_3
 								| j.getCurrentItem().getType() == Material.RECORD_4
 								| j.getCurrentItem().getType() == Material.RECORD_5
 								| j.getCurrentItem().getType() == Material.RECORD_6
@@ -729,10 +822,14 @@ public class BookListener implements Listener {
 								| j.getCurrentItem().getType().getId() == 2257
 								| j.getCurrentItem().getType().getId() == 2256)
 						{
-							j.setCancelled(true);
 							return;
 						}
-						else if(j.getCursor().getType() == Material.RECORD_3 
+						if(j.getCursor().getType() == Material.MAP
+								| j.getCursor().getType() == Material.BOOK
+								| j.getCursor().getType() == Material.ENCHANTED_BOOK
+								| j.getCursor().getType() == Material.BOOK_AND_QUILL
+								| j.getCursor().getType() == Material.WRITTEN_BOOK
+								| j.getCursor().getType() == Material.RECORD_3
 								| j.getCursor().getType() == Material.RECORD_4
 								| j.getCursor().getType() == Material.RECORD_5
 								| j.getCursor().getType() == Material.RECORD_6
@@ -745,78 +842,24 @@ public class BookListener implements Listener {
 								| j.getCursor().getType().getId() == 2257
 								| j.getCursor().getType().getId() == 2256)
 						{
-							j.setCancelled(true);
 							return;
 						}
-					}
-					if(plugin.getConfig().getBoolean("permissions.allow_paper") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.paper"))
-					{
-						if(j.getCurrentItem().getType() == Material.PAPER)
-						{
-							j.setCancelled(true);
-							return;
-						}
-						else if(j.getCursor().getType() == Material.PAPER)
-						{
-							j.setCancelled(true);
-							return;
-						}
-					}
-					if(j.getCurrentItem().getType() == Material.MAP
-							| j.getCurrentItem().getType() == Material.BOOK
-							| j.getCurrentItem().getType() == Material.ENCHANTED_BOOK
-							| j.getCurrentItem().getType() == Material.BOOK_AND_QUILL
-							| j.getCurrentItem().getType() == Material.WRITTEN_BOOK
-							| j.getCurrentItem().getType() == Material.RECORD_3
-							| j.getCurrentItem().getType() == Material.RECORD_4
-							| j.getCurrentItem().getType() == Material.RECORD_5
-							| j.getCurrentItem().getType() == Material.RECORD_6
-							| j.getCurrentItem().getType() == Material.RECORD_7
-							| j.getCurrentItem().getType() == Material.RECORD_8
-							| j.getCurrentItem().getType() == Material.RECORD_9
-							| j.getCurrentItem().getType() == Material.RECORD_10
-							| j.getCurrentItem().getType() == Material.RECORD_11
-							| j.getCurrentItem().getType() == Material.RECORD_12
-							| j.getCurrentItem().getType().getId() == 2257
-							| j.getCurrentItem().getType().getId() == 2256)
-					{
-						return;
-					}
-					if(j.getCursor().getType() == Material.MAP
-							| j.getCursor().getType() == Material.BOOK
-							| j.getCursor().getType() == Material.ENCHANTED_BOOK
-							| j.getCursor().getType() == Material.BOOK_AND_QUILL
-							| j.getCursor().getType() == Material.WRITTEN_BOOK
-							| j.getCursor().getType() == Material.RECORD_3
-							| j.getCursor().getType() == Material.RECORD_4
-							| j.getCursor().getType() == Material.RECORD_5
-							| j.getCursor().getType() == Material.RECORD_6
-							| j.getCursor().getType() == Material.RECORD_7
-							| j.getCursor().getType() == Material.RECORD_8
-							| j.getCursor().getType() == Material.RECORD_9
-							| j.getCursor().getType() == Material.RECORD_10
-							| j.getCursor().getType() == Material.RECORD_11
-							| j.getCursor().getType() == Material.RECORD_12
-							| j.getCursor().getType().getId() == 2257
-							| j.getCursor().getType().getId() == 2256)
-					{
-						return;
-					}
-					j.setCancelled(true);
-				}
-				else
-				{
-					r.close();
-					int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
-					if(j.getRawSlot() <= slotamt)
-					{
-						return;
+						j.setCancelled(true);
 					}
 					else
 					{
-						if(j.getCurrentItem().getType() == Material.AIR)
+						r.close();
+						int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
+						if(j.getRawSlot() <= slotamt)
+						{
 							return;
-						j.setCancelled(true);
+						}
+						else
+						{
+							if(j.getCurrentItem().getType() == Material.AIR)
+								return;
+							j.setCancelled(true);
+						}
 					}
 				}
 			} catch (SQLException e) {

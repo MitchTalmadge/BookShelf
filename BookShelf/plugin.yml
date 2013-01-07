@@ -23,6 +23,12 @@ commands:
       aliases: ['bsr']
       permission: bookshelf.reload
       permission-message: You don't have permission for that command!
+   bsshop:
+      description: Toggles target bookshelf as shop or normal.
+      usage: /<command> price
+      aliases: ['bss']
+      permission: bookshelf.shop
+      permission-message: You don't have permission for that command!
 permissions:
     bookshelf.*:
         description: Gives all permissions of BookShelf.

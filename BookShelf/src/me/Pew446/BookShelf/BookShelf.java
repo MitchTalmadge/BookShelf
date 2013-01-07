@@ -13,11 +13,11 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import net.milkbowl.vault.economy.*;
+import net.milkbowl.vault.economy.Economy;
 
 public class BookShelf extends JavaPlugin{
 	static FileConfiguration config;
@@ -25,12 +25,11 @@ public class BookShelf extends JavaPlugin{
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public final BookListener BookListener = new BookListener(this);
 	public static SQLite mysql;
-	public static Economy economy = null;
+	public static Economy economy;
 	static ResultSet r;
 	
 	@Override
 	public void onDisable() {
-		PluginDescriptionFile pdfFile = this.getDescription();
 		try {
 			if(me.Pew446.BookShelf.BookListener.r != null)
 				me.Pew446.BookShelf.BookListener.r.close();
@@ -39,7 +38,6 @@ public class BookShelf extends JavaPlugin{
 			e.printStackTrace();
 		}
 		mysql.close();
-		this.logger.info(pdfFile.getName() + " is now disabled.");
 	}
 	@Override
 	public void onEnable() {
@@ -47,20 +45,36 @@ public class BookShelf extends JavaPlugin{
 		saveDefaultConfig();
 		sqlConnection();
 		sqlDoesDatabaseExist();
-		setupEconomy();
+		if(!setupEconomy())
+		{
+			this.logger.info("[BookShelf] Vault is not installed. Shops disabled.");
+		}
+		else
+		{
+			this.logger.info("[BookShelf] Vault found. Shops enabled.");
+		}
 		getServer().getPluginManager().registerEvents(this.BookListener, this);
 		PluginDescriptionFile pdfFile = this.getDescription();
-		this.logger.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled.");
+		this.logger.info("["+pdfFile.getName() + "] Enabled BookShelf v" + pdfFile.getVersion());
 		
 	}
 	private boolean setupEconomy()
 	{
-		RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-	    if (economyProvider != null) {
-	       economy = economyProvider.getProvider();
-	    }
-	    return (economy != null);
-    }
+		Plugin plugin = getServer().getPluginManager().getPlugin("Vault");
+
+		if (plugin != null)
+		{
+			@SuppressWarnings("rawtypes")
+			RegisteredServiceProvider economyProvider = getServer()
+					.getServicesManager().getRegistration(Economy.class);
+			if (economyProvider != null)
+			{
+				economy = (Economy) economyProvider.getProvider();
+			}
+		}
+
+		return (economy != null);
+	}
 	public void sqlConnection() 
 	{
 		mysql = new SQLite(logger, "BookShelf", this.getDataFolder().getAbsolutePath(), "Shelves");
@@ -84,12 +98,13 @@ public class BookShelf extends JavaPlugin{
 				mysql.query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
 				mysql.query("CREATE TABLE IF NOT EXISTS enchant (id INT, type STRING, level INT);");
 				mysql.query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
+				mysql.query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
         	} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         	
-        System.out.println("BookShelf Database Loaded.");
+        System.out.println("[BookShelf] Database Loaded.");
 	}	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
@@ -205,7 +220,69 @@ public class BookShelf extends JavaPlugin{
 			if(p.hasPermission("bookshelf.reload"))
 			{
 				this.reloadConfig();
-				p.sendMessage("BookShelf config sucessfully reloaded.");
+				p.sendMessage("BookShelf config successfully reloaded.");
+			}
+			else
+			{
+				p.sendMessage("You don't have permission to use this command!");
+			}
+			return true;
+		}
+		else if(cmd.getName().equalsIgnoreCase("bsshop") || cmd.getName().equalsIgnoreCase("bss"))
+		{
+			Player p = Bukkit.getPlayer(sender.getName());
+			if(p.hasPermission("bookshelf.shop"))
+			{
+				Integer price;
+				if(!(args.length >= 1))
+				{
+					price = 10;
+				}
+				else
+				{
+					price = Integer.parseInt(args[0]);
+				}
+				if(economy == null)
+				{
+					p.sendMessage("Vault is not installed! Aborting...");
+					return true;
+				}
+				Location loc = p.getTargetBlock(null, 10).getLocation();
+				if(loc.getBlock().getType() == Material.BOOKSHELF)
+				{
+					try {
+						ResultSet re = mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						if(!re.next())
+						{
+							BookShelf.mysql.query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0, 10);");
+							re.close();
+						}
+						else
+						{
+							re.close();
+						}
+						re = mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						if(re.getInt("bool") == 1 & !(args.length >= 1))
+						{
+							re.close();
+							p.sendMessage("The bookshelf you are looking at is no longer a shop.");
+							mysql.query("UPDATE shop SET bool=0, price="+price+" WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						}
+						else
+						{
+							re.close();
+							p.sendMessage("The bookshelf you are looking at is now a shop selling at "+price+" "+economy.currencyNamePlural()+" each.");
+							mysql.query("UPDATE shop SET bool=1, price="+price+" WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						}
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				else
+				{
+					p.sendMessage("Please look at a bookshelf when using this command");
+				}
 			}
 			else
 			{

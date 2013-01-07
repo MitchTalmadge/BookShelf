@@ -92,6 +92,30 @@ public class BookListener implements Listener {
 							{
 								r.close();
 							}
+							r = BookShelf.mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							if(!r.next())
+							{
+								r.close();
+								r = BookShelf.mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								if(!r.next())
+								{
+									r.close();
+									BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shelf_name")+"');");
+									BookShelf.mysql.query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0,10);");
+								}
+								else
+								{
+									if(r.getBoolean("bool"))
+									{
+										r.close();
+										BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shop_name").replaceAll("%$", plugin.getConfig().getInt("economy.default_price")+" "+BookShelf.economy.currencyNamePlural())+"');");
+									}
+								}
+							}
+							else
+							{
+								r.close();
+							}
 							r = BookShelf.mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							if(!r.next())
 							{
@@ -134,7 +158,18 @@ public class BookListener implements Listener {
 						}
 						if(!map.containsKey(j.getClickedBlock().getLocation()))
 						{
-							Inventory inv = Bukkit.createInventory(p, plugin.getConfig().getInt("rows")*9, plugin.getConfig().getString("shelf_title"));
+							String name = plugin.getConfig().getString("default_shelf_name");
+							try
+							{
+								r = BookShelf.mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								name = r.getString("name");
+								r.close();
+							} catch (SQLException e1)
+							{
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							Inventory inv = Bukkit.createInventory(p, plugin.getConfig().getInt("rows")*9, name);
 							Block cl = j.getClickedBlock();
 							int x = cl.getX();
 							int y = cl.getY();
@@ -632,15 +667,12 @@ public class BookListener implements Listener {
 						BookShelf.mysql.query("DELETE FROM pages WHERE id=" + id.get(i) + ";");
 					}
 				}
+				Location loc = j.getBlock().getLocation();
+				BookShelf.mysql.query("DELETE FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+				BookShelf.mysql.query("DELETE FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+				BookShelf.mysql.query("DELETE FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 				BookShelf.mysql.getConnection().commit();
 				BookShelf.mysql.getConnection().setAutoCommit(true);
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			Location loc = j.getBlock().getLocation();
-			try {
-				BookShelf.mysql.query("DELETE FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -650,9 +682,22 @@ public class BookListener implements Listener {
 	@EventHandler
 	public void onInv(InventoryClickEvent j)
 	{
-		if(j.getInventory().getTitle() == plugin.getConfig().getString("shelf_title"))
+		String name = null;
+		if(!map3.containsKey((Player)j.getWhoClicked()))
+			return;
+		Location loc = map3.get((Player)j.getWhoClicked());
+		try
 		{
-			Location loc = map3.get((Player)j.getWhoClicked());
+			r = BookShelf.mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			name = r.getString("name");
+			r.close();
+		} catch (SQLException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		if(j.getInventory().getTitle() == name)
+		{	
 			try {
 				r = BookShelf.mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 				if(r.getInt("bool") == 1 & BookShelf.economy != null)
@@ -932,47 +977,26 @@ public class BookListener implements Listener {
 	{
 		if(j.getBlock().getType() == Material.BOOKSHELF)
 		{
-			if(j.getBlockAgainst().getType() == Material.BOOKSHELF)
-			{
-				Location loc = j.getBlock().getLocation();
-				try {
-					BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
-					int def = 1;
-					if(plugin.getConfig().getBoolean("default_openable"))
-					{
-						def = 1;
-					}
-					else
-					{
-						def = 0;
-					}
-					BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			Location loc = j.getBlock().getLocation();
+			try {
+				BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+				BookShelf.mysql.query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0, "+plugin.getConfig().getInt("economy.default_price")+");");
+				BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shelf_name")+"');");
+				int def = 1;
+				if(plugin.getConfig().getBoolean("default_openable"))
+				{
+					def = 1;
 				}
-				return;
-			}
-			else
-			{
-				Location loc = j.getBlock().getLocation();
-				try {
-					BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
-					int def = 1;
-					if(plugin.getConfig().getBoolean("default_openable"))
-					{
-						def = 1;
-					}
-					else
-					{
-						def = 0;
-					}
-					BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				else
+				{
+					def = 0;
 				}
+				BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+			return;
 		}
 		else if(j.getBlock().getType() == Material.WALL_SIGN)
 		{

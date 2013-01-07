@@ -99,6 +99,7 @@ public class BookShelf extends JavaPlugin{
 				mysql.query("CREATE TABLE IF NOT EXISTS enchant (id INT, type STRING, level INT);");
 				mysql.query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
 				mysql.query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
+				mysql.query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name STRING);");
         	} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -236,7 +237,7 @@ public class BookShelf extends JavaPlugin{
 				Integer price;
 				if(!(args.length >= 1))
 				{
-					price = 10;
+					price = config.getInt("economy.default_price");
 				}
 				else
 				{
@@ -254,7 +255,7 @@ public class BookShelf extends JavaPlugin{
 						ResultSet re = mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!re.next())
 						{
-							BookShelf.mysql.query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0, 10);");
+							BookShelf.mysql.query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0, "+config.getInt("economy.default_price")+");");
 							re.close();
 						}
 						else
@@ -265,14 +266,83 @@ public class BookShelf extends JavaPlugin{
 						if(re.getInt("bool") == 1 & !(args.length >= 1))
 						{
 							re.close();
+							re = mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							if(!re.next())
+							{
+								BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shelf_name")+"');");
+								re.close();
+							}
+							else
+							{
+								mysql.query("UPDATE names SET name='"+config.getString("default_shelf_name")+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								re.close();
+							}
 							p.sendMessage("The bookshelf you are looking at is no longer a shop.");
 							mysql.query("UPDATE shop SET bool=0, price="+price+" WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 						else
 						{
 							re.close();
+							re = mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							if(!re.next())
+							{
+								BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shop_name").replaceAll("%$", price+" "+BookShelf.economy.currencyNamePlural())+"');");
+								re.close();
+							}
+							else
+							{
+								mysql.query("UPDATE names SET name='"+config.getString("default_shop_name").replaceAll("%$", price+" "+BookShelf.economy.currencyNamePlural())+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								re.close();
+							}
 							p.sendMessage("The bookshelf you are looking at is now a shop selling at "+price+" "+economy.currencyNamePlural()+" each.");
 							mysql.query("UPDATE shop SET bool=1, price="+price+" WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						}
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				else
+				{
+					p.sendMessage("Please look at a bookshelf when using this command");
+				}
+			}
+			else
+			{
+				p.sendMessage("You don't have permission to use this command!");
+			}
+			return true;
+		}
+		else if(cmd.getName().equalsIgnoreCase("bsname") || cmd.getName().equalsIgnoreCase("bsn"))
+		{
+			Player p = Bukkit.getPlayer(sender.getName());
+			if(p.hasPermission("bookshelf.name"))
+			{
+				String name;
+				if(!(args.length >= 1))
+				{
+					name = config.getString("default_shelf_name");
+				}
+				else
+				{
+					name = args[0];
+				}
+				Location loc = p.getTargetBlock(null, 10).getLocation();
+				if(loc.getBlock().getType() == Material.BOOKSHELF)
+				{
+					try {
+						ResultSet re = mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						if(!re.next())
+						{
+							BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+name+"');");
+							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
+							re.close();
+						}
+						else
+						{
+							mysql.query("UPDATE names SET name='"+name+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
+							re.close();
 						}
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block

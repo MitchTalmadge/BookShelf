@@ -6,9 +6,13 @@
 
 rows: 2
 
-shelf_title: "BookShelf"
+default_shelf_name: "BookShelf"
+default_shop_name: "BookShelf Shop - %$ each"
 default_openable: true
 top-bottom_access: false
+
+economy:
+    default_price: 10
 
 permissions:
     allow_book: true

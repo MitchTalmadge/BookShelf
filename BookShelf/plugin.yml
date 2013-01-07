@@ -29,6 +29,12 @@ commands:
       aliases: ['bss']
       permission: bookshelf.shop
       permission-message: You don't have permission for that command!
+   bsname:
+      description: Toggles target bookshelf as shop or normal.
+      usage: /<command> name
+      aliases: ['bsn']
+      permission: bookshelf.name
+      permission-message: You don't have permission for that command!
 permissions:
     bookshelf.*:
         description: Gives all permissions of BookShelf.

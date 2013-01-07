@@ -714,7 +714,10 @@ public class BookListener implements Listener {
 					if(j.getRawSlot() <= slotamt)
 					{
 						if(j.getCurrentItem().getType() == Material.AIR)
+						{
 							j.setCancelled(true);
+							return;
+						}
 						double money = BookShelf.economy.getBalance(j.getWhoClicked().getName());
 						Player p = (Player)j.getWhoClicked();
 						if(money >= price)
@@ -731,6 +734,7 @@ public class BookListener implements Listener {
 						if(j.getCurrentItem().getType() == Material.AIR)
 							return;
 						j.setCancelled(true);
+						return;
 					}
 				}
 				else

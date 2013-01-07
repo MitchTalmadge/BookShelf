@@ -30,7 +30,7 @@ commands:
       permission: bookshelf.shop
       permission-message: You don't have permission for that command!
    bsname:
-      description: Toggles target bookshelf as shop or normal.
+      description: Changes name of target bookshelf.
       usage: /<command> name
       aliases: ['bsn']
       permission: bookshelf.name
@@ -39,9 +39,21 @@ permissions:
     bookshelf.*:
         description: Gives all permissions of BookShelf.
         children:
-            bookshelf.bs: true
-    bookshelf.bs:
+            bookshelf.b: true
+    bookshelf.unlimited:
         description: Allows player to make bookshelf never stop giving books.
+        default: op
+    bookshelf.toggle:
+        description: Allows player to toggle shelves enabled/disabled.
+        default: op
+    bookshelf.reload:
+        description: Allows player to reload the config.
+        default: op
+    bookshelf.shop:
+        description: Allows player to create shop shelves.
+        default: op
+    bookshelf.name:
+        description: Allows player to change names of bookshelves.
         default: op
     bookshelf.book:
         description: Allows player to add plain books to shelves.

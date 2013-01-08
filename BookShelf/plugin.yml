@@ -1,6 +1,6 @@
 name: BookShelf
 main: me.Pew446.BookShelf.BookShelf
-version: 2.0
+version: 2.1
 description: Allows players to store books in bookshelves.
 author: Pew446
 softdepend: [Vault]
@@ -71,9 +71,9 @@ permissions:
         description: Allows player to add enchanted books to shelves.
         default: true
     bookshelf.records:
-        description: Allows player to add enchanted books to shelves.
+        description: Allows player to add records to shelves.
         default: true
     bookshelf.paper:
-        description: Allows player to add enchanted books to shelves.
+        description: Allows player to add paper to shelves.
         default: true
     

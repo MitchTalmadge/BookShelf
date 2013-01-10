@@ -24,7 +24,8 @@ public class BookShelf extends JavaPlugin{
 	public static BookShelf plugin;
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public final BookListener BookListener = new BookListener(this);
-	public static SQLite mysql;
+	public static MySQL mysql;
+	public static SQLite sqlite;
 	public static Economy economy;
 	static ResultSet r;
 	
@@ -37,7 +38,31 @@ public class BookShelf extends JavaPlugin{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		mysql.close();
+		boolean enable = config.getBoolean("database.mysql_enabled");
+		if(enable)
+		{
+			try 
+			{
+				mysql.close();
+		    } 
+			catch (Exception e) 
+		    {
+				logger.info(e.getMessage());
+				getPluginLoader().disablePlugin(this);
+		    }
+		}
+		else
+		{
+			try 
+			{
+				sqlite.close();
+		    } 
+			catch (Exception e) 
+		    {
+				logger.info(e.getMessage());
+				getPluginLoader().disablePlugin(this);
+		    }
+		}
 	}
 	@Override
 	public void onEnable() {
@@ -77,29 +102,69 @@ public class BookShelf extends JavaPlugin{
 	}
 	public void sqlConnection() 
 	{
-		mysql = new SQLite(logger, "BookShelf", this.getDataFolder().getAbsolutePath(), "Shelves");
-		try 
+		boolean enable = config.getBoolean("database.mysql_enabled");
+		String host = config.getString("database.hostname");
+		int port = config.getInt("database.port");
+		String dbname = config.getString("database.database");
+		String user = config.getString("database.username");
+		String pass = config.getString("database.password");
+		if(enable)
 		{
-			mysql.open();
-	    } 
-		catch (Exception e) 
-	    {
-			logger.info(e.getMessage());
-			getPluginLoader().disablePlugin(this);
-	    }
+			mysql = new MySQL(logger, "BookShelf_", host, port, dbname, user, pass);
+			try 
+			{
+				mysql.open();
+		    } 
+			catch (Exception e) 
+		    {
+				logger.info(e.getMessage());
+				getPluginLoader().disablePlugin(this);
+		    }
+		}
+		else
+		{
+			sqlite = new SQLite(logger, "BookShelf", this.getDataFolder().getAbsolutePath(), "Shelves");
+			try 
+			{
+				sqlite.open();
+		    } 
+			catch (Exception e) 
+		    {
+				logger.info(e.getMessage());
+				getPluginLoader().disablePlugin(this);
+		    }
+		}
 	}
 	public void sqlDoesDatabaseExist()
 	{
 
         	try {
-        		mysql.query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, type INT, loc INT, amt INT);");
-				mysql.query("CREATE TABLE IF NOT EXISTS pages (id INT, text STRING);");
-				mysql.query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
-				mysql.query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
-				mysql.query("CREATE TABLE IF NOT EXISTS enchant (id INT, type STRING, level INT);");
-				mysql.query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
-				mysql.query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
-				mysql.query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name STRING);");
+        		boolean enable = config.getBoolean("database.mysql_enabled");
+        		if(enable)
+        		{
+        			getdb().query("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(32), author VARCHAR(32), type INT, loc INT, amt INT, primary key (id));");
+    				getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text VARCHAR(1000));");
+    				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
+    				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
+    				getdb().query("CREATE TABLE IF NOT EXISTS enchant (id INT, type VARCHAR(64), level INT);");
+    				getdb().query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
+    				getdb().query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
+    				getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
+    				getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name VARCHAR(64));");
+        		}
+        		else
+        		{
+	        		getdb().query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, type INT, loc INT, amt INT);");
+					getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text STRING);");
+					getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
+					getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
+					getdb().query("CREATE TABLE IF NOT EXISTS enchant (id INT, type STRING, level INT);");
+					getdb().query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
+					getdb().query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
+					getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
+					getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name STRING);");	
+        		}
+        		
         	} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -118,28 +183,29 @@ public class BookShelf extends JavaPlugin{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
 					try {
-						ResultSet re = mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						ResultSet re = getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!re.next())
 						{
-							BookShelf.mysql.query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+							BookShelf.getdb().query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
 							re.close();
 						}
 						else
 						{
 							re.close();
 						}
-						re = mysql.query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						re = getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						re.next();
 						if(re.getInt("bool") == 1)
 						{
 							re.close();
 							p.sendMessage("The bookshelf you are looking at is now limited.");
-							mysql.query("UPDATE copy SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							getdb().query("UPDATE copy SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 						else
 						{
 							re.close();
 							p.sendMessage("The bookshelf you are looking at is now unlimited.");
-							mysql.query("UPDATE copy SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							getdb().query("UPDATE copy SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
@@ -167,7 +233,7 @@ public class BookShelf extends JavaPlugin{
 				{
 					try 
 					{
-						ResultSet re = mysql.query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						ResultSet re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!re.next())
 						{
 							int def = 1;
@@ -179,25 +245,26 @@ public class BookShelf extends JavaPlugin{
 							{
 								def = 0;
 							}
-							BookShelf.mysql.query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
 							re.close();
+							BookShelf.getdb().query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
 						}
 						else
 						{
 							re.close();
 						}
-						re = mysql.query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						re.next();
 						if(re.getInt("bool") == 1)
 						{
 							re.close();
 							p.sendMessage("The bookshelf you are looking at is now disabled.");
-							mysql.query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							getdb().query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 						else
 						{
 							re.close();
 							p.sendMessage("The bookshelf you are looking at is now enabled.");
-							mysql.query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							getdb().query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
@@ -255,50 +322,51 @@ public class BookShelf extends JavaPlugin{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
 					try {
-						ResultSet re = mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						ResultSet re = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!re.next())
 						{
-							BookShelf.mysql.query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0, "+config.getInt("economy.default_price")+");");
 							re.close();
+							BookShelf.getdb().query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0, "+config.getInt("economy.default_price")+");");
 						}
 						else
 						{
 							re.close();
 						}
-						re = mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						re = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						re.next();
 						if(re.getInt("bool") == 1 & !(args.length >= 1))
 						{
 							re.close();
-							re = mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							re = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							if(!re.next())
 							{
-								BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shelf_name")+"');");
 								re.close();
+								BookShelf.getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shelf_name")+"');");
 							}
 							else
 							{
-								mysql.query("UPDATE names SET name='"+config.getString("default_shelf_name")+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 								re.close();
+								getdb().query("UPDATE names SET name='"+config.getString("default_shelf_name")+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							}
 							p.sendMessage("The bookshelf you are looking at is no longer a shop.");
-							mysql.query("UPDATE shop SET bool=0, price="+price+" WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							getdb().query("UPDATE shop SET bool=0, price="+price+" WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 						else
 						{
 							re.close();
-							re = mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							re = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							if(!re.next())
 							{
-								BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shop_name").replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+"');");
 								re.close();
+								BookShelf.getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shop_name").replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+"');");
 							}
 							else
 							{
-								mysql.query("UPDATE names SET name='"+config.getString("default_shop_name").replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 								re.close();
+								getdb().query("UPDATE names SET name='"+config.getString("default_shop_name").replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							}
 							p.sendMessage("The bookshelf you are looking at is now a shop selling at "+price+" "+economy.currencyNamePlural()+" each.");
-							mysql.query("UPDATE shop SET bool=1, price="+price+" WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							getdb().query("UPDATE shop SET bool=1, price="+price+" WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
@@ -332,7 +400,8 @@ public class BookShelf extends JavaPlugin{
 					int price = 0;
 					try
 					{
-						ResultSet re = mysql.query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						ResultSet re = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						re.next();
 						price = re.getInt("price");
 						re.close();
 					} catch (SQLException e)
@@ -368,18 +437,18 @@ public class BookShelf extends JavaPlugin{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
 					try {
-						ResultSet re = mysql.query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						ResultSet re = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!re.next())
 						{
-							BookShelf.mysql.query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+name+"');");
-							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
 							re.close();
+							BookShelf.getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+name+"');");
+							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
 						}
 						else
 						{
-							mysql.query("UPDATE names SET name='"+name+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
 							re.close();
+							getdb().query("UPDATE names SET name='"+name+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
 						}
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
@@ -397,6 +466,66 @@ public class BookShelf extends JavaPlugin{
 			}
 			return true;
 		}
+//		else if(cmd.getName().equalsIgnoreCase("bsdisplay") || cmd.getName().equalsIgnoreCase("bsd"))
+//		{
+//			Player p = Bukkit.getPlayer(sender.getName());
+//			if(p.hasPermission("bookshelf.display"))
+//			{
+//				Location loc = p.getTargetBlock(null, 10).getLocation();
+//				if(loc.getBlock().getType() == Material.BOOKSHELF)
+//				{
+//					try {
+//						ResultSet re = getdb().query("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+//						if(!re.next())
+//						{
+//							BookShelf.getdb().query("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 1);");
+//							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
+//							re.close();
+//						}
+//						else
+//						{
+//							if(re.getInt("bool") == 1)
+//							{
+//								re.close();
+//								p.sendMessage("The bookshelf you are looking at is no longer a display.");
+//								getdb().query("UPDATE display SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+//							}
+//							else
+//							{
+//								re.close();
+//								p.sendMessage("The bookshelf you are looking at is now a display.");
+//								getdb().query("UPDATE display SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+//							}
+//						}
+//					} catch (SQLException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//				}
+//				else
+//				{
+//					p.sendMessage("Please look at a bookshelf when using this command");
+//				}
+//			}
+//			else
+//			{
+//				p.sendMessage("You don't have permission to use this command!");
+//			}
+//			return true;
+//		}
 		return false; 
+	}
+
+	public static Database getdb()
+	{
+		boolean enable = config.getBoolean("database.mysql_enabled");
+		if(enable)
+		{
+			return mysql;
+		}
+		else
+		{
+			return sqlite;
+		}
 	}
 }

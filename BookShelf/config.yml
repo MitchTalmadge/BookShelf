@@ -14,6 +14,14 @@ top-bottom_access: false
 economy:
     default_price: 10
 
+database:
+    mysql_enabled: false
+    hostname: localhost
+    port: 3306
+    database: minecraft
+    username: root
+    password: password
+
 permissions:
     allow_book: true
     allow_book_and_quill: true

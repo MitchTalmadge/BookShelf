@@ -97,7 +97,6 @@ public class BookShelf extends JavaPlugin{
 				economy = (Economy) economyProvider.getProvider();
 			}
 		}
-
 		return (economy != null);
 	}
 	public void sqlConnection() 
@@ -186,8 +185,8 @@ public class BookShelf extends JavaPlugin{
 						ResultSet re = getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!re.next())
 						{
-							BookShelf.getdb().query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
 							re.close();
+							BookShelf.getdb().query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
 						}
 						else
 						{
@@ -246,7 +245,7 @@ public class BookShelf extends JavaPlugin{
 								def = 0;
 							}
 							re.close();
-							BookShelf.getdb().query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
+							getdb().query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
 						}
 						else
 						{
@@ -326,7 +325,7 @@ public class BookShelf extends JavaPlugin{
 						if(!re.next())
 						{
 							re.close();
-							BookShelf.getdb().query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0, "+config.getInt("economy.default_price")+");");
+							getdb().query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0, "+config.getInt("economy.default_price")+");");
 						}
 						else
 						{
@@ -341,7 +340,7 @@ public class BookShelf extends JavaPlugin{
 							if(!re.next())
 							{
 								re.close();
-								BookShelf.getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shelf_name")+"');");
+								getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shelf_name")+"');");
 							}
 							else
 							{
@@ -358,7 +357,7 @@ public class BookShelf extends JavaPlugin{
 							if(!re.next())
 							{
 								re.close();
-								BookShelf.getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shop_name").replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+"');");
+								getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shop_name").replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+"');");
 							}
 							else
 							{
@@ -441,7 +440,7 @@ public class BookShelf extends JavaPlugin{
 						if(!re.next())
 						{
 							re.close();
-							BookShelf.getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+name+"');");
+							getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+name+"');");
 							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
 						}
 						else
@@ -478,7 +477,7 @@ public class BookShelf extends JavaPlugin{
 //						ResultSet re = getdb().query("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 //						if(!re.next())
 //						{
-//							BookShelf.getdb().query("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 1);");
+//							getdb().query("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 1);");
 //							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
 //							re.close();
 //						}

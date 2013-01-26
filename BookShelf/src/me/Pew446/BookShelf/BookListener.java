@@ -16,8 +16,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_4_6.CraftWorld;
-import org.bukkit.craftbukkit.v1_4_6.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_4_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_4_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -38,7 +38,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 
 
 import me.Pew446.BookShelf.BookShelf;
-import net.minecraft.server.v1_4_6.EntityItem;
+import net.minecraft.server.v1_4_R1.EntityItem;
 public class BookListener implements Listener {
 	public static BookShelf plugin;
 	public BookListener(BookShelf instance) {
@@ -63,6 +63,8 @@ public class BookListener implements Listener {
 		{
 			if(j.getClickedBlock().getType() == Material.BOOKSHELF)
 			{
+				if(j.isCancelled())
+					return;
 				if(!j.getPlayer().isSneaking())
 				{
 					if(j.getPlayer().getItemInHand().getType() == Material.BOOKSHELF)
@@ -527,6 +529,8 @@ public class BookListener implements Listener {
 		}
 		if(j.getBlock().getType() == Material.BOOKSHELF)
 		{
+			if(j.isCancelled())
+				return;
 			
 			try {
 				r = BookShelf.getdb().query("SELECT * FROM items WHERE x=" + j.getBlock().getX() + " AND y=" + j.getBlock().getY() + " AND z=" + j.getBlock().getZ() + ";");
@@ -1045,6 +1049,8 @@ public class BookListener implements Listener {
 		}
 		if(j.getBlockAgainst().getType() == Material.BOOKSHELF)
 		{
+			if(j.isCancelled())
+				return;
 			if(j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.UP | j.getBlockAgainst().getFace(j.getBlock()) == BlockFace.DOWN)
 			{
 				if(!plugin.getConfig().getBoolean("top-bottom_access"))
@@ -1052,8 +1058,7 @@ public class BookListener implements Listener {
 					return;
 				}
 			}
-			j.setBuild(false);
-			j.setCancelled(true);
+			return;
 		}
 	}
 	@EventHandler
@@ -1062,6 +1067,8 @@ public class BookListener implements Listener {
 		Player p = j.getPlayer();
 		if(p.getTargetBlock(null, 10).getType() == Material.BOOKSHELF)
 		{
+			if(j.isCancelled())
+				return;
 			if(j.getItemDrop().getItemStack().getType() == Material.BOOK 
 					| j.getItemDrop().getItemStack().getType() == Material.WRITTEN_BOOK 
 					| j.getItemDrop().getItemStack().getType() == Material.BOOK_AND_QUILL 

@@ -17,6 +17,9 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.griefcraft.lwc.LWCPlugin;
+
 import net.milkbowl.vault.economy.Economy;
 
 public class BookShelf extends JavaPlugin{
@@ -27,6 +30,7 @@ public class BookShelf extends JavaPlugin{
 	public static MySQL mysql;
 	public static SQLite sqlite;
 	public static Economy economy;
+	public static LWCPlugin LWC;
 	static ResultSet r;
 	
 	@Override
@@ -70,13 +74,13 @@ public class BookShelf extends JavaPlugin{
 		saveDefaultConfig();
 		sqlConnection();
 		sqlDoesDatabaseExist();
-		if(!setupEconomy())
+		if(setupEconomy())
 		{
-			this.logger.info("[BookShelf] Vault is not installed. Shops disabled.");
+			this.logger.info("[BookShelf] Vault found and hooked.");
 		}
-		else
+		if(setupLWC())
 		{
-			this.logger.info("[BookShelf] Vault found. Shops enabled.");
+			this.logger.info("[BookShelf] LWC found and hooked.");
 		}
 		getServer().getPluginManager().registerEvents(this.BookListener, this);
 		PluginDescriptionFile pdfFile = this.getDescription();
@@ -99,6 +103,12 @@ public class BookShelf extends JavaPlugin{
 		}
 		return (economy != null);
 	}
+	private boolean setupLWC()
+	{
+		Plugin plugin = getServer().getPluginManager().getPlugin("LWC");
+		LWC = (LWCPlugin) plugin;
+		return (plugin != null);
+	}
 	public void sqlConnection() 
 	{
 		boolean enable = config.getBoolean("database.mysql_enabled");
@@ -109,7 +119,7 @@ public class BookShelf extends JavaPlugin{
 		String pass = config.getString("database.password");
 		if(enable)
 		{
-			mysql = new MySQL(logger, "BookShelf_", host, port, dbname, user, pass);
+			mysql = new MySQL(logger, "BookShelf", host, port, dbname, user, pass);
 			try 
 			{
 				mysql.open();
@@ -520,7 +530,13 @@ public class BookShelf extends JavaPlugin{
 		boolean enable = config.getBoolean("database.mysql_enabled");
 		if(enable)
 		{
-			return mysql;
+			if(mysql.checkConnection())
+				return mysql;
+			else
+			{
+				mysql.open();
+				return mysql;
+			}
 		}
 		else
 		{

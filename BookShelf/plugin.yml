@@ -1,6 +1,6 @@
 name: BookShelf
 main: me.Pew446.BookShelf.BookShelf
-version: 2.3
+version: 2.4
 description: Allows players to store books in bookshelves.
 author: Pew446
 dev-url: http://dev.bukkit.org/server-mods/BookShelf

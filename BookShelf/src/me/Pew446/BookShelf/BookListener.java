@@ -338,7 +338,7 @@ public class BookListener implements Listener {
 											}
 											else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
 											{
-												Book("null", "null", thepages);
+												Book(titl.get(i), auth.get(i), thepages);
 												inv.setItem(loca.get(i), generateItemStack(1));
 												pages.clear();
 											}
@@ -440,14 +440,7 @@ public class BookListener implements Listener {
 										String title = getTitle().replaceAll("'", "''");
 										String author = getAuthor().replaceAll("'", "''");
 										int type = cont[i].getTypeId(); 
-										if(cont[i].getType() == Material.BOOK_AND_QUILL)
-										{
-											BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+",'null','null',"+type+","+i+",1);");
-										}
-										else
-										{
-											BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+",'"+author+"','"+title+"',"+type+","+i+",1);");	
-										}
+										BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+",'"+author+"','"+title+"',"+type+","+i+",1);");	
 										int id = getidxyz(x,y,z);
 										BookShelf.getdb().query("DELETE FROM pages WHERE id="+id+";");
 										for(int k=0;k<getPages().length;k++)
@@ -1131,19 +1124,21 @@ public class BookListener implements Listener {
         if(bookItem.getType() == Material.WRITTEN_BOOK)
         {
 	        this.author = bookData.getAuthor();
-	        this.title = bookData.getTitle();
+	        if(bookData.hasDisplayName())
+	        {	
+	        	this.title = bookData.getDisplayName();
+	        }
+	        else
+	        {
+	        	this.title = bookData.getTitle();
+	        }
+	        
         }
         else
         {
         	this.author = "null";
-        	this.title = "null";
-        }
-        if(bookData == null)
-        {
-        	String[] sPages = {""};
-                    
-            this.pages = sPages;
-            return;
+        	this.title = bookData.getDisplayName();
+        	plugin.getLogger().info(title);
         }
         List<String> nPages;
         nPages = bookData.getPages();
@@ -1201,6 +1196,10 @@ public class BookListener implements Listener {
         {
         	newbook1.setAuthor(author);
         	newbook1.setTitle(title);
+        	if(!title.equals("null"))
+        	{
+        		newbook1.setDisplayName(title);
+        	}
         	for(int i = 0;i<pages.length;i++)
             {  
         		newbook1.addPage(pages[i]);
@@ -1213,6 +1212,7 @@ public class BookListener implements Listener {
         	
         	newbook.setAuthor(author);
         	newbook.setTitle(title);
+        	newbook.setDisplayName(title);
         	for(int i = 0;i<pages.length;i++)
             {  
         		newbook.addPage(pages[i]);

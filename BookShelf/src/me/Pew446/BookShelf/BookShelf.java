@@ -293,7 +293,7 @@ public class BookShelf extends JavaPlugin{
 		}
 		else if(cmd.getName().equalsIgnoreCase("bsreload") || cmd.getName().equalsIgnoreCase("bsr"))
 		{
-			Player p = Bukkit.getPlayer(sender.getName());
+			CommandSender p = sender;
 			if(p.hasPermission("bookshelf.reload"))
 			{
 				this.reloadConfig();

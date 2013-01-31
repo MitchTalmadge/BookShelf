@@ -1137,8 +1137,14 @@ public class BookListener implements Listener {
         else
         {
         	this.author = "null";
-        	this.title = bookData.getDisplayName();
-        	plugin.getLogger().info(title);
+        	if(bookData.hasDisplayName())
+        	{
+        		this.title = bookData.getDisplayName();
+        	}
+        	else
+        	{
+        		this.title = "null";
+        	}
         }
         List<String> nPages;
         nPages = bookData.getPages();

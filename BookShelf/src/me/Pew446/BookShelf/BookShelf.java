@@ -132,7 +132,7 @@ public class BookShelf extends JavaPlugin{
 		}
 		else
 		{
-			sqlite = new SQLite(logger, "BookShelf", this.getDataFolder().getAbsolutePath(), "Shelves");
+			sqlite = new SQLite(logger, "BookShelf", getDataFolder().getAbsolutePath(), "Shelves");
 			try 
 			{
 				sqlite.open();

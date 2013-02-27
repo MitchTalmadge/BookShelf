@@ -3,7 +3,8 @@ package me.Pew446.BookShelf;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
-import lib.PatPeter.SQLibrary.*;
+
+import lib.Databases.*;
 import me.Pew446.BookShelf.BookListener;
 
 import org.bukkit.Bukkit;

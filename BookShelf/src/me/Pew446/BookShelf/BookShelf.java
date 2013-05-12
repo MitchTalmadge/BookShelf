@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-import lib.Databases.*;
 import me.Pew446.BookShelf.BookListener;
 
 import org.bukkit.Bukkit;
@@ -20,6 +19,10 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.griefcraft.lwc.LWCPlugin;
+
+import me.Pew446.SimpleSQL.Database;
+import me.Pew446.SimpleSQL.MySQL;
+import me.Pew446.SimpleSQL.SQLite;
 
 import net.milkbowl.vault.economy.Economy;
 
@@ -531,7 +534,7 @@ public class BookShelf extends JavaPlugin{
 		boolean enable = config.getBoolean("database.mysql_enabled");
 		if(enable)
 		{
-			if(mysql.checkConnection())
+			if(mysql.isOpen())
 				return mysql;
 			else
 			{

@@ -5,7 +5,6 @@ description: Allows players to store books in bookshelves.
 author: Pew446
 dev-url: http://dev.bukkit.org/server-mods/BookShelf
 softdepend: [Vault]
-depend: [SQLibrary]
 commands:
    bsunlimited:
       description: Sets target bookshelf to never run out of books.

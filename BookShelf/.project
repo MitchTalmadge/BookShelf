@@ -14,4 +14,41 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/me/Pew446/SimpleSQL/DBList.java</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/git/simplesql/Simple%20SQL/lib/me/Pew446/SimpleSQL/DBList.java</locationURI>
+		</link>
+		<link>
+			<name>src/me/Pew446/SimpleSQL/Database.java</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/git/simplesql/Simple%20SQL/lib/me/Pew446/SimpleSQL/Database.java</locationURI>
+		</link>
+		<link>
+			<name>src/me/Pew446/SimpleSQL/MySQL.java</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/git/simplesql/Simple%20SQL/lib/me/Pew446/SimpleSQL/MySQL.java</locationURI>
+		</link>
+		<link>
+			<name>src/me/Pew446/SimpleSQL/MySQLUtils.java</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/git/simplesql/Simple%20SQL/lib/me/Pew446/SimpleSQL/MySQLUtils.java</locationURI>
+		</link>
+		<link>
+			<name>src/me/Pew446/SimpleSQL/SQLite.java</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/git/simplesql/Simple%20SQL/lib/me/Pew446/SimpleSQL/SQLite.java</locationURI>
+		</link>
+		<link>
+			<name>src/me/Pew446/SimpleSQL/SQLiteUtils.java</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/git/simplesql/Simple%20SQL/lib/me/Pew446/SimpleSQL/SQLiteUtils.java</locationURI>
+		</link>
+		<link>
+			<name>src/me/Pew446/SimpleSQL/StatementsList.java</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/git/simplesql/Simple%20SQL/lib/me/Pew446/SimpleSQL/StatementsList.java</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

@@ -16,8 +16,9 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_6_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_6_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_6_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_6_R2.inventory.CraftItemStack;
+import net.minecraft.server.v1_6_R2.EntityItem;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -38,7 +39,6 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 
 
 import me.Pew446.BookShelf.BookShelf;
-import net.minecraft.server.v1_6_R1.EntityItem;
 public class BookListener implements Listener {
 	public static BookShelf plugin;
 	public BookListener(BookShelf instance) {

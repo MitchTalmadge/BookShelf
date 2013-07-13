@@ -16,9 +16,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_6_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_6_R2.inventory.CraftItemStack;
-import net.minecraft.server.v1_6_R2.EntityItem;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -37,10 +34,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerBucketEvent;
-
-
 import me.Pew446.BookShelf.BookShelf;
+
 public class BookListener implements Listener {
 	public static BookShelf plugin;
 	public BookListener(BookShelf instance) {
@@ -180,7 +175,6 @@ public class BookListener implements Listener {
 								}
 							}
 						} catch (SQLException e1) {
-							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 						if(!map.containsKey(j.getClickedBlock().getLocation()))
@@ -194,7 +188,6 @@ public class BookListener implements Listener {
 								r.close();
 							} catch (SQLException e1)
 							{
-								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
 							Inventory inv = Bukkit.createInventory(p, plugin.getConfig().getInt("rows")*9, name);
@@ -355,7 +348,6 @@ public class BookListener implements Listener {
 									p.openInventory(inv);
 								}
 							} catch (SQLException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
@@ -502,7 +494,6 @@ public class BookListener implements Listener {
 							r.close();
 						}
 					} catch (SQLException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				    loading=false;
@@ -564,8 +555,8 @@ public class BookListener implements Listener {
 						double xs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
 						double ys = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
 						double zs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-						EntityItem entity = new EntityItem(((CraftWorld) loc.getWorld()).getHandle(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs, (CraftItemStack.asNMSCopy(generateItemStack(2))));
-						((CraftWorld) loc.getWorld()).getHandle().addEntity(entity);
+						ItemStack drop = generateItemStack(2).clone();
+						loc.getWorld().dropItem(new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs), drop);
 					}
 					else if(type.get(i) == Material.MAP.getId())
 					{
@@ -581,8 +572,8 @@ public class BookListener implements Listener {
 						double xs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
 						double ys = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
 						double zs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-						EntityItem entity = new EntityItem(((CraftWorld) loc.getWorld()).getHandle(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs, (CraftItemStack.asNMSCopy(generateItemStack(3))));
-						((CraftWorld) loc.getWorld()).getHandle().addEntity(entity);
+						ItemStack drop = generateItemStack(3).clone();
+						loc.getWorld().dropItem(new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs), drop);
 					}
 					else if(type.get(i) == Material.BOOK.getId())
 					{
@@ -672,8 +663,8 @@ public class BookListener implements Listener {
 							double xs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
 							double ys = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
 							double zs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-							EntityItem entity = new EntityItem(((CraftWorld) loc.getWorld()).getHandle(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs, (CraftItemStack.asNMSCopy(generateItemStack(0))));
-							((CraftWorld) loc.getWorld()).getHandle().addEntity(entity);
+							ItemStack drop = generateItemStack(0).clone();
+							loc.getWorld().dropItem(new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs), drop);
 							pages.clear();
 						}
 						else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
@@ -684,8 +675,8 @@ public class BookListener implements Listener {
 							double xs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
 							double ys = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
 							double zs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-							EntityItem entity = new EntityItem(((CraftWorld) loc.getWorld()).getHandle(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs, (CraftItemStack.asNMSCopy(generateItemStack(1))));
-							((CraftWorld) loc.getWorld()).getHandle().addEntity(entity);
+							ItemStack drop = generateItemStack(1).clone();
+							loc.getWorld().dropItem(new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs), drop);
 							pages.clear();
 						}
 						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
@@ -701,7 +692,6 @@ public class BookListener implements Listener {
 				BookShelf.getdb().getConnection().commit();
 				BookShelf.getdb().getConnection().setAutoCommit(true);
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -721,7 +711,6 @@ public class BookListener implements Listener {
 			r.close();
 		} catch (SQLException e1)
 		{
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		if(j.getInventory().getTitle().equals(name))
@@ -944,7 +933,6 @@ public class BookListener implements Listener {
 					}
 				}
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -1033,7 +1021,6 @@ public class BookListener implements Listener {
 				BookShelf.getdb().getConnection().commit();
 				BookShelf.getdb().getConnection().setAutoCommit(true);
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return;
@@ -1152,7 +1139,6 @@ public class BookListener implements Listener {
 					}
 					r.close();
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -1169,7 +1155,6 @@ public class BookListener implements Listener {
 			last = r.getInt("id");
 			r.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return last;

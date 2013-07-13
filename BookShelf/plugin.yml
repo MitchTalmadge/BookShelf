@@ -1,6 +1,6 @@
 name: BookShelf
 main: me.Pew446.BookShelf.BookShelf
-version: 2.9
+version: 2.9.1
 description: Allows players to store books in bookshelves.
 author: Pew446
 dev-url: http://dev.bukkit.org/server-mods/BookShelf
@@ -13,8 +13,8 @@ commands:
       permission: bookshelf.unlimited
       permission-message: You don't have permission for that command!
    bstoggle:
-      description: Toggles target bookshelf enabled/disabled.
-      usage: /<command>
+      description: Toggles target bookshelf enabled/disabled, or all shelves with the same specified name.
+      usage: /<command> [shelf name]
       aliases: ['bst']
       permission: bookshelf.toggle
       permission-message: You don't have permission for that command!

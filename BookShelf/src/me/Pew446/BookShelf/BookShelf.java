@@ -2,6 +2,8 @@ package me.Pew446.BookShelf;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import me.Pew446.BookShelf.BookListener;
@@ -11,12 +13,15 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.craftbukkit.v1_6_R2.command.CraftBlockCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 
 import com.griefcraft.lwc.LWCPlugin;
 
@@ -238,60 +243,158 @@ public class BookShelf extends JavaPlugin{
 		}
 		else if(cmd.getName().equalsIgnoreCase("bstoggle") || cmd.getName().equalsIgnoreCase("bst"))
 		{
-			Player p = Bukkit.getPlayer(sender.getName());
-			if(p.hasPermission("bookshelf.toggle"))
+			if(sender instanceof ConsoleCommandSender || sender instanceof CraftBlockCommandSender)
 			{
-				Location loc = p.getTargetBlock(null, 10).getLocation();
-				if(loc.getBlock().getType() == Material.BOOKSHELF)
+				if(!(args.length >= 1))
 				{
+					sender.sendMessage("Must include a shelf name!");
+					return false;
+				}
+				else
+				{
+					String name = "";
+					for(int i = 0;i<args.length;i++)
+					{
+						name += args[i]+" ";
+					}
+					
+					ResultSet re;
 					try 
 					{
-						ResultSet re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-						if(!re.next())
+						re = getdb().query("SELECT * FROM names WHERE name='"+name+"';");
+						List<Vector> vecs = new ArrayList<Vector>();
+						while(re.next())
 						{
-							int def = 1;
-							if(getConfig().getBoolean("default_openable"))
+							Vector loc = new Vector(re.getInt("x"), re.getInt("y"), re.getInt("z"));
+							vecs.add(loc);
+						}
+						re.close();
+						for(Vector loc : vecs)
+						{
+							re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							if(re.next())
 							{
-								def = 1;
+								if(re.getInt("bool") == 1)
+								{
+									re.close();
+									getdb().query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								}
+								else
+								{
+									re.close();
+									getdb().query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								}
 							}
-							else
-							{
-								def = 0;
-							}
-							re.close();
-							getdb().query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
 						}
-						else
-						{
-							re.close();
-						}
-						re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-						re.next();
-						if(re.getInt("bool") == 1)
-						{
-							re.close();
-							p.sendMessage("The bookshelf you are looking at is now disabled.");
-							getdb().query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-						}
-						else
-						{
-							re.close();
-							p.sendMessage("The bookshelf you are looking at is now enabled.");
-							getdb().query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-						}
+						sender.sendMessage("All bookshelves with the name "+name+"have been toggled.");
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
-				else
-				{
-					p.sendMessage("Please look at a bookshelf when using this command");
-				}
 			}
 			else
 			{
-				p.sendMessage("You don't have permission to use this command!");
+				Player p = Bukkit.getPlayer(sender.getName());
+				if(p.hasPermission("bookshelf.toggle"))
+				{
+					if(!(args.length >= 1))
+					{
+						Location loc = p.getTargetBlock(null, 10).getLocation();
+						if(loc.getBlock().getType() == Material.BOOKSHELF)
+						{
+							try 
+							{
+								ResultSet re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								if(!re.next())
+								{
+									int def = 1;
+									if(getConfig().getBoolean("default_openable"))
+									{
+										def = 1;
+									}
+									else
+									{
+										def = 0;
+									}
+									re.close();
+									getdb().query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
+								}
+								else
+								{
+									re.close();
+								}
+								re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								re.next();
+								if(re.getInt("bool") == 1)
+								{
+									re.close();
+									p.sendMessage("The bookshelf you are looking at is now disabled.");
+									getdb().query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								}
+								else
+								{
+									re.close();
+									p.sendMessage("The bookshelf you are looking at is now enabled.");
+									getdb().query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								}
+							} catch (SQLException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						else
+						{
+							p.sendMessage("Please look at a bookshelf when using this command.");
+						}
+					}
+					else
+					{
+						String name = "";
+						for(int i = 0;i<args.length;i++)
+						{
+							name += args[i]+" ";
+						}
+						
+						ResultSet re;
+						try 
+						{
+							re = getdb().query("SELECT * FROM names WHERE name='"+name+"';");
+							List<Vector> vecs = new ArrayList<Vector>();
+							while(re.next())
+							{
+								Vector loc = new Vector(re.getInt("x"), re.getInt("y"), re.getInt("z"));
+								vecs.add(loc);
+							}
+							re.close();
+							for(Vector loc : vecs)
+							{
+								re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+								if(re.next())
+								{
+									if(re.getInt("bool") == 1)
+									{
+										re.close();
+										getdb().query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+									}
+									else
+									{
+										re.close();
+										getdb().query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+									}
+								}
+							}
+							p.sendMessage("All bookshelves with the name "+name+"have been toggled.");
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+				else
+				{
+					p.sendMessage("You don't have permission to use this command!");
+				}
 			}
 			return true;
 		}

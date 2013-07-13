@@ -35,7 +35,9 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerBucketEvent;
 
 
 import me.Pew446.BookShelf.BookShelf;
@@ -1036,10 +1038,6 @@ public class BookListener implements Listener {
 			}
 			return;
 		}
-		else if(j.getBlock().getType() == Material.WALL_SIGN)
-		{
-			return;
-		}
 		if(j.getBlockAgainst().getType() == Material.BOOKSHELF)
 		{
 			if(j.isCancelled())
@@ -1050,10 +1048,73 @@ public class BookListener implements Listener {
 				{
 					return;
 				}
+				else
+				{
+					if(j.getPlayer().isSneaking())
+					{
+						return;
+					}
+					else
+					{
+						j.setCancelled(true);
+					}
+				}
+			}
+			else
+			{
+				if(j.getPlayer().isSneaking())
+				{
+					return;
+				}
+				else
+				{
+					j.setCancelled(true);
+				}
 			}
 			return;
 		}
 	}
+	
+	@EventHandler
+	public void onBucket(PlayerBucketEmptyEvent j)
+	{
+		if(j.getBlockClicked().getType() == Material.BOOKSHELF)
+		{
+			if(j.isCancelled())
+				return;
+			if(j.getBlockFace() == BlockFace.UP | j.getBlockFace() == BlockFace.DOWN)
+			{
+				if(!plugin.getConfig().getBoolean("top-bottom_access"))
+				{
+					return;
+				}
+				else
+				{
+					if(j.getPlayer().isSneaking())
+					{
+						return;
+					}
+					else
+					{
+						j.setCancelled(true);
+					}
+				}
+			}
+			else
+			{
+				if(j.getPlayer().isSneaking())
+				{
+					return;
+				}
+				else
+				{
+					j.setCancelled(true);
+				}
+			}
+			return;
+		}
+	}
+	
 	@EventHandler
 	public void onDrop(PlayerDropItemEvent j)
 	{

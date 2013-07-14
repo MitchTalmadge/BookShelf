@@ -37,3 +37,7 @@ villager_trading:
     allow_signed: true
     allow_paper: true
  
+towny-checks:
+    enabled: false
+    only-towns: true
+    only-owned-plots: true

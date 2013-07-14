@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="lib/LWC.jar"/>
 	<classpathentry kind="lib" path="lib/GriefPrevention.jar"/>
 	<classpathentry kind="lib" path="lib/craftbukkit.jar"/>
+	<classpathentry kind="lib" path="lib/Towny.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

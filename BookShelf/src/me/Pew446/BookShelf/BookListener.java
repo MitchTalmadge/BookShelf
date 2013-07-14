@@ -12,6 +12,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -996,11 +997,32 @@ public class BookListener implements Listener {
 			}
 		}
 	}
+	
 	@EventHandler
 	public void onPlace(BlockPlaceEvent j)
 	{
 		if(j.getBlock().getType() == Material.BOOKSHELF)
 		{
+			//If we are using town/detected towny and the player is not an op, let's do some Towny checks.
+			//Right now we just check if they can only create it in towns and if they are allowed to create them outside of their owned plots.
+			if(plugin.isUsingTowny() && !j.getPlayer().isOp()) {
+				//if only creation in towns check
+				if(BookShelf.config.getBoolean("towny-checks.only-towns"))
+					if(!TownyHandler.checkForPlayersTown(j.getBlock(), j.getPlayer().getName())) {
+						j.getPlayer().sendMessage(ChatColor.RED + "You can only build a bookshelf in your Town.");
+						j.setCancelled(true);
+						return;
+					}
+				
+				//if only player owned plots check
+				if(BookShelf.config.getBoolean("towny-checks.only-owned-plots"))
+					if(!TownyHandler.checkSingleTownyBlock(j.getBlock(), j.getPlayer().getName())) {
+						j.getPlayer().sendMessage(ChatColor.RED + "You can only build a bookshelf in your own plot.");
+						j.setCancelled(true);
+						return;
+					}
+			}
+			
 			Location loc = j.getBlock().getLocation();
 			try {
 				BookShelf.getdb().getConnection().setAutoCommit(false);

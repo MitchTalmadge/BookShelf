@@ -40,6 +40,7 @@ public class BookShelf extends JavaPlugin{
 	public static SQLite sqlite;
 	public static Economy economy;
 	public static LWCPlugin LWC;
+	private boolean useTowny = false;
 	static ResultSet r;
 	
 	@Override
@@ -91,6 +92,12 @@ public class BookShelf extends JavaPlugin{
 		{
 			this.logger.info("[BookShelf] LWC found and hooked.");
 		}
+		
+		if(setupTowny()) {
+			logger.info("[BookShelf] Towny checks enabled.");
+			useTowny = true;
+		}
+		
 		getServer().getPluginManager().registerEvents(this.BookListener, this);
 		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info("["+pdfFile.getName() + "] Enabled BookShelf v" + pdfFile.getVersion());
@@ -118,6 +125,15 @@ public class BookShelf extends JavaPlugin{
 		LWC = (LWCPlugin) plugin;
 		return (plugin != null);
 	}
+	
+	private boolean setupTowny() {
+		return config.getBoolean("towny-checks.enabled") && getServer().getPluginManager().getPlugin("Towny") != null;
+	}
+	
+	public boolean isUsingTowny() {
+		return this.useTowny;
+	}
+	
 	public void sqlConnection() 
 	{
 		boolean enable = config.getBoolean("database.mysql_enabled");

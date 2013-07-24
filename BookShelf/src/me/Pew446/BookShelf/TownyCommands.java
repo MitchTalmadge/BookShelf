@@ -43,9 +43,9 @@ public class TownyCommands {
 				if(res.hasTown())
 				{
 					try {
-						if(!TownyHandler.hasPriviledges(res, res.getTown()) && (args[0].equals("town") || args[0].equals("resident")))
+						if(!TownyHandler.hasPrivileges(res, res.getTown()) && (args[0].equals("town") || args[0].equals("resident")))
 						{
-							sender.sendMessage("You do not have the priveledges for this town!");
+							sender.sendMessage("You do not have the privileges for this town!");
 							return true;
 						}
 						if(args[1].equals("set"))
@@ -59,9 +59,9 @@ public class TownyCommands {
 									sender.sendMessage("This plot does not belong to "+res.getTown().getFormattedName()+".");
 									return true;
 								}
-								if(!TownyHandler.checkPlotOwnedByResident(currentPlot, res) && !TownyHandler.hasPriviledges(res, res.getTown()))
+								if(!TownyHandler.checkPlotOwnedByResident(currentPlot, res) && !TownyHandler.hasPrivileges(res, res.getTown()))
 								{
-									sender.sendMessage("You do not have the priveledges for this plot!");
+									sender.sendMessage("You do not have the privileges for this plot!");
 									return true;
 								}
 								plotString = TownyHandler.getPlotStringFromResidentCoords(res)+".";

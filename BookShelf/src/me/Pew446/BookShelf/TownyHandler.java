@@ -82,7 +82,7 @@ public class TownyHandler {
 			return false;
 		try {
 			Town town = plot.getTown();
-			if(hasPriviledges(r, town))
+			if(hasPrivileges(r, town))
 				return true;
 			if(checkPlotIsOwned(plot))
 			{
@@ -176,13 +176,16 @@ public class TownyHandler {
 		return false;
 	}
 
-	public static boolean hasPriviledges(Resident r, Town t)
+	public static boolean hasPrivileges(Resident r, Town t)
 	{
 		if(t.hasMayor())
 			if(t.getMayor() == r)
 				return true;
 		if(t.hasAssistant(r))
 			return true;
+		if(Bukkit.getPlayer(r.getName()) != null)
+			if(Bukkit.getPlayer(r.getName()).isOp())
+				return true;
 		return false;
 	}
 

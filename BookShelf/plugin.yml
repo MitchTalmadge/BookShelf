@@ -36,11 +36,29 @@ commands:
       aliases: ['bsn']
       permission: bookshelf.name
       permission-message: You don't have permission for that command!
+   bstowny:
+      description: Multiple commands for Towny support.
+      usage: /<command>
+      permission: bookshelf.towny
+      permission-message: You don't have permission for that command!
 permissions:
     bookshelf.*:
         description: Gives all permissions of BookShelf.
         children:
-            bookshelf.b: true
+            bookshelf.unlimited: true
+            bookshelf.toggle: true
+            bookshelf.reload: true
+            bookshelf.shop: true
+            bookshelf.name: true
+            bookshelf.towny: true
+            bookshelf.book: true
+            bookshelf.baq: true
+            bookshelf.signed: true
+            bookshelf.maps: true
+            bookshelf.enchanted_book: true
+            bookshelf.records: true
+            bookshelf.paper: true
+            
     bookshelf.unlimited:
         description: Allows player to make bookshelf never stop giving books.
         default: op
@@ -56,6 +74,9 @@ permissions:
     bookshelf.name:
         description: Allows player to change names of bookshelves.
         default: op
+    bookshelf.towny:
+        description: Allows players to use /bstowny command for Towny.
+        default: true
     bookshelf.book:
         description: Allows player to add plain books to shelves.
         default: true

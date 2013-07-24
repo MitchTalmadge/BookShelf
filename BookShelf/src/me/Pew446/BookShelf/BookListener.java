@@ -721,7 +721,7 @@ public class BookListener implements Listener {
 			try {
 				r = BookShelf.getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 				r.next();
-				if(r.getInt("bool") == 1 & BookShelf.economy != null)
+				if(r.getInt("bool") == 1 && BookShelf.economy != null)
 				{
 					int price = r.getInt("price");
 					r.close();
@@ -764,6 +764,7 @@ public class BookListener implements Listener {
 						{
 							return;
 						}
+						System.out.println(j.getCurrentItem().getType());
 						if(plugin.getConfig().getBoolean("permissions.allow_maps") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.maps"))
 						{
 							if(j.getCurrentItem().getType() == Material.MAP)

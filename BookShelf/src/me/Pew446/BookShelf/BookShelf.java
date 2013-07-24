@@ -1,5 +1,6 @@
 package me.Pew446.BookShelf;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.craftbukkit.v1_6_R2.command.CraftBlockCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -46,9 +48,11 @@ public class BookShelf extends JavaPlugin{
 	static Economy economy;
 	static LWCPlugin LWC;
 	private boolean useTowny = false;
+	static FileConfiguration townyConfig;
 	static Towny towny;
 	static ResultSet r;
-	
+	public static File townyConfigPath;
+
 	@Override
 	public void onDisable() {
 		try {
@@ -57,31 +61,9 @@ public class BookShelf extends JavaPlugin{
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		boolean enable = config.getBoolean("database.mysql_enabled");
-		if(enable)
-		{
-			try 
-			{
-				mysql.close();
-		    } 
-			catch (Exception e) 
-		    {
-				logger.info(e.getMessage());
-				getPluginLoader().disablePlugin(this);
-		    }
-		}
-		else
-		{
-			try 
-			{
-				sqlite.close();
-		    } 
-			catch (Exception e) 
-		    {
-				logger.info(e.getMessage());
-				getPluginLoader().disablePlugin(this);
-		    }
-		}
+
+		getdb().close();
+		TownyHandler.saveConfig();
 	}
 	@Override
 	public void onEnable() {
@@ -89,6 +71,7 @@ public class BookShelf extends JavaPlugin{
 		saveDefaultConfig();
 		sqlConnection();
 		sqlDoesDatabaseExist();
+
 		if(setupEconomy())
 		{
 			this.logger.info("[BookShelf] Vault found and hooked.");
@@ -97,22 +80,30 @@ public class BookShelf extends JavaPlugin{
 		{
 			this.logger.info("[BookShelf] LWC found and hooked.");
 		}
-		
+
+		townyConfigPath = new File(getDataFolder(), "towny.yml");
+
 		if(setupTowny()) {
 			logger.info("[BookShelf] Towny found and hooked.");
 			useTowny = config.getBoolean("towny_checks.enabled");
 			if(useTowny)
 			{
-				if(!TownySettings.getSwitchIds().contains(Material.BOOKSHELF.getId()))
-					TownySettings.getSwitchIds().add(Material.BOOKSHELF.getId());
+				loadTownyConfig();
 			}
 		}
-		
+
 		getServer().getPluginManager().registerEvents(this.BookListener, this);
 		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info("["+pdfFile.getName() + "] Enabled BookShelf V" + pdfFile.getVersion());
-		
+
 	}
+
+	private void loadTownyConfig() {
+		if(!townyConfigPath.exists())
+			saveResource("towny.yml", false);
+		townyConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "towny.yml"));
+	}
+
 	private boolean setupEconomy()
 	{
 		Plugin plugin = getServer().getPluginManager().getPlugin("Vault");
@@ -121,7 +112,7 @@ public class BookShelf extends JavaPlugin{
 		{
 			@SuppressWarnings("rawtypes")
 			RegisteredServiceProvider economyProvider = getServer()
-					.getServicesManager().getRegistration(Economy.class);
+			.getServicesManager().getRegistration(Economy.class);
 			if (economyProvider != null)
 			{
 				economy = (Economy) economyProvider.getProvider();
@@ -135,16 +126,16 @@ public class BookShelf extends JavaPlugin{
 		LWC = (LWCPlugin) plugin;
 		return (plugin != null);
 	}
-	
+
 	private boolean setupTowny() {
 		towny = (Towny) getServer().getPluginManager().getPlugin("Towny");
 		return towny != null;
 	}
-	
+
 	public boolean isUsingTowny() {
 		return this.useTowny;
 	}
-	
+
 	public void sqlConnection() 
 	{
 		boolean enable = config.getBoolean("database.mysql_enabled");
@@ -160,12 +151,12 @@ public class BookShelf extends JavaPlugin{
 			try 
 			{
 				mysql.open();
-		    } 
+			} 
 			catch (Exception e) 
-		    {
+			{
 				logger.info(e.getMessage());
 				getPluginLoader().disablePlugin(this);
-		    }
+			}
 		}
 		else
 		{
@@ -173,66 +164,66 @@ public class BookShelf extends JavaPlugin{
 			try 
 			{
 				sqlite.open();
-		    } 
+			} 
 			catch (Exception e) 
-		    {
+			{
 				logger.info(e.getMessage());
 				getPluginLoader().disablePlugin(this);
-		    }
+			}
 		}
 	}
 	public void sqlDoesDatabaseExist()
 	{
 
-        	try {
-        		boolean enable = config.getBoolean("database.mysql_enabled");
-        		if(enable)
-        		{
-        			getdb().query("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(32), author VARCHAR(32), type INT, loc INT, amt INT, primary key (id));");
-    				getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text VARCHAR(1000));");
-    				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
-    				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
-    				getdb().query("CREATE TABLE IF NOT EXISTS enchant (id INT, type VARCHAR(64), level INT);");
-    				getdb().query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
-    				getdb().query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
-    				getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
-    				getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name VARCHAR(64));");
-        		}
-        		else
-        		{
-	        		getdb().query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, type INT, loc INT, amt INT);");
-					getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text STRING);");
-					getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
-					getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
-					getdb().query("CREATE TABLE IF NOT EXISTS enchant (id INT, type STRING, level INT);");
-					getdb().query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
-					getdb().query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
-					getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
-					getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name STRING);");	
-        		}
-        		
-        	} catch (SQLException e) {
-				e.printStackTrace();
+		try {
+			boolean enable = config.getBoolean("database.mysql_enabled");
+			if(enable)
+			{
+				getdb().query("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(32), author VARCHAR(32), type INT, loc INT, amt INT, primary key (id));");
+				getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text VARCHAR(1000));");
+				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS enchant (id INT, type VARCHAR(64), level INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name VARCHAR(64));");
 			}
-        	
-        System.out.println("[BookShelf] Database Loaded.");
+			else
+			{
+				getdb().query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, type INT, loc INT, amt INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text STRING);");
+				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS enchant (id INT, type STRING, level INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name STRING);");	
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("[BookShelf] Database Loaded.");
 	}	
-	
+
 	public boolean isConsole(CommandSender sender)
 	{
 		return sender instanceof ConsoleCommandSender;
 	}
-	
+
 	public boolean isCommandBlock(CommandSender sender)
 	{
 		return sender instanceof CraftBlockCommandSender;
 	}
-	
+
 	public boolean isPlayer(CommandSender sender)
 	{
 		return sender instanceof Player;
 	}
-	
+
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
 		if(cmd.getName().equalsIgnoreCase("bsunlimited") || cmd.getName().equalsIgnoreCase("bsu"))
@@ -248,6 +239,15 @@ public class BookShelf extends JavaPlugin{
 				Location loc = p.getTargetBlock(null, 10).getLocation();
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
+					if(useTowny)
+					{
+						Resident res = TownyHandler.convertToResident(p);
+						if(!TownyHandler.checkCanUseCommand(loc.getBlock(), res, TownyHandler.UNLIMITED))
+						{
+							sender.sendMessage("You do not have permissions to use that command for this plot.");
+							return true;
+						}
+					}
 					try {
 						ResultSet re = getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!re.next())
@@ -304,7 +304,7 @@ public class BookShelf extends JavaPlugin{
 					{
 						name += args[i]+" ";
 					}
-					
+
 					ResultSet re;
 					try 
 					{
@@ -349,6 +349,15 @@ public class BookShelf extends JavaPlugin{
 						Location loc = p.getTargetBlock(null, 10).getLocation();
 						if(loc.getBlock().getType() == Material.BOOKSHELF)
 						{
+							if(useTowny)
+							{
+								Resident res = TownyHandler.convertToResident(p);
+								if(!TownyHandler.checkCanUseCommand(loc.getBlock(), res, TownyHandler.TOGGLE))
+								{
+									sender.sendMessage("You do not have permissions to use that command for this plot.");
+									return true;
+								}
+							}
 							try 
 							{
 								ResultSet re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
@@ -400,7 +409,7 @@ public class BookShelf extends JavaPlugin{
 						{
 							name += args[i]+" ";
 						}
-						
+
 						ResultSet re;
 						try 
 						{
@@ -486,6 +495,15 @@ public class BookShelf extends JavaPlugin{
 				Location loc = p.getTargetBlock(null, 10).getLocation();
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
+					if(useTowny)
+					{
+						Resident res = TownyHandler.convertToResident(p);
+						if(!TownyHandler.checkCanUseCommand(loc.getBlock(), res, TownyHandler.SHOP))
+						{
+							sender.sendMessage("You do not have permissions to use that command for this plot.");
+							return true;
+						}
+					}
 					try {
 						ResultSet re = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!re.next())
@@ -604,6 +622,15 @@ public class BookShelf extends JavaPlugin{
 				}
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
+					if(useTowny)
+					{
+						Resident res = TownyHandler.convertToResident(p);
+						if(!TownyHandler.checkCanUseCommand(loc.getBlock(), res, TownyHandler.NAME))
+						{
+							sender.sendMessage("You do not have permissions to use that command for this plot.");
+							return true;
+						}
+					}
 					try {
 						ResultSet re = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!re.next())
@@ -640,9 +667,13 @@ public class BookShelf extends JavaPlugin{
 				sender.sendMessage("This command may only be used by players.");
 				return true;
 			}
-			return TownyCommands.onCommand(sender, label, args, this);
+			if(useTowny)
+				return TownyCommands.onCommand(sender, label, args, this);
+
+			sender.sendMessage("Towny is not enabled on this server.");
+			return true;
 		}
-/*		else if(cmd.getName().equalsIgnoreCase("bsdisplay") || cmd.getName().equalsIgnoreCase("bsd"))
+		/*		else if(cmd.getName().equalsIgnoreCase("bsdisplay") || cmd.getName().equalsIgnoreCase("bsd"))
 		{
 			Player p = Bukkit.getPlayer(sender.getName());
 			if(p.hasPermission("bookshelf.display"))

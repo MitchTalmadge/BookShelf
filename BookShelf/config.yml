@@ -38,8 +38,5 @@ villager_trading:
     allow_signed: true
     allow_paper: true
  
-towny_checks:
-    enabled: true
-    towns:
-    
-        
+towny_support:
+    enabled: true     

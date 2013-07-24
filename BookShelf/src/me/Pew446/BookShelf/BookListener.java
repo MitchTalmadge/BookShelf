@@ -12,7 +12,6 @@ import java.util.Random;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -106,7 +105,7 @@ public class BookListener implements Listener {
 								}
 								else
 								{
-									if(r.getBoolean("bool") & BookShelf.economy != null)
+									if(r.getBoolean("bool") && BookShelf.economy != null)
 									{
 										r.close();
 										BookShelf.getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shop_name").replace("%$", plugin.getConfig().getInt("economy.default_price")+" "+BookShelf.economy.currencyNamePlural())+"');");
@@ -348,6 +347,57 @@ public class BookListener implements Listener {
 									loca.clear();
 									amt.clear();
 									p.openInventory(inv);
+
+									if(plugin.autoToggle)
+									{
+										String shelfName = name;
+										if(shelfName.endsWith(" "))
+											shelfName = shelfName.substring(0, shelfName.length()-1);
+										if(plugin.autoToggleNameList == null || plugin.autoToggleNameList.contains(shelfName))
+										{
+											if(!plugin.autoToggleMap1.containsKey(loc))
+											{
+												plugin.autoToggleMap1.put(loc, 1);
+												List<Player> list = new ArrayList<Player>();
+												list.add(p);
+												plugin.autoToggleMap2.put(loc, list);
+											}
+											else
+											{
+												if(!plugin.autoToggleDiffPlayers)
+												{
+													int old = plugin.autoToggleMap1.get(loc);
+													plugin.autoToggleMap1.remove(loc);
+													plugin.autoToggleMap1.put(loc, old+1);
+												}
+												else if(!plugin.autoToggleMap2.get(loc).contains(p))
+												{
+													int old = plugin.autoToggleMap1.get(loc);
+													plugin.autoToggleMap1.remove(loc);
+													plugin.autoToggleMap1.put(loc, old+1);
+													plugin.autoToggleMap2.get(loc).add(p);
+												}
+											}
+											if(plugin.autoToggleMap1.get(loc) >= plugin.autoToggleFreq)
+											{
+												plugin.autoToggleMap1.remove(loc);
+												plugin.autoToggleMap2.remove(loc);
+												if(plugin.autoToggleServerWide)
+												{
+													BookShelf.toggleBookShelvesByName(name);
+													if(!name.endsWith(" "))
+														name += " ";
+													System.out.println("(Auto Toggle) All bookshelves with the name "+name+"have been toggled.");
+												}
+												else
+												{
+													BookShelf.toggleBookShelf(loc);
+													System.out.println("(Auto Toggle) The bookshelf at ("+loc.getBlockX()+", "+loc.getBlockY()+", "+loc.getBlockZ()+") has been toggled.");
+												}
+											}
+										}
+									}
+
 								}
 							} catch (SQLException e) {
 								e.printStackTrace();
@@ -696,6 +746,15 @@ public class BookListener implements Listener {
 				BookShelf.getdb().getConnection().setAutoCommit(true);
 			} catch (SQLException e) {
 				e.printStackTrace();
+			}
+			if(plugin.autoToggle)
+			{
+				Location loc = j.getBlock().getLocation();
+				if(plugin.autoToggleMap1.containsKey(loc))
+				{
+					plugin.autoToggleMap1.remove(loc);
+					plugin.autoToggleMap2.remove(loc);
+				}
 			}
 		}
 	}

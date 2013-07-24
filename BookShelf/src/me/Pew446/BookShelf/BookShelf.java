@@ -4,13 +4,13 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
 import me.Pew446.BookShelf.BookListener;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -28,8 +28,6 @@ import org.bukkit.util.Vector;
 
 import com.griefcraft.lwc.LWCPlugin;
 import com.palmergames.bukkit.towny.Towny;
-import com.palmergames.bukkit.towny.TownySettings;
-import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.Resident;
 
 import me.Pew446.SimpleSQL.Database;
@@ -39,19 +37,38 @@ import me.Pew446.SimpleSQL.SQLite;
 import net.milkbowl.vault.economy.Economy;
 
 public class BookShelf extends JavaPlugin{
+	
+	/* SETUP */
 	static FileConfiguration config;
 	public static BookShelf plugin;
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public final BookListener BookListener = new BookListener(this);
+	
+	/* ECONOMY */
+	static Economy economy;
+	
+	/* LWC */
+	static LWCPlugin LWC;
+	
+	/* AUTO TOGGLE (For shaythegoon) */
+	boolean autoToggle = false;
+	int autoToggleFreq = 10;
+	boolean autoToggleServerWide = false;
+	boolean autoToggleDiffPlayers = false;
+	HashMap<Location, Integer> autoToggleMap1 = new HashMap<Location, Integer>();
+	HashMap<Location, List<Player>> autoToggleMap2 = new HashMap<Location, List<Player>>();
+	List<?> autoToggleNameList = null;
+	
+	/* TOWNY */
+	static Towny towny;
+	private boolean useTowny = false;
+	public static File townyConfigPath;
+	static FileConfiguration townyConfig;
+	
+	/* DATABASE */
 	static MySQL mysql;
 	static SQLite sqlite;
-	static Economy economy;
-	static LWCPlugin LWC;
-	private boolean useTowny = false;
-	static FileConfiguration townyConfig;
-	static Towny towny;
 	static ResultSet r;
-	public static File townyConfigPath;
 
 	@Override
 	public void onDisable() {
@@ -63,7 +80,8 @@ public class BookShelf extends JavaPlugin{
 		}
 
 		getdb().close();
-		TownyHandler.saveConfig();
+		if(this.useTowny)
+			TownyHandler.saveConfig();
 	}
 	@Override
 	public void onEnable() {
@@ -71,6 +89,8 @@ public class BookShelf extends JavaPlugin{
 		saveDefaultConfig();
 		sqlConnection();
 		sqlDoesDatabaseExist();
+		
+		setupAutoToggle();
 
 		if(setupEconomy())
 		{
@@ -85,7 +105,7 @@ public class BookShelf extends JavaPlugin{
 
 		if(setupTowny()) {
 			logger.info("[BookShelf] Towny found and hooked.");
-			useTowny = config.getBoolean("towny_checks.enabled");
+			useTowny = config.getBoolean("towny_support.enabled");
 			if(useTowny)
 			{
 				loadTownyConfig();
@@ -98,6 +118,32 @@ public class BookShelf extends JavaPlugin{
 
 	}
 
+	private void setupAutoToggle() {
+		if(config.get("auto_toggle.enabled") != null)
+		{
+			this.autoToggle = config.getBoolean("auto_toggle.enabled");
+		}
+		
+		if(config.get("auto_toggle.frequency") != null)
+		{
+			this.autoToggleFreq = config.getInt("auto_toggle.frequency");
+		}
+		
+		if(config.get("auto_toggle.server_wide") != null)
+		{
+			this.autoToggleServerWide = config.getBoolean("auto_toggle.server_wide");
+		}
+		
+		if(config.get("auto_toggle.different_players") != null)
+		{
+			this.autoToggleDiffPlayers = config.getBoolean("auto_toggle.different_players");
+		}
+		
+		if(config.get("auto_toggle.name_list") != null)
+		{
+			this.autoToggleNameList = config.getList("auto_toggle.name_list");
+		}
+	}
 	private void loadTownyConfig() {
 		if(!townyConfigPath.exists())
 			saveResource("towny.yml", false);
@@ -304,39 +350,9 @@ public class BookShelf extends JavaPlugin{
 					{
 						name += args[i]+" ";
 					}
-
-					ResultSet re;
-					try 
-					{
-						re = getdb().query("SELECT * FROM names WHERE name='"+name+"';");
-						List<Vector> vecs = new ArrayList<Vector>();
-						while(re.next())
-						{
-							Vector loc = new Vector(re.getInt("x"), re.getInt("y"), re.getInt("z"));
-							vecs.add(loc);
-						}
-						re.close();
-						for(Vector loc : vecs)
-						{
-							re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-							if(re.next())
-							{
-								if(re.getInt("bool") == 1)
-								{
-									re.close();
-									getdb().query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-								}
-								else
-								{
-									re.close();
-									getdb().query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-								}
-							}
-						}
-						sender.sendMessage("All bookshelves with the name "+name+"have been toggled.");
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
+					
+					toggleBookShelvesByName(name);
+					sender.sendMessage("All bookshelves with the name "+name+"have been toggled.");
 				}
 			}
 			else
@@ -358,44 +374,13 @@ public class BookShelf extends JavaPlugin{
 									return true;
 								}
 							}
-							try 
-							{
-								ResultSet re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-								if(!re.next())
-								{
-									int def = 1;
-									if(getConfig().getBoolean("default_openable"))
-									{
-										def = 1;
-									}
-									else
-									{
-										def = 0;
-									}
-									re.close();
-									getdb().query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
-								}
-								else
-								{
-									re.close();
-								}
-								re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-								re.next();
-								if(re.getInt("bool") == 1)
-								{
-									re.close();
-									p.sendMessage("The bookshelf you are looking at is now disabled.");
-									getdb().query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-								}
-								else
-								{
-									re.close();
-									p.sendMessage("The bookshelf you are looking at is now enabled.");
-									getdb().query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-								}
-							} catch (SQLException e) {
-								e.printStackTrace();
-							}
+							int result = toggleBookShelf(loc);
+							if(result == -1)
+								p.sendMessage("An error occured while processing this command. Check server logs.");
+							if(result == 0)
+								p.sendMessage("The bookshelf you are looking at is now disabled.");
+							else
+								p.sendMessage("The bookshelf you are looking at is now enabled.");
 						}
 						else
 						{
@@ -410,38 +395,8 @@ public class BookShelf extends JavaPlugin{
 							name += args[i]+" ";
 						}
 
-						ResultSet re;
-						try 
-						{
-							re = getdb().query("SELECT * FROM names WHERE name='"+name+"';");
-							List<Vector> vecs = new ArrayList<Vector>();
-							while(re.next())
-							{
-								Vector loc = new Vector(re.getInt("x"), re.getInt("y"), re.getInt("z"));
-								vecs.add(loc);
-							}
-							re.close();
-							for(Vector loc : vecs)
-							{
-								re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-								if(re.next())
-								{
-									if(re.getInt("bool") == 1)
-									{
-										re.close();
-										getdb().query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-									}
-									else
-									{
-										re.close();
-										getdb().query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-									}
-								}
-							}
-							p.sendMessage("All bookshelves with the name "+name+"have been toggled.");
-						} catch (SQLException e) {
-							e.printStackTrace();
-						}
+						toggleBookShelvesByName(name);
+						sender.sendMessage("All bookshelves with the name "+name+"have been toggled.");
 					}
 				}
 				else
@@ -457,6 +412,11 @@ public class BookShelf extends JavaPlugin{
 			if(p.hasPermission("bookshelf.reload"))
 			{
 				this.reloadConfig();
+				config = getConfig();
+				saveDefaultConfig();
+				this.loadTownyConfig();
+				this.setupAutoToggle();
+				
 				p.sendMessage("BookShelf config successfully reloaded.");
 			}
 			else
@@ -722,6 +682,99 @@ public class BookShelf extends JavaPlugin{
 		return false; 
 	}
 
+	public static int toggleBookShelf(Location loc) {
+		try 
+		{
+			ResultSet re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			if(!re.next())
+			{
+				int def = 1;
+				if(config.getBoolean("default_openable"))
+				{
+					def = 1;
+				}
+				else
+				{
+					def = 0;
+				}
+				re.close();
+				getdb().query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
+			}
+			else
+			{
+				re.close();
+			}
+			re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			re.next();
+			if(re.getInt("bool") == 1)
+			{
+				re.close();
+				getdb().query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+				return 0;
+			}
+			else
+			{
+				re.close();
+				getdb().query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+				return 1;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return -1;
+		}
+	}
+	
+	public static void toggleBookShelvesByName(String name)
+	{
+		
+		if(!name.endsWith(" "))
+		{
+			if(!name.equals(config.getString("default_shelf_name")))
+				name += " ";
+		}
+		else
+		{
+			if(name.equals(config.getString("default_shelf_name")+" "))
+				name = name.substring(0, name.length()-1);
+		}
+		
+		ResultSet re;
+		try 
+		{
+			re = getdb().query("SELECT * FROM names WHERE name='"+name+"';");
+			List<Vector> vecs = new ArrayList<Vector>();
+			HashMap<Vector, Boolean> selmap = new HashMap<Vector, Boolean>();
+			
+			while(re.next())
+			{
+				Vector loc = new Vector(re.getInt("x"), re.getInt("y"), re.getInt("z"));
+				vecs.add(loc);
+			}
+			re.close();
+			for(Vector loc : vecs)
+			{
+				re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+				if(re.next())
+				{
+					selmap.put(loc, re.getInt("bool") == 1 ? true : false);
+				}
+				re.close();
+			}
+			getdb().getConnection().setAutoCommit(false);
+			for(Vector vec : selmap.keySet())
+			{
+				boolean bool = selmap.get(vec);
+				int bool2 = bool == true ? 0 : 1;
+				getdb().query("UPDATE enable SET bool="+bool2+" WHERE x="+vec.getX()+" AND y="+vec.getY()+" AND z="+vec.getZ()+";");
+			}
+			getdb().getConnection().commit();
+			getdb().getConnection().setAutoCommit(true);
+			
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+	}
+	
 	public static Database getdb()
 	{
 		boolean enable = config.getBoolean("database.mysql_enabled");

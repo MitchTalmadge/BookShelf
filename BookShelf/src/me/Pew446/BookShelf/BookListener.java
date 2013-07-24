@@ -764,7 +764,6 @@ public class BookListener implements Listener {
 						{
 							return;
 						}
-						System.out.println(j.getCurrentItem().getType());
 						if(plugin.getConfig().getBoolean("permissions.allow_maps") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.maps"))
 						{
 							if(j.getCurrentItem().getType() == Material.MAP)
@@ -883,6 +882,7 @@ public class BookListener implements Listener {
 								| j.getCurrentItem().getType() == Material.ENCHANTED_BOOK
 								| j.getCurrentItem().getType() == Material.BOOK_AND_QUILL
 								| j.getCurrentItem().getType() == Material.WRITTEN_BOOK
+								| j.getCurrentItem().getType() == Material.PAPER
 								| j.getCurrentItem().getType() == Material.RECORD_3
 								| j.getCurrentItem().getType() == Material.RECORD_4
 								| j.getCurrentItem().getType() == Material.RECORD_5
@@ -903,6 +903,7 @@ public class BookListener implements Listener {
 								| j.getCursor().getType() == Material.ENCHANTED_BOOK
 								| j.getCursor().getType() == Material.BOOK_AND_QUILL
 								| j.getCursor().getType() == Material.WRITTEN_BOOK
+								| j.getCursor().getType() == Material.PAPER
 								| j.getCursor().getType() == Material.RECORD_3
 								| j.getCursor().getType() == Material.RECORD_4
 								| j.getCursor().getType() == Material.RECORD_5

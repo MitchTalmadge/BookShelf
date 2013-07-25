@@ -66,6 +66,7 @@ public class BookShelf extends JavaPlugin{
 	/* TOWNY */
 	static Towny towny;
 	public boolean useTowny = false;
+	public static boolean LWCEnabled;
 	public static File townyConfigPath;
 	public static FileConfiguration townyConfig;
 	
@@ -425,6 +426,21 @@ public class BookShelf extends JavaPlugin{
 				saveDefaultConfig();
 				this.loadTownyConfig();
 				this.setupAutoToggle();
+				
+				if(config.getBoolean("lwc_support.enabled"))
+				{
+					if(LWCPluginHandler == null)
+					{
+						LWCEnabled = true;
+						LWCPluginHandler = new LWCPluginHandler(LWC);
+						LWCPluginHandler.init();
+					}
+					else if(LWCEnabled == false)
+						LWCEnabled = true;
+				}
+				else
+					if(LWCPluginHandler != null)
+						LWCEnabled = false;
 				
 				p.sendMessage("BookShelf config successfully reloaded.");
 			}

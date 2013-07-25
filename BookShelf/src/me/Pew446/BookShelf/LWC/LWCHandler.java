@@ -6,6 +6,8 @@ Date Created:
 
 package me.Pew446.BookShelf.LWC;
 
+import me.Pew446.BookShelf.BookShelf;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
@@ -22,7 +24,7 @@ public class LWCHandler extends LWC{
 	@Override
 	public boolean isProtectable(Block block)
 	{
-		if(block.getType() == Material.BOOKSHELF)
+		if(block.getType() == Material.BOOKSHELF && BookShelf.LWCEnabled)
 			return true;
 		else
 			return super.isProtectable(block.getType());	

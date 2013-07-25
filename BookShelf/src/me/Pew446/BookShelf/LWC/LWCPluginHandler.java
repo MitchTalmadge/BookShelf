@@ -10,7 +10,7 @@ import com.griefcraft.lwc.LWCPlugin;
 
 public class LWCPluginHandler extends LWCPlugin
 {
-	LWCHandler LWCHandler;
+	public LWCHandler LWCHandler;
 	private LWCPlugin plugin;
 
 	public LWCPluginHandler(LWCPlugin plugin)

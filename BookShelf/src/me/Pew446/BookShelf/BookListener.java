@@ -33,6 +33,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import me.Pew446.BookShelf.BookShelf;
@@ -53,7 +54,7 @@ public class BookListener implements Listener {
 	HashMap<Location, InventoryHolder> map2 = new HashMap<Location, InventoryHolder>();
 	HashMap<Player, Location> map3 = new HashMap<Player, Location>();
 	static ResultSet r;
-	@EventHandler(priority = EventPriority.LOWEST)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onClick(PlayerInteractEvent j)
 	{
 		Player p = j.getPlayer();
@@ -237,63 +238,7 @@ public class BookListener implements Listener {
 									ArrayList<String> pages = new ArrayList<String>();
 									for(int i=0;i<id.size();i++)
 									{
-										if(type.get(i) == Material.BOOK.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.BOOK, amt.get(i)));
-										}
-										else if(type.get(i) == Material.RECORD_3.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_3, amt.get(i)));
-										}
-										else if(type.get(i) == Material.RECORD_4.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_4, amt.get(i)));
-										}
-										else if(type.get(i) == Material.RECORD_5.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_5, amt.get(i)));
-										}
-										else if(type.get(i) == Material.RECORD_6.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_6, amt.get(i)));
-										}
-										else if(type.get(i) == Material.RECORD_7.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_7, amt.get(i)));
-										}
-										else if(type.get(i) == Material.RECORD_8.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_8, amt.get(i)));
-										}
-										else if(type.get(i) == Material.RECORD_9.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_9, amt.get(i)));
-										}
-										else if(type.get(i) == Material.RECORD_10.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_10, amt.get(i)));
-										}
-										else if(type.get(i) == Material.RECORD_11.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_11, amt.get(i)));
-										}
-										else if(type.get(i) == Material.RECORD_12.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.RECORD_12, amt.get(i)));
-										}
-										else if(type.get(i) == 2257)
-										{
-											inv.setItem(loca.get(i), new ItemStack(2257, amt.get(i)));
-										}
-										else if(type.get(i) == 2256)
-										{
-											inv.setItem(loca.get(i), new ItemStack(2256, amt.get(i)));
-										}
-										else if(type.get(i) == Material.PAPER.getId())
-										{
-											inv.setItem(loca.get(i), new ItemStack(Material.PAPER, amt.get(i)));
-										}
-										else if(type.get(i) == Material.MAP.getId())
+										if(type.get(i) == Material.MAP.getId())
 										{
 											r = BookShelf.getdb().query("SELECT * FROM maps WHERE id="+id.get(i)+";");
 											while(r.next())
@@ -316,7 +261,7 @@ public class BookListener implements Listener {
 											etype = Enchantment.getByName(enchant);
 											inv.setItem(loca.get(i), generateItemStack(2));
 										}
-										else
+										else if(type.get(i) == Material.WRITTEN_BOOK.getId() || type.get(i) == Material.BOOK_AND_QUILL.getId())
 										{
 											r = BookShelf.getdb().query("SELECT * FROM pages WHERE id="+id.get(i)+";");
 											while(r.next())
@@ -338,6 +283,10 @@ public class BookListener implements Listener {
 												inv.setItem(loca.get(i), generateItemStack(1));
 												pages.clear();
 											}
+										}
+										else if(BookShelf.allowedItems.contains(type.get(i)))
+										{
+											inv.setItem(loca.get(i), new ItemStack(type.get(i), amt.get(i)));
 										}
 									}
 									auth.clear();
@@ -459,6 +408,7 @@ public class BookListener implements Listener {
 		{
 			public void run() 
 			{
+				loading = true;
 				Location loc = getKey(map2, j.getInventory().getHolder());
 				map.remove(loc);
 				map2.remove(loc);
@@ -467,7 +417,6 @@ public class BookListener implements Listener {
 				int x = loc.getBlockX();
 				int y = loc.getBlockY();
 				int z = loc.getBlockZ();
-				loading = true;
 				try {
 					r = BookShelf.getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 					BookShelf.getdb().getConnection().setAutoCommit(false);
@@ -482,6 +431,10 @@ public class BookListener implements Listener {
 							{
 								if(cont[i].getType() == Material.BOOK_AND_QUILL || cont[i].getType() == Material.WRITTEN_BOOK)
 								{
+									BookMeta meta = (BookMeta) cont[i].getItemMeta();
+									
+									System.out.println(meta.getPageCount());
+									
 									Book(cont[i]);
 									String title = getTitle().replaceAll("'", "''");
 									String author = getAuthor().replaceAll("'", "''");
@@ -489,28 +442,13 @@ public class BookListener implements Listener {
 									BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+",'"+author+"','"+title+"',"+type+","+i+",1);");	
 									int id = getidxyz(x,y,z);
 									BookShelf.getdb().query("DELETE FROM pages WHERE id="+id+";");
-									for(int k=0;k<getPages().length;k++)
+									if(getPages() != null)
 									{
-										BookShelf.getdb().query("INSERT INTO pages (id, text) VALUES ("+id+",'"+getPages()[k].replaceAll("'", "''")+"');");
+										for(int k=0;k<getPages().length;k++)
+										{
+											BookShelf.getdb().query("INSERT INTO pages (id, text) VALUES ("+id+",'"+getPages()[k].replaceAll("'", "''")+"');");
+										}
 									}
-								}
-								else if(cont[i].getType() == Material.BOOK 
-										| cont[i].getType() == Material.RECORD_3 
-										| cont[i].getType() == Material.RECORD_4 
-										| cont[i].getType() == Material.RECORD_5 
-										| cont[i].getType() == Material.RECORD_6 
-										| cont[i].getType() == Material.RECORD_7 
-										| cont[i].getType() == Material.RECORD_8 
-										| cont[i].getType() == Material.RECORD_9 
-										| cont[i].getType() == Material.RECORD_10 
-										| cont[i].getType() == Material.RECORD_11 
-										| cont[i].getType() == Material.RECORD_12
-										| cont[i].getType().getId() == 2257
-										| cont[i].getType().getId() == 2256
-										| cont[i].getType() == Material.PAPER)
-								{
-									int type = cont[i].getTypeId(); 
-									BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
 								}
 								else if(cont[i].getType() == Material.ENCHANTED_BOOK)
 								{
@@ -535,6 +473,11 @@ public class BookListener implements Listener {
 									BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
 									int id = getidxyz(x,y,z);
 									BookShelf.getdb().query("INSERT INTO maps (id, durability) VALUES ("+id+",'"+dur+"');");
+								}
+								else if(BookShelf.allowedItems.contains(cont[i].getType().getId()))
+								{
+									int type = cont[i].getTypeId(); 
+									BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
 								}
 							}
 						}
@@ -628,77 +571,7 @@ public class BookListener implements Listener {
 						ItemStack drop = generateItemStack(3).clone();
 						loc.getWorld().dropItem(new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs), drop);
 					}
-					else if(type.get(i) == Material.BOOK.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.BOOK, amt.get(i)));
-					}
-					else if(type.get(i) == Material.RECORD_3.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.RECORD_3, amt.get(i)));
-					}
-					else if(type.get(i) == Material.RECORD_4.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.RECORD_4, amt.get(i)));
-					}
-					else if(type.get(i) == Material.RECORD_5.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.RECORD_5, amt.get(i)));
-					}
-					else if(type.get(i) == Material.RECORD_6.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.RECORD_6, amt.get(i)));
-					}
-					else if(type.get(i) == Material.RECORD_7.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.RECORD_7, amt.get(i)));
-					}
-					else if(type.get(i) == Material.RECORD_8.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.RECORD_8, amt.get(i)));
-					}
-					else if(type.get(i) == Material.RECORD_9.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.RECORD_9, amt.get(i)));
-					}
-					else if(type.get(i) == Material.RECORD_10.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.RECORD_10, amt.get(i)));
-					}
-					else if(type.get(i) == Material.RECORD_11.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.RECORD_11, amt.get(i)));
-					}
-					else if(type.get(i) == Material.RECORD_12.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.RECORD_12, amt.get(i)));
-					}
-					else if(type.get(i) == 2257) //Record
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(2257, amt.get(i)));
-					}
-					else if(type.get(i) == 2256) //Record
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(2256, amt.get(i)));
-					}
-					else if(type.get(i) == Material.PAPER.getId())
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(Material.PAPER, amt.get(i)));
-					}
-					else
+					else if(type.get(i) == Material.WRITTEN_BOOK.getId() || type.get(i) == Material.BOOK_AND_QUILL.getId())
 					{
 						r = BookShelf.getdb().query("SELECT * FROM pages WHERE id="+id.get(i)+";");
 						while(r.next())
@@ -706,8 +579,13 @@ public class BookListener implements Listener {
 							pages.add(r.getString("text"));
 						}
 						r.close();
-						String[] thepages = new String[pages.size()];
-						thepages = pages.toArray(thepages);
+						String[] thepages = null;
+						
+						if(pages.size() > 0)
+						{
+							thepages = new String[pages.size()];
+							thepages = pages.toArray(thepages);
+						}
 						if(type.get(i) == Material.WRITTEN_BOOK.getId())
 						{
 							Book(titl.get(i), auth.get(i), thepages);
@@ -735,6 +613,11 @@ public class BookListener implements Listener {
 						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
 						BookShelf.getdb().query("DELETE FROM pages WHERE id=" + id.get(i) + ";");
 					}
+					else if(BookShelf.allowedItems.contains(type.get(i)))
+					{
+						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
+						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(type.get(i), amt.get(i)));
+					}
 				}
 				Location loc = j.getBlock().getLocation();
 				BookShelf.getdb().query("DELETE FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
@@ -761,6 +644,11 @@ public class BookListener implements Listener {
 	@EventHandler
 	public void onInv(InventoryClickEvent j)
 	{
+		if(j.getInventory().getType() == InventoryType.CHEST
+				|| j.getInventory().getType() == InventoryType.ENDER_CHEST)
+		{
+			//if(BookShelf.config.getBoolean(path))
+		}
 		String name = null;
 		if(!map3.containsKey((Player)j.getWhoClicked()))
 			return;
@@ -936,45 +824,12 @@ public class BookListener implements Listener {
 								return;
 							}
 						}
-						if(j.getCurrentItem().getType() == Material.MAP
-								| j.getCurrentItem().getType() == Material.BOOK
-								| j.getCurrentItem().getType() == Material.ENCHANTED_BOOK
-								| j.getCurrentItem().getType() == Material.BOOK_AND_QUILL
-								| j.getCurrentItem().getType() == Material.WRITTEN_BOOK
-								| j.getCurrentItem().getType() == Material.PAPER
-								| j.getCurrentItem().getType() == Material.RECORD_3
-								| j.getCurrentItem().getType() == Material.RECORD_4
-								| j.getCurrentItem().getType() == Material.RECORD_5
-								| j.getCurrentItem().getType() == Material.RECORD_6
-								| j.getCurrentItem().getType() == Material.RECORD_7
-								| j.getCurrentItem().getType() == Material.RECORD_8
-								| j.getCurrentItem().getType() == Material.RECORD_9
-								| j.getCurrentItem().getType() == Material.RECORD_10
-								| j.getCurrentItem().getType() == Material.RECORD_11
-								| j.getCurrentItem().getType() == Material.RECORD_12
-								| j.getCurrentItem().getType().getId() == 2257
-								| j.getCurrentItem().getType().getId() == 2256)
+						if(BookShelf.allowedItems.contains(j.getCurrentItem().getType().getId()))
 						{
 							return;
 						}
-						if(j.getCursor().getType() == Material.MAP
-								| j.getCursor().getType() == Material.BOOK
-								| j.getCursor().getType() == Material.ENCHANTED_BOOK
-								| j.getCursor().getType() == Material.BOOK_AND_QUILL
-								| j.getCursor().getType() == Material.WRITTEN_BOOK
-								| j.getCursor().getType() == Material.PAPER
-								| j.getCursor().getType() == Material.RECORD_3
-								| j.getCursor().getType() == Material.RECORD_4
-								| j.getCursor().getType() == Material.RECORD_5
-								| j.getCursor().getType() == Material.RECORD_6
-								| j.getCursor().getType() == Material.RECORD_7
-								| j.getCursor().getType() == Material.RECORD_8
-								| j.getCursor().getType() == Material.RECORD_9
-								| j.getCursor().getType() == Material.RECORD_10
-								| j.getCursor().getType() == Material.RECORD_11
-								| j.getCursor().getType() == Material.RECORD_12
-								| j.getCursor().getType().getId() == 2257
-								| j.getCursor().getType().getId() == 2256)
+						
+						if(BookShelf.allowedItems.contains(j.getCursor().getType().getId()))
 						{
 							return;
 						}
@@ -1175,23 +1030,7 @@ public class BookListener implements Listener {
 		{
 			if(j.isCancelled())
 				return;
-			if(j.getItemDrop().getItemStack().getType() == Material.BOOK 
-					| j.getItemDrop().getItemStack().getType() == Material.WRITTEN_BOOK 
-					| j.getItemDrop().getItemStack().getType() == Material.BOOK_AND_QUILL 
-					| j.getItemDrop().getItemStack().getType() == Material.ENCHANTED_BOOK 
-					| j.getItemDrop().getItemStack().getType() == Material.MAP 
-					| j.getItemDrop().getItemStack().getType() == Material.PAPER
-					| j.getItemDrop().getItemStack().getType() == Material.RECORD_4
-					| j.getItemDrop().getItemStack().getType() == Material.RECORD_5
-					| j.getItemDrop().getItemStack().getType() == Material.RECORD_6
-					| j.getItemDrop().getItemStack().getType() == Material.RECORD_7
-					| j.getItemDrop().getItemStack().getType() == Material.RECORD_8
-					| j.getItemDrop().getItemStack().getType() == Material.RECORD_9
-					| j.getItemDrop().getItemStack().getType() == Material.RECORD_10
-					| j.getItemDrop().getItemStack().getType() == Material.RECORD_11
-					| j.getItemDrop().getItemStack().getType() == Material.RECORD_12
-					| j.getItemDrop().getItemStack().getTypeId() == 2257
-					| j.getItemDrop().getItemStack().getTypeId() == 2256)
+			if(BookShelf.allowedItems.contains(j.getItemDrop().getItemStack().getType().getId()))
 			{
 				Location loc = p.getTargetBlock(null, 10).getLocation();
 
@@ -1259,88 +1098,116 @@ public class BookListener implements Listener {
 		}
 		List<String> nPages;
 		nPages = bookData.getPages();
-		String[] sPages = new String[nPages.size()];
-		for(int i = 0;i<nPages.size();i++)
+		String[] sPages = null;
+		if(nPages.size() > 0)
 		{
-			sPages[i] = nPages.get(i).toString();
+			sPages = new String[nPages.size()];
+			for(int i = 0;i<nPages.size();i++)
+			{
+				sPages[i] = nPages.get(i).toString();
+			}
+		}
+		else
+		{
+			sPages = new String[1];
+			sPages[0] = "";
 		}
 
 		this.pages = sPages;
 	}
-	void Book(String title, String author, String[] pages) {
+	
+	void Book(String title, String author, String[] pages) 
+	{
 		this.title = title;
 		this.author = author;
 		this.pages = pages;
 	}
+	
 	public String getAuthor()
 	{
 		return author;
 	}
+	
 	public void setAuthor(String sAuthor)
 	{
 		author = sAuthor;
 	}
+	
 	public String getTitle()
 	{
 		return title;
 	}
+	
 	public String[] getPages()
 	{
 		return pages;
 	}
-	public ItemStack generateItemStack(int type){
-		ItemStack newbooka = new ItemStack(Material.WRITTEN_BOOK);
-		ItemStack newbook1a = new ItemStack(Material.BOOK_AND_QUILL);
-		ItemStack newbook2a = new ItemStack(Material.ENCHANTED_BOOK);
-		ItemStack newmapa = new ItemStack(Material.MAP);
-
-		BookMeta newbook = (BookMeta)newbooka.getItemMeta();
-		BookMeta newbook1 = (BookMeta)newbook1a.getItemMeta();
-		EnchantmentStorageMeta newbook2 = (EnchantmentStorageMeta)newbook2a.getItemMeta();
-
-		if(type == 3)
+	
+	public ItemStack generateItemStack(int type)
+	{
+		switch(type)
 		{
-			newmapa.setDurability(mapdur);
-			return newmapa;
-		}
-		else if(type == 2)
-		{
-			newbook2.addStoredEnchant(etype, elvl, false);
-			newbook2a.setItemMeta(newbook2);
-			return newbook2a;
-		}
-		else if(type == 1)
-		{
-			newbook1.setAuthor(author);
-			newbook1.setTitle(title);
+		case 0:
+			ItemStack written_book = new ItemStack(Material.WRITTEN_BOOK);
+			BookMeta new_written_book = (BookMeta)written_book.getItemMeta();
+			
+			new_written_book.setAuthor(author);
+			new_written_book.setTitle(title);
+			new_written_book.setDisplayName(title);
+			if(pages != null)
+			{
+				for(int i = 0;i<pages.length;i++)
+				{  
+					new_written_book.addPage(pages[i]);
+				}
+			}
+			else
+			{
+				new_written_book.addPage("");
+			}
+			written_book.setItemMeta(new_written_book);
+			return written_book;
+		case 1:
+			ItemStack baq = new ItemStack(Material.BOOK_AND_QUILL);
+			BookMeta newbaq = (BookMeta)baq.getItemMeta();
+			
+			newbaq.setAuthor(author);
+			newbaq.setTitle(title);
+			
 			if(!title.equals("null"))
 			{
-				newbook1.setDisplayName(title);
+				newbaq.setDisplayName(title);
 			}
-			for(int i = 0;i<pages.length;i++)
-			{  
-				newbook1.addPage(pages[i]);
+			if(pages != null)
+			{
+				for(int i = 0;i<pages.length;i++)
+				{  
+					newbaq.addPage(pages[i]);
+				}
 			}
-			newbook1a.setItemMeta(newbook1);
-			return newbook1a;
-		}
-		else if(type == 0)
-		{
+			else
+			{
+				newbaq.addPage("");
+			}
+			
+			System.out.println(newbaq.getPageCount());
+			
+			baq.setItemMeta(newbaq);
+			return baq;
+		case 2:
+			ItemStack enchanted_book = new ItemStack(Material.ENCHANTED_BOOK);
+			EnchantmentStorageMeta new_enchanted_book = (EnchantmentStorageMeta)enchanted_book.getItemMeta();
+			
+			new_enchanted_book.addStoredEnchant(etype, elvl, false);
+			enchanted_book.setItemMeta(new_enchanted_book);
+			return enchanted_book;
+		case 3:
+			ItemStack map = new ItemStack(Material.MAP);
 
-			newbook.setAuthor(author);
-			newbook.setTitle(title);
-			newbook.setDisplayName(title);
-			for(int i = 0;i<pages.length;i++)
-			{  
-				newbook.addPage(pages[i]);
-			}
-			newbooka.setItemMeta(newbook);
-			return newbooka;
+			map.setDurability(mapdur);
+			return map;
 		}
-		else
-		{
-			return null;
-		}
+		return null;
 	}
-
+	
 }

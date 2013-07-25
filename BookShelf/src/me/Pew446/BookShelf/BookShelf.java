@@ -4,6 +4,7 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -46,6 +47,26 @@ public class BookShelf extends JavaPlugin{
 	public static BookShelf plugin;
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public final BookListener BookListener = new BookListener(this);
+	
+	public static ArrayList<Integer> allowedItems = new ArrayList<Integer>(Arrays.asList(
+			Material.BOOK.getId(), 
+			Material.BOOK_AND_QUILL.getId(), 
+			Material.WRITTEN_BOOK.getId(),
+			Material.ENCHANTED_BOOK.getId(),
+			Material.PAPER.getId(),
+			Material.MAP.getId(),
+			Material.RECORD_3.getId(),
+			Material.RECORD_4.getId(),
+			Material.RECORD_5.getId(),
+			Material.RECORD_6.getId(),
+			Material.RECORD_7.getId(),
+			Material.RECORD_8.getId(),
+			Material.RECORD_9.getId(),
+			Material.RECORD_10.getId(),
+			Material.RECORD_11.getId(),
+			Material.RECORD_12.getId(),
+			2256,
+			2257));
 	
 	/* ECONOMY */
 	static Economy economy;

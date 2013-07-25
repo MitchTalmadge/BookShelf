@@ -13,6 +13,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Logger;
 
+import me.Pew446.BookShelf.BookShelf;
+
 public abstract class Database {
 	
 	protected Logger logger;
@@ -21,6 +23,8 @@ public abstract class Database {
 	protected String prefix;
 	protected String dbprefix;
 	private int lastUpdate;
+	private Object syncObject = new Object();
+	private boolean shouldWait = false;
 	
 	/**
 	 * Used for child class super
@@ -95,9 +99,11 @@ public abstract class Database {
 	protected abstract void queryValidation(StatementsList statement) throws SQLException;
 	
 	public final ResultSet query(String query) throws SQLException {
+		doWait();
 		queryValidation(this.getStatement(query));
 		Statement statement = this.getConnection().createStatement();
 	    if (statement.execute(query)) {
+	    	this.shouldWait = true;
 	    	return statement.getResultSet();
 	    } else {
 	    	int uc = statement.getUpdateCount();
@@ -105,4 +111,39 @@ public abstract class Database {
 	    	return this.getConnection().createStatement().executeQuery("SELECT " + uc);
 	    }
 	}
+	
+	public Object getSynchronized()
+	{
+		return this.syncObject;
+	}
+	
+	public boolean shouldWait()
+	{
+		return this.shouldWait;
+	}
+	
+	public void doWait()
+	{
+		if(shouldWait())
+		{
+			try {
+				synchronized (getSynchronized())
+				{
+					getSynchronized().wait();
+				}
+			} catch (InterruptedException e) {
+				return;
+			}
+		}
+		else
+		{
+			return;
+		}
+	}
+
+
+	public void setShouldWait(boolean b) {
+		this.shouldWait = b;
+	}
+	
 }

@@ -101,7 +101,7 @@ public class BookShelf extends JavaPlugin{
 	public void onDisable() {
 		try {
 			if(me.Pew446.BookShelf.BookListener.r != null)
-				me.Pew446.BookShelf.BookListener.r.close();
+				close(me.Pew446.BookShelf.BookListener.r);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -149,6 +149,16 @@ public class BookShelf extends JavaPlugin{
 		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info("["+pdfFile.getName() + "] Enabled BookShelf V" + pdfFile.getVersion());
 
+	}
+	
+	public static void close(ResultSet r) throws SQLException
+	{
+		r.close();
+		getdb().setShouldWait(false);
+		synchronized (getdb().getSynchronized())
+		{
+			getdb().getSynchronized().notify();
+		}
 	}
 
 	private void setupAutoToggle() {
@@ -328,27 +338,27 @@ public class BookShelf extends JavaPlugin{
 						}
 					}
 					try {
-						ResultSet re = getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-						if(!re.next())
+						ResultSet r = getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						if(!r.next())
 						{
-							re.close();
+							close(r);
 							BookShelf.getdb().query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
 						}
 						else
 						{
-							re.close();
+							close(r);
 						}
-						re = getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-						re.next();
-						if(re.getInt("bool") == 1)
+						r = getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						r.next();
+						if(r.getInt("bool") == 1)
 						{
-							re.close();
+							close(r);
 							p.sendMessage("The bookshelf you are looking at is now limited.");
 							getdb().query("UPDATE copy SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 						else
 						{
-							re.close();
+							close(r);
 							p.sendMessage("The bookshelf you are looking at is now unlimited.");
 							getdb().query("UPDATE copy SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
@@ -513,30 +523,30 @@ public class BookShelf extends JavaPlugin{
 						}
 					}
 					try {
-						ResultSet re = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-						if(!re.next())
+						ResultSet r = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						if(!r.next())
 						{
-							re.close();
+							close(r);
 							getdb().query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0, "+config.getInt("economy.default_price")+");");
 						}
 						else
 						{
-							re.close();
+							close(r);
 						}
-						re = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-						re.next();
-						if(re.getInt("bool") == 1 & !(args.length >= 1))
+						r = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						r.next();
+						if(r.getInt("bool") == 1 & !(args.length >= 1))
 						{
-							re.close();
-							re = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-							if(!re.next())
+							close(r);
+							r = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							if(!r.next())
 							{
-								re.close();
+								close(r);
 								getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shelf_name")+"');");
 							}
 							else
 							{
-								re.close();
+								close(r);
 								getdb().query("UPDATE names SET name='"+config.getString("default_shelf_name")+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							}
 							p.sendMessage("The bookshelf you are looking at is no longer a shop.");
@@ -544,16 +554,16 @@ public class BookShelf extends JavaPlugin{
 						}
 						else
 						{
-							re.close();
-							re = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-							if(!re.next())
+							close(r);
+							r = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							if(!r.next())
 							{
-								re.close();
+								close(r);
 								getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+config.getString("default_shop_name").replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+"');");
 							}
 							else
 							{
-								re.close();
+								close(r);
 								getdb().query("UPDATE names SET name='"+config.getString("default_shop_name").replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							}
 							p.sendMessage("The bookshelf you are looking at is now a shop selling at "+price+" "+economy.currencyNamePlural()+" each.");
@@ -595,10 +605,10 @@ public class BookShelf extends JavaPlugin{
 					int price = 0;
 					try
 					{
-						ResultSet re = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-						re.next();
-						price = re.getInt("price");
-						re.close();
+						ResultSet r = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						r.next();
+						price = r.getInt("price");
+						close(r);
 					} catch (SQLException e)
 					{
 						e.printStackTrace();
@@ -640,16 +650,16 @@ public class BookShelf extends JavaPlugin{
 						}
 					}
 					try {
-						ResultSet re = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-						if(!re.next())
+						ResultSet r = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						if(!r.next())
 						{
-							re.close();
+							close(r);
 							getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+name+"');");
 							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
 						}
 						else
 						{
-							re.close();
+							close(r);
 							getdb().query("UPDATE names SET name='"+name+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
 						}
@@ -690,24 +700,24 @@ public class BookShelf extends JavaPlugin{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
 					try {
-						ResultSet re = getdb().query("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-						if(!re.next())
+						ResultSet r = getdb().query("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						if(!r.next())
 						{
 							getdb().query("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 1);");
 							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
-							re.close();
+							close(r);
 						}
 						else
 						{
-							if(re.getInt("bool") == 1)
+							if(r.getInt("bool") == 1)
 							{
-								re.close();
+								close(r);
 								p.sendMessage("The bookshelf you are looking at is no longer a display.");
 								getdb().query("UPDATE display SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							}
 							else
 							{
-								re.close();
+								close(r);
 								p.sendMessage("The bookshelf you are looking at is now a display.");
 								getdb().query("UPDATE display SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							}
@@ -733,8 +743,8 @@ public class BookShelf extends JavaPlugin{
 	public static int toggleBookShelf(Location loc) {
 		try 
 		{
-			ResultSet re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-			if(!re.next())
+			ResultSet r = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			if(!r.next())
 			{
 				int def = 1;
 				if(config.getBoolean("default_openable"))
@@ -745,24 +755,24 @@ public class BookShelf extends JavaPlugin{
 				{
 					def = 0;
 				}
-				re.close();
+				close(r);
 				getdb().query("INSERT INTO enable (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", "+def+");");
 			}
 			else
 			{
-				re.close();
+				close(r);
 			}
-			re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-			re.next();
-			if(re.getInt("bool") == 1)
+			r = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			r.next();
+			if(r.getInt("bool") == 1)
 			{
-				re.close();
+				close(r);
 				getdb().query("UPDATE enable SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 				return 0;
 			}
 			else
 			{
-				re.close();
+				close(r);
 				getdb().query("UPDATE enable SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 				return 1;
 			}
@@ -786,27 +796,27 @@ public class BookShelf extends JavaPlugin{
 				name = name.substring(0, name.length()-1);
 		}
 		
-		ResultSet re;
+		ResultSet r;
 		try 
 		{
-			re = getdb().query("SELECT * FROM names WHERE name='"+name+"';");
+			r = getdb().query("SELECT * FROM names WHERE name='"+name+"';");
 			List<Vector> vecs = new ArrayList<Vector>();
 			HashMap<Vector, Boolean> selmap = new HashMap<Vector, Boolean>();
 			
-			while(re.next())
+			while(r.next())
 			{
-				Vector loc = new Vector(re.getInt("x"), re.getInt("y"), re.getInt("z"));
+				Vector loc = new Vector(r.getInt("x"), r.getInt("y"), r.getInt("z"));
 				vecs.add(loc);
 			}
-			re.close();
+			close(r);
 			for(Vector loc : vecs)
 			{
-				re = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-				if(re.next())
+				r = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+				if(r.next())
 				{
-					selmap.put(loc, re.getInt("bool") == 1 ? true : false);
+					selmap.put(loc, r.getInt("bool") == 1 ? true : false);
 				}
-				re.close();
+				close(r);
 			}
 			getdb().getConnection().setAutoCommit(false);
 			for(Vector vec : selmap.keySet())

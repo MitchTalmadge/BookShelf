@@ -54,6 +54,12 @@ public class BookListener implements Listener {
 	HashMap<Location, InventoryHolder> map2 = new HashMap<Location, InventoryHolder>();
 	HashMap<Player, Location> map3 = new HashMap<Player, Location>();
 	static ResultSet r;
+		
+	private void close(ResultSet r) throws SQLException
+	{
+		BookShelf.close(r);
+	}
+	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onClick(PlayerInteractEvent j)
 	{
@@ -86,21 +92,21 @@ public class BookListener implements Listener {
 							r = BookShelf.getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							if(!r.next())
 							{
-								r.close();
+								close(r);
 								BookShelf.getdb().query("INSERT INTO copy (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0);");
 							}
 							else
 							{
-								r.close();
+								close(r);
 							}
 							r = BookShelf.getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							if(!r.next())
 							{
-								r.close();
+								close(r);
 								r = BookShelf.getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 								if(!r.next())
 								{
-									r.close();
+									close(r);
 									BookShelf.getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shelf_name")+"');");
 									BookShelf.getdb().query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0,10);");
 								}
@@ -108,53 +114,53 @@ public class BookListener implements Listener {
 								{
 									if(r.getBoolean("bool") && BookShelf.economy != null)
 									{
-										r.close();
+										close(r);
 										BookShelf.getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shop_name").replace("%$", plugin.getConfig().getInt("economy.default_price")+" "+BookShelf.economy.currencyNamePlural())+"');");
 									}
 									else
 									{
-										r.close();
+										close(r);
 										BookShelf.getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shop_name")+"');");
 									}
 								}
 							}
 							else
 							{
-								r.close();
+								close(r);
 							}
 							r = BookShelf.getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							if(!r.next())
 							{
-								r.close();
+								close(r);
 								BookShelf.getdb().query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0,"+plugin.getConfig().getInt("economy.default_price")+");");
 							}
 							else
 							{
-								r.close();
+								close(r);
 							}
 							//							r = BookShelf.getdb().query("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							//							if(!r.next())
 							//							{
-							//								r.close();
+							//								close(r);
 							//								BookShelf.getdb().query("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0);");
 							//							}
 							//							else
 							//							{
 							//								if(r.getInt("bool") == 1)
 							//								{
-							//									r.close();
+							//									close(r);
 							//									j.getPlayer().setItemInHand(new ItemStack(Material.WATER_BUCKET, 1));
 							//									j.useItemInHand();
 							//									return;	
 							//								}
 							//								else
-							//									r.close();
+							//									close(r);
 							//							}
 							r = BookShelf.getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							if(!r.next())
 							{
 								int def = 1;
-								r.close();
+								close(r);
 								if(plugin.getConfig().getBoolean("default_openable"))
 								{
 									def = 1;
@@ -170,7 +176,7 @@ public class BookListener implements Listener {
 							else
 							{
 								boolean open = r.getBoolean("bool");
-								r.close();
+								close(r);
 								if(!open)
 								{
 									return;
@@ -187,7 +193,7 @@ public class BookListener implements Listener {
 								r = BookShelf.getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 								r.next();
 								name = r.getString("name");
-								r.close();
+								close(r);
 							} catch (SQLException e1)
 							{
 								e1.printStackTrace();
@@ -207,17 +213,17 @@ public class BookListener implements Listener {
 									map.put(cl.getLocation(), inv);
 									map2.put(cl.getLocation(), inv.getHolder());
 								}
-								r.close();
+								close(r);
 								r = BookShelf.getdb().query("SELECT COUNT(*) FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
 								if(!r.next())
 								{
-									r.close();
+									close(r);
 									p.openInventory(inv);
 									return;
 								}
 								else
 								{
-									r.close();
+									close(r);
 									r = BookShelf.getdb().query("SELECT * FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
 									ArrayList<String> auth = new ArrayList<String>();
 									ArrayList<String> titl = new ArrayList<String>();
@@ -234,7 +240,7 @@ public class BookListener implements Listener {
 										loca.add(r.getInt("loc"));
 										amt.add(r.getInt("amt"));
 									}
-									r.close();
+									close(r);
 									ArrayList<String> pages = new ArrayList<String>();
 									for(int i=0;i<id.size();i++)
 									{
@@ -245,7 +251,7 @@ public class BookListener implements Listener {
 											{
 												mapdur = r.getShort("durability");
 											}
-											r.close();
+											close(r);
 											inv.setItem(loca.get(i), generateItemStack(3));
 										}
 										else if(type.get(i) == Material.ENCHANTED_BOOK.getId())
@@ -257,7 +263,7 @@ public class BookListener implements Listener {
 												enchant = r.getString("type");
 												elvl = r.getInt("level");
 											}
-											r.close();
+											close(r);
 											etype = Enchantment.getByName(enchant);
 											inv.setItem(loca.get(i), generateItemStack(2));
 										}
@@ -268,7 +274,7 @@ public class BookListener implements Listener {
 											{
 												pages.add(r.getString("text"));
 											}
-											r.close();
+											close(r);
 											String[] thepages = new String[pages.size()];
 											thepages = pages.toArray(thepages);
 											if(type.get(i) == Material.WRITTEN_BOOK.getId())
@@ -423,7 +429,7 @@ public class BookListener implements Listener {
 					r.next();
 					if(r.getInt("bool") == 0)
 					{
-						r.close();
+						close(r);
 						BookShelf.getdb().query("DELETE FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
 						for(int i=0;i<cont.length;i++)
 						{
@@ -487,7 +493,7 @@ public class BookListener implements Listener {
 					else
 					{
 						BookShelf.getdb().getConnection().setAutoCommit(true);
-						r.close();
+						close(r);
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -529,7 +535,7 @@ public class BookListener implements Listener {
 					type.add(r.getInt("type"));
 					amt.add(r.getInt("amt"));
 				}
-				r.close();
+				close(r);
 				ArrayList<String> pages = new ArrayList<String>();
 				String enchant = "";
 				BookShelf.getdb().getConnection().setAutoCommit(false);
@@ -543,7 +549,7 @@ public class BookListener implements Listener {
 							enchant = r.getString("type");
 							elvl = r.getInt("level");
 						}
-						r.close();
+						close(r);
 						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
 						etype = Enchantment.getByName(enchant);
 						Location loc = j.getBlock().getLocation();
@@ -561,7 +567,7 @@ public class BookListener implements Listener {
 						{
 							mapdur = r.getShort("durability");
 						}
-						r.close();
+						close(r);
 						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
 						Location loc = j.getBlock().getLocation();
 						Random gen = new Random();
@@ -578,7 +584,7 @@ public class BookListener implements Listener {
 						{
 							pages.add(r.getString("text"));
 						}
-						r.close();
+						close(r);
 						String[] thepages = null;
 						
 						if(pages.size() > 0)
@@ -644,8 +650,8 @@ public class BookListener implements Listener {
 	@EventHandler
 	public void onInv(InventoryClickEvent j)
 	{
-		if(j.getInventory().getType() == InventoryType.CHEST
-				|| j.getInventory().getType() == InventoryType.ENDER_CHEST)
+		if((j.getInventory().getType() == InventoryType.CHEST
+				|| j.getInventory().getType() == InventoryType.ENDER_CHEST) && !map3.containsKey((Player)j.getWhoClicked()))
 		{
 			String prefix = "shelf_only_items.";
 			Player p = Bukkit.getPlayer(j.getWhoClicked().getName());
@@ -723,10 +729,10 @@ public class BookListener implements Listener {
 			r = BookShelf.getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 			r.next();
 			name = r.getString("name");
-			r.close();
+			close(r);
 		} catch (SQLException e1)
 		{
-			return;
+			e1.printStackTrace();
 		}
 		if(j.getInventory().getTitle().equals(name))
 		{	
@@ -736,7 +742,7 @@ public class BookListener implements Listener {
 				if(r.getInt("bool") == 1 && BookShelf.economy != null)
 				{
 					int price = r.getInt("price");
-					r.close();
+					close(r);
 					int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
 					if(j.getRawSlot() <= slotamt)
 					{
@@ -766,12 +772,12 @@ public class BookListener implements Listener {
 				}
 				else
 				{
-					r.close();
+					close(r);
 					r = BookShelf.getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 					r.next();
 					if(r.getInt("bool") == 0)
 					{
-						r.close();
+						close(r);
 						if(j.getCurrentItem() == null)
 						{
 							return;
@@ -840,7 +846,7 @@ public class BookListener implements Listener {
 					}
 					else
 					{
-						r.close();
+						close(r);
 						int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
 						if(j.getRawSlot() <= slotamt)
 						{
@@ -1044,7 +1050,7 @@ public class BookListener implements Listener {
 					{
 						j.setCancelled(true);
 					}
-					r.close();
+					close(r);
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
@@ -1060,7 +1066,7 @@ public class BookListener implements Listener {
 			r = BookShelf.getdb().query("SELECT * FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + " ORDER BY id DESC LIMIT 1;");
 			r.next();
 			last = r.getInt("id");
-			r.close();
+			close(r);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

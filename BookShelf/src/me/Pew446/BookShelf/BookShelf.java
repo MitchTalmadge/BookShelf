@@ -48,13 +48,7 @@ public class BookShelf extends JavaPlugin{
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public final BookListener BookListener = new BookListener(this);
 	
-	public static ArrayList<Integer> allowedItems = new ArrayList<Integer>(Arrays.asList(
-			Material.BOOK.getId(), 
-			Material.BOOK_AND_QUILL.getId(), 
-			Material.WRITTEN_BOOK.getId(),
-			Material.ENCHANTED_BOOK.getId(),
-			Material.PAPER.getId(),
-			Material.MAP.getId(),
+	public static ArrayList<Integer> records = new ArrayList<Integer>(Arrays.asList(
 			Material.RECORD_3.getId(),
 			Material.RECORD_4.getId(),
 			Material.RECORD_5.getId(),
@@ -67,6 +61,13 @@ public class BookShelf extends JavaPlugin{
 			Material.RECORD_12.getId(),
 			2256,
 			2257));
+	public static ArrayList<Integer> allowedItems = new ArrayList<Integer>(Arrays.asList(
+			Material.BOOK.getId(), 
+			Material.BOOK_AND_QUILL.getId(), 
+			Material.WRITTEN_BOOK.getId(),
+			Material.ENCHANTED_BOOK.getId(),
+			Material.PAPER.getId(),
+			Material.MAP.getId()));
 	
 	/* ECONOMY */
 	static Economy economy;
@@ -111,6 +112,7 @@ public class BookShelf extends JavaPlugin{
 	}
 	@Override
 	public void onEnable() {
+		allowedItems.addAll(records);
 		config = getConfig();
 		saveDefaultConfig();
 		sqlConnection();

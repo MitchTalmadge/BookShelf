@@ -11,6 +11,15 @@ default_shop_name: "BookShop - %$ each"
 default_openable: true
 top-bottom_access: false
 
+shelf_only_items:
+    book: false
+    book_and_quill: false
+    signed: false
+    maps: false
+    enchanted_book: false
+    records: false
+    paper: false
+
 economy:
     default_price: 10
 
@@ -39,4 +48,7 @@ villager_trading:
     allow_paper: true
  
 towny_support:
-    enabled: true     
+    enabled: false     
+    
+lwc_support:
+    enabled: false

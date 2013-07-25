@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import me.Pew446.BookShelf.BookListener;
+import me.Pew446.BookShelf.LWC.LWCPluginHandler;
+import me.Pew446.BookShelf.Towny.TownyCommands;
+import me.Pew446.BookShelf.Towny.TownyHandler;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -49,6 +52,7 @@ public class BookShelf extends JavaPlugin{
 	
 	/* LWC */
 	static LWCPlugin LWC;
+	static LWCPluginHandler LWCPluginHandler;
 	
 	/* AUTO TOGGLE (For shaythegoon) */
 	boolean autoToggle = false;
@@ -61,9 +65,9 @@ public class BookShelf extends JavaPlugin{
 	
 	/* TOWNY */
 	static Towny towny;
-	private boolean useTowny = false;
+	public boolean useTowny = false;
 	public static File townyConfigPath;
-	static FileConfiguration townyConfig;
+	public static FileConfiguration townyConfig;
 	
 	/* DATABASE */
 	static MySQL mysql;
@@ -99,6 +103,11 @@ public class BookShelf extends JavaPlugin{
 		if(setupLWC())
 		{
 			this.logger.info("[BookShelf] LWC found and hooked.");
+			if(config.getBoolean("lwc_support.enabled"))
+			{
+				LWCPluginHandler = new LWCPluginHandler(LWC);
+				LWCPluginHandler.init();
+			}
 		}
 
 		townyConfigPath = new File(getDataFolder(), "towny.yml");

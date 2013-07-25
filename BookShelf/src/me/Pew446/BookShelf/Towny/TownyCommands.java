@@ -4,10 +4,12 @@ Date Created:
 	Jul 24, 2013
  */
 
-package me.Pew446.BookShelf;
+package me.Pew446.BookShelf.Towny;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import me.Pew446.BookShelf.BookShelf;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

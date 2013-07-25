@@ -1,8 +1,10 @@
-package me.Pew446.BookShelf;
+package me.Pew446.BookShelf.Towny;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import me.Pew446.BookShelf.BookShelf;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

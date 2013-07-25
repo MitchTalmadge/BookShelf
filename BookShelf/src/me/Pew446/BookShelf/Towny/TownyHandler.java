@@ -51,10 +51,10 @@ public class TownyHandler {
 		}
 	}
 
-	public static boolean checkPlotOwnedByResident(TownBlock p, Resident r)
+	public static boolean checkPlotOwnedByResident(TownBlock b, Resident r)
 	{
 		try {
-			if(p.getResident() == r)
+			if(b.getResident() == r)
 				return true;
 			else
 				return false;
@@ -65,6 +65,7 @@ public class TownyHandler {
 
 	public static boolean checkCanUseCommand(Block b, Resident r, int type)
 	{
+		Player p = Bukkit.getPlayer(r.getName());
 		String typeString = null;
 		switch(type)
 		{
@@ -79,9 +80,15 @@ public class TownyHandler {
 		}
 		TownBlock plot = TownyUniverse.getTownBlock(b.getLocation());
 		if(plot == null)
-			return false;
+			if(!p.isOp())
+				return false;
+			else
+				return true;
 		if(!plot.hasTown())
-			return false;
+			if(!p.isOp())
+				return false;
+			else
+				return true;
 		try {
 			Town town = plot.getTown();
 			if(hasPrivileges(r, town))
@@ -180,14 +187,14 @@ public class TownyHandler {
 
 	public static boolean hasPrivileges(Resident r, Town t)
 	{
+		Player p = Bukkit.getPlayer(r.getName());
 		if(t.hasMayor())
 			if(t.getMayor() == r)
 				return true;
 		if(t.hasAssistant(r))
 			return true;
-		if(Bukkit.getPlayer(r.getName()) != null)
-			if(Bukkit.getPlayer(r.getName()).isOp())
-				return true;
+		if(p.isOp())
+			return true;
 		return false;
 	}
 

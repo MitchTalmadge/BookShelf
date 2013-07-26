@@ -49,6 +49,7 @@ public class BookShelf extends JavaPlugin{
 	public static BookShelf plugin;
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public static BookListener BookListener;
+	public static final int currentDatabaseVersion = 1;
 
 	public static ArrayList<Integer> records = new ArrayList<Integer>(Arrays.asList(
 			Material.RECORD_3.getId(),
@@ -242,6 +243,11 @@ public class BookShelf extends JavaPlugin{
 		return this.useTowny;
 	}
 
+	public boolean usingMySQL()
+	{
+		return getdb() instanceof MySQL;
+	}
+	
 	public void sqlConnection() 
 	{
 		boolean enable = config.getBoolean("database.mysql_enabled");
@@ -283,6 +289,11 @@ public class BookShelf extends JavaPlugin{
 	{
 		try {
 			updateDb();
+			ResultSet r = getdb().query("SELECT * FROM version");
+			r.next();
+			int version = r.getInt("version");
+			close(r);
+			logger.info("[BookShelf] Current Database Version: "+version);
 			boolean enable = config.getBoolean("database.mysql_enabled");
 			if(enable) //MYSQL
 			{
@@ -319,67 +330,93 @@ public class BookShelf extends JavaPlugin{
 	private void updateDb() {
 
 		sqlDoesVersionExist();
-		
+
 		try {
 			ResultSet r = getdb().query("SELECT * FROM version");
 			r.next();
 			int version = r.getInt("version");
 			close(r);
-			
+
 			switch(version)
 			{
+			case 0:
+				if(usingMySQL())
+					getdb().query("ALTER TABLE items ADD lore VARCHAR(32) AFTER author;");
+				else
+					getdb().query("ALTER TABLE items ADD lore STRING;");
+				getdb().query("UPDATE version SET version=1");
+				updateDb();
+				break;
 			case 1:
 				break;
 			}
-			
-			logger.info("[BookShelf] Database Version: "+version);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void sqlDoesVersionExist()
 	{
-		if(getdb() instanceof MySQL)
+		if(usingMySQL())
 		{
 			try {
-				ResultSet r = getdb().query("SHOW TABLES LIKE 'version';");
+				ResultSet r = getdb().query("SHOW TABLES LIKE 'items';");
 				if(!r.next())
 				{
-					close(r);
+					close(r); //Looks like we are making a new database.
 					getdb().query("CREATE TABLE IF NOT EXISTS version (version INT);");
-					getdb().query("INSERT INTO version (version) VALUES(1);");
-					getdb().query("ALTER TABLE items ADD lore VARCHAR(32) AFTER author;");
+					getdb().query("INSERT INTO version (version) VALUES("+currentDatabaseVersion+");");
 				}
 				else
-				{
+				{ //We aren't making a new database, but version doesn't exist.... Let's add it.
 					close(r);
+					r = getdb().query("SHOW TABLES LIKE 'version';");
+					if(!r.next())
+					{
+						close(r);
+						getdb().query("CREATE TABLE IF NOT EXISTS version (version INT);");
+						getdb().query("INSERT INTO version (version) VALUES(0);");
+					}
+					else
+					{
+						close(r);
+					}
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
-		else if(getdb() instanceof SQLite)
+		else
 		{
 			try {
-				ResultSet r = getdb().query("SELECT name FROM sqlite_master WHERE type='table' AND name='version';");
+				ResultSet r = getdb().query("SELECT name FROM sqlite_master WHERE type='table' AND name='items';");
 				if(!r.next())
 				{
-					close(r);
+					close(r); //Looks like we are making a new database.
 					getdb().query("CREATE TABLE IF NOT EXISTS version (version INT);");
-					getdb().query("INSERT INTO version (version) VALUES(1);");
-					getdb().query("ALTER TABLE items ADD lore STRING;");
+					getdb().query("INSERT INTO version (version) VALUES("+currentDatabaseVersion+");");
 				}
 				else
-				{
+				{ //We aren't making a new database, but version doesn't exist.... Let's add it.
 					close(r);
+					r = getdb().query("SELECT name FROM sqlite_master WHERE type='table' AND name='version';");
+					if(!r.next())
+					{
+						close(r);
+						getdb().query("CREATE TABLE IF NOT EXISTS version (version INT);");
+						getdb().query("INSERT INTO version (version) VALUES(0);");
+					}
+					else
+					{
+						close(r);
+					}
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
 	}
-	
+
 	public boolean isConsole(CommandSender sender)
 	{
 		return sender instanceof ConsoleCommandSender;

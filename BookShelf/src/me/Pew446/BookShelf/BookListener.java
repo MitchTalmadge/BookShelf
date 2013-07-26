@@ -506,22 +506,23 @@ public class BookListener implements Listener {
 	@EventHandler
 	public void onBreak(BlockBreakEvent j)
 	{
-		if(map.containsKey(j.getBlock().getLocation()))
+		if(j.isCancelled())
+			return;
+		breakShelf(j.getBlock().getLocation(), true);
+	}
+	
+	public void breakShelf(Location loc, boolean dropItems) {
+		if(map.containsKey(loc))
 		{
-			Inventory inv = map.get(j.getBlock().getLocation());
+			Inventory inv = map.get(loc);
 			List<HumanEntity> viewers = inv.getViewers();
 			for(int i = 0;i<viewers.size();i++)
 			{
 				viewers.get(i).closeInventory();
 			}
 		}
-		if(j.getBlock().getType() == Material.BOOKSHELF)
-		{
-			if(j.isCancelled())
-				return;
-
 			try {
-				r = BookShelf.getdb().query("SELECT * FROM items WHERE x=" + j.getBlock().getX() + " AND y=" + j.getBlock().getY() + " AND z=" + j.getBlock().getZ() + ";");
+				r = BookShelf.getdb().query("SELECT * FROM items WHERE x=" + loc.getBlockX() + " AND y=" + loc.getBlockY() + " AND z=" + loc.getBlockZ() + ";");
 				ArrayList<String> auth = new ArrayList<String>();
 				ArrayList<String> titl = new ArrayList<String>();
 				ArrayList<Integer> type = new ArrayList<Integer>();
@@ -552,13 +553,8 @@ public class BookListener implements Listener {
 						close(r);
 						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
 						etype = Enchantment.getByName(enchant);
-						Location loc = j.getBlock().getLocation();
-						Random gen = new Random();
-						double xs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-						double ys = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-						double zs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-						ItemStack drop = generateItemStack(2).clone();
-						loc.getWorld().dropItem(new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs), drop);
+						if(dropItems)
+							dropItem(generateItemStack(2).clone(), loc);
 					}
 					else if(type.get(i) == Material.MAP.getId())
 					{
@@ -569,13 +565,8 @@ public class BookListener implements Listener {
 						}
 						close(r);
 						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						Location loc = j.getBlock().getLocation();
-						Random gen = new Random();
-						double xs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-						double ys = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-						double zs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-						ItemStack drop = generateItemStack(3).clone();
-						loc.getWorld().dropItem(new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs), drop);
+						if(dropItems)
+							dropItem(generateItemStack(3).clone(), loc);
 					}
 					else if(type.get(i) == Material.WRITTEN_BOOK.getId() || type.get(i) == Material.BOOK_AND_QUILL.getId())
 					{
@@ -595,25 +586,15 @@ public class BookListener implements Listener {
 						if(type.get(i) == Material.WRITTEN_BOOK.getId())
 						{
 							Book(titl.get(i), auth.get(i), thepages);
-							Location loc = j.getBlock().getLocation();
-							Random gen = new Random();
-							double xs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-							double ys = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-							double zs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-							ItemStack drop = generateItemStack(0).clone();
-							loc.getWorld().dropItem(new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs), drop);
+							if(dropItems)
+								dropItem(generateItemStack(0).clone(), loc);
 							pages.clear();
 						}
 						else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
 						{
 							Book("null", "null", thepages);
-							Location loc = j.getBlock().getLocation();
-							Random gen = new Random();
-							double xs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-							double ys = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-							double zs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-							ItemStack drop = generateItemStack(1).clone();
-							loc.getWorld().dropItem(new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs), drop);
+							if(dropItems)
+								dropItem(generateItemStack(1).clone(), loc);
 							pages.clear();
 						}
 						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
@@ -622,10 +603,10 @@ public class BookListener implements Listener {
 					else if(BookShelf.allowedItems.contains(type.get(i)))
 					{
 						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						j.getBlock().getWorld().dropItem(j.getBlock().getLocation(), new ItemStack(type.get(i), amt.get(i)));
+						if(dropItems)
+							dropItem(new ItemStack(type.get(i)), loc);
 					}
 				}
-				Location loc = j.getBlock().getLocation();
 				BookShelf.getdb().query("DELETE FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 				BookShelf.getdb().query("DELETE FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 				BookShelf.getdb().query("DELETE FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
@@ -638,15 +619,14 @@ public class BookListener implements Listener {
 			}
 			if(plugin.autoToggle)
 			{
-				Location loc = j.getBlock().getLocation();
 				if(plugin.autoToggleMap1.containsKey(loc))
 				{
 					plugin.autoToggleMap1.remove(loc);
 					plugin.autoToggleMap2.remove(loc);
 				}
 			}
-		}
 	}
+
 	@EventHandler
 	public void onInv(InventoryClickEvent j)
 	{
@@ -925,6 +905,15 @@ public class BookListener implements Listener {
 		}
 	}
 
+	private void dropItem(ItemStack item, Location loc)
+	{
+		Random gen = new Random();
+		double xs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
+		double ys = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
+		double zs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
+		loc.getWorld().dropItem(new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs), item);
+	}
+	
 	@EventHandler
 	public void onPlace(BlockPlaceEvent j)
 	{

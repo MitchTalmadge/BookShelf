@@ -13,6 +13,7 @@ import me.Pew446.BookShelf.BookListener;
 import me.Pew446.BookShelf.LWC.LWCPluginHandler;
 import me.Pew446.BookShelf.Towny.TownyCommands;
 import me.Pew446.BookShelf.Towny.TownyHandler;
+import me.Pew446.BookShelf.WorldEdit.WorldEdit_EditSessionFactoryHandler;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -33,6 +34,7 @@ import org.bukkit.util.Vector;
 import com.griefcraft.lwc.LWCPlugin;
 import com.palmergames.bukkit.towny.Towny;
 import com.palmergames.bukkit.towny.object.Resident;
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 import me.Pew446.SimpleSQL.Database;
 import me.Pew446.SimpleSQL.MySQL;
@@ -46,7 +48,7 @@ public class BookShelf extends JavaPlugin{
 	static FileConfiguration config;
 	public static BookShelf plugin;
 	public final Logger logger = Logger.getLogger("Minecraft");
-	public final BookListener BookListener = new BookListener(this);
+	public static BookListener BookListener;
 	
 	public static ArrayList<Integer> records = new ArrayList<Integer>(Arrays.asList(
 			Material.RECORD_3.getId(),
@@ -88,6 +90,7 @@ public class BookShelf extends JavaPlugin{
 	/* TOWNY */
 	static Towny towny;
 	public boolean useTowny = false;
+	private WorldEditPlugin worldEdit;
 	public static boolean LWCEnabled;
 	public static File townyConfigPath;
 	public static FileConfiguration townyConfig;
@@ -99,6 +102,10 @@ public class BookShelf extends JavaPlugin{
 
 	@Override
 	public void onDisable() {
+		
+		if(this.useTowny)
+			TownyHandler.saveConfig();
+		
 		try {
 			if(me.Pew446.BookShelf.BookListener.r != null)
 				close(me.Pew446.BookShelf.BookListener.r);
@@ -107,12 +114,11 @@ public class BookShelf extends JavaPlugin{
 		}
 
 		getdb().close();
-		if(this.useTowny)
-			TownyHandler.saveConfig();
 	}
 	@Override
 	public void onEnable() {
 		allowedItems.addAll(records);
+		BookListener = new BookListener(this);
 		config = getConfig();
 		saveDefaultConfig();
 		sqlConnection();
@@ -136,13 +142,20 @@ public class BookShelf extends JavaPlugin{
 
 		townyConfigPath = new File(getDataFolder(), "towny.yml");
 
-		if(setupTowny()) {
+		if(setupTowny()) 
+		{
 			logger.info("[BookShelf] Towny found and hooked.");
 			useTowny = config.getBoolean("towny_support.enabled");
 			if(useTowny)
 			{
 				loadTownyConfig();
 			}
+		}
+		
+		if(setupWorldEdit())
+		{
+			logger.info("[BookShelf] WorldEdit found and hooked.");
+			worldEdit.getWorldEdit().setEditSessionFactory(new WorldEdit_EditSessionFactoryHandler());
 		}
 
 		getServer().getPluginManager().registerEvents(this.BookListener, this);
@@ -211,14 +224,18 @@ public class BookShelf extends JavaPlugin{
 	}
 	private boolean setupLWC()
 	{
-		Plugin plugin = getServer().getPluginManager().getPlugin("LWC");
-		LWC = (LWCPlugin) plugin;
+		LWC = (LWCPlugin) getServer().getPluginManager().getPlugin("LWC");
 		return (plugin != null);
 	}
 
 	private boolean setupTowny() {
 		towny = (Towny) getServer().getPluginManager().getPlugin("Towny");
 		return towny != null;
+	}
+	
+	private boolean setupWorldEdit() {
+		worldEdit = (WorldEditPlugin) getServer().getPluginManager().getPlugin("WorldEdit");
+		return worldEdit != null;
 	}
 
 	public boolean isUsingTowny() {
@@ -850,5 +867,8 @@ public class BookShelf extends JavaPlugin{
 		{
 			return sqlite;
 		}
+	}
+	public static void eraseData(Location location) {
+		
 	}
 }

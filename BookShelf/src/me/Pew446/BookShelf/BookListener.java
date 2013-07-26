@@ -439,8 +439,6 @@ public class BookListener implements Listener {
 								{
 									BookMeta meta = (BookMeta) cont[i].getItemMeta();
 									
-									System.out.println(meta.getPageCount());
-									
 									Book(cont[i]);
 									String title = getTitle().replaceAll("'", "''");
 									String author = getAuthor().replaceAll("'", "''");
@@ -1187,8 +1185,6 @@ public class BookListener implements Listener {
 			{
 				newbaq.addPage("");
 			}
-			
-			System.out.println(newbaq.getPageCount());
 			
 			baq.setItemMeta(newbaq);
 			return baq;

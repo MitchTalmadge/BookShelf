@@ -43,13 +43,13 @@ import me.Pew446.SimpleSQL.SQLite;
 import net.milkbowl.vault.economy.Economy;
 
 public class BookShelf extends JavaPlugin{
-	
+
 	/* SETUP */
 	static FileConfiguration config;
 	public static BookShelf plugin;
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public static BookListener BookListener;
-	
+
 	public static ArrayList<Integer> records = new ArrayList<Integer>(Arrays.asList(
 			Material.RECORD_3.getId(),
 			Material.RECORD_4.getId(),
@@ -70,14 +70,14 @@ public class BookShelf extends JavaPlugin{
 			Material.ENCHANTED_BOOK.getId(),
 			Material.PAPER.getId(),
 			Material.MAP.getId()));
-	
+
 	/* ECONOMY */
 	static Economy economy;
-	
+
 	/* LWC */
 	static LWCPlugin LWC;
 	static LWCPluginHandler LWCPluginHandler;
-	
+
 	/* AUTO TOGGLE (For shaythegoon) */
 	boolean autoToggle = false;
 	int autoToggleFreq = 10;
@@ -86,7 +86,7 @@ public class BookShelf extends JavaPlugin{
 	HashMap<Location, Integer> autoToggleMap1 = new HashMap<Location, Integer>();
 	HashMap<Location, List<Player>> autoToggleMap2 = new HashMap<Location, List<Player>>();
 	List<?> autoToggleNameList = null;
-	
+
 	/* TOWNY */
 	static Towny towny;
 	public boolean useTowny = false;
@@ -94,7 +94,7 @@ public class BookShelf extends JavaPlugin{
 	public static boolean LWCEnabled;
 	public static File townyConfigPath;
 	public static FileConfiguration townyConfig;
-	
+
 	/* DATABASE */
 	static MySQL mysql;
 	static SQLite sqlite;
@@ -102,10 +102,10 @@ public class BookShelf extends JavaPlugin{
 
 	@Override
 	public void onDisable() {
-		
+
 		if(this.useTowny)
 			TownyHandler.saveConfig();
-		
+
 		try {
 			if(me.Pew446.BookShelf.BookListener.r != null)
 				close(me.Pew446.BookShelf.BookListener.r);
@@ -123,7 +123,7 @@ public class BookShelf extends JavaPlugin{
 		saveDefaultConfig();
 		sqlConnection();
 		sqlDoesDatabaseExist();
-		
+
 		setupAutoToggle();
 
 		if(setupEconomy())
@@ -151,7 +151,7 @@ public class BookShelf extends JavaPlugin{
 				loadTownyConfig();
 			}
 		}
-		
+
 		if(setupWorldEdit())
 		{
 			logger.info("[BookShelf] WorldEdit found and hooked.");
@@ -163,7 +163,7 @@ public class BookShelf extends JavaPlugin{
 		this.logger.info("["+pdfFile.getName() + "] Enabled BookShelf V" + pdfFile.getVersion());
 
 	}
-	
+
 	public static void close(ResultSet r) throws SQLException
 	{
 		r.close();
@@ -179,22 +179,22 @@ public class BookShelf extends JavaPlugin{
 		{
 			this.autoToggle = config.getBoolean("auto_toggle.enabled");
 		}
-		
+
 		if(config.get("auto_toggle.frequency") != null)
 		{
 			this.autoToggleFreq = config.getInt("auto_toggle.frequency");
 		}
-		
+
 		if(config.get("auto_toggle.server_wide") != null)
 		{
 			this.autoToggleServerWide = config.getBoolean("auto_toggle.server_wide");
 		}
-		
+
 		if(config.get("auto_toggle.different_players") != null)
 		{
 			this.autoToggleDiffPlayers = config.getBoolean("auto_toggle.different_players");
 		}
-		
+
 		if(config.get("auto_toggle.name_list") != null)
 		{
 			this.autoToggleNameList = config.getList("auto_toggle.name_list");
@@ -232,7 +232,7 @@ public class BookShelf extends JavaPlugin{
 		towny = (Towny) getServer().getPluginManager().getPlugin("Towny");
 		return towny != null;
 	}
-	
+
 	private boolean setupWorldEdit() {
 		worldEdit = (WorldEditPlugin) getServer().getPluginManager().getPlugin("WorldEdit");
 		return worldEdit != null;
@@ -278,10 +278,11 @@ public class BookShelf extends JavaPlugin{
 			}
 		}
 	}
-	
+
 	public void sqlDoesDatabaseExist()
 	{
 		try {
+			updateDb(3.0);
 			boolean enable = config.getBoolean("database.mysql_enabled");
 			if(enable) //MYSQL
 			{
@@ -312,9 +313,34 @@ public class BookShelf extends JavaPlugin{
 			System.out.println("[BookShelf] Database could not load! Check server log.");
 			e.printStackTrace();
 		}
-		
+
 	}	
 
+	private void updateDb(double d) {
+		if(d == 3.0)
+		{
+			if(!new File(getDataFolder(), "databaseVersion.dat").exists())
+			{
+				if(getdb() instanceof MySQL)
+				{
+					try {
+						ResultSet r = getdb().query("SHOW TABLES LIKE 'items'");
+						if(!r.next())
+						{
+
+						}
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+			else
+			{
+
+			}
+		}
+	}
 	public boolean isConsole(CommandSender sender)
 	{
 		return sender instanceof ConsoleCommandSender;
@@ -410,7 +436,7 @@ public class BookShelf extends JavaPlugin{
 					{
 						name += args[i]+" ";
 					}
-					
+
 					toggleBookShelvesByName(name);
 					sender.sendMessage("All bookshelves with the name "+name+"have been toggled.");
 				}
@@ -476,7 +502,7 @@ public class BookShelf extends JavaPlugin{
 				saveDefaultConfig();
 				this.loadTownyConfig();
 				this.setupAutoToggle();
-				
+
 				if(config.getBoolean("lwc_support.enabled"))
 				{
 					if(LWCPluginHandler == null)
@@ -491,7 +517,7 @@ public class BookShelf extends JavaPlugin{
 				else
 					if(LWCPluginHandler != null)
 						LWCEnabled = false;
-				
+
 				p.sendMessage("BookShelf config successfully reloaded.");
 			}
 			else
@@ -798,10 +824,10 @@ public class BookShelf extends JavaPlugin{
 			return -1;
 		}
 	}
-	
+
 	public static void toggleBookShelvesByName(String name)
 	{
-		
+
 		if(!name.endsWith(" "))
 		{
 			if(!name.equals(config.getString("default_shelf_name")))
@@ -812,14 +838,14 @@ public class BookShelf extends JavaPlugin{
 			if(name.equals(config.getString("default_shelf_name")+" "))
 				name = name.substring(0, name.length()-1);
 		}
-		
+
 		ResultSet r;
 		try 
 		{
 			r = getdb().query("SELECT * FROM names WHERE name='"+name+"';");
 			List<Vector> vecs = new ArrayList<Vector>();
 			HashMap<Vector, Boolean> selmap = new HashMap<Vector, Boolean>();
-			
+
 			while(r.next())
 			{
 				Vector loc = new Vector(r.getInt("x"), r.getInt("y"), r.getInt("z"));
@@ -844,12 +870,12 @@ public class BookShelf extends JavaPlugin{
 			}
 			getdb().getConnection().commit();
 			getdb().getConnection().setAutoCommit(true);
-			
+
 		} catch (SQLException e){
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static Database getdb()
 	{
 		boolean enable = config.getBoolean("database.mysql_enabled");
@@ -869,6 +895,6 @@ public class BookShelf extends JavaPlugin{
 		}
 	}
 	public static void eraseData(Location location) {
-		
+
 	}
 }

@@ -27,7 +27,7 @@ public class LWCHandler extends LWC{
 		if(block.getType() == Material.BOOKSHELF && BookShelf.LWCEnabled)
 			return true;
 		else
-			return super.isProtectable(block.getType());	
+			return super.isProtectable(block);	
 	}
 	
 }

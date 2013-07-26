@@ -158,7 +158,7 @@ public class BookShelf extends JavaPlugin{
 			worldEdit.getWorldEdit().setEditSessionFactory(new WorldEdit_EditSessionFactoryHandler());
 		}
 
-		getServer().getPluginManager().registerEvents(this.BookListener, this);
+		getServer().getPluginManager().registerEvents(BookListener, this);
 		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info("["+pdfFile.getName() + "] Enabled BookShelf V" + pdfFile.getVersion());
 
@@ -278,14 +278,14 @@ public class BookShelf extends JavaPlugin{
 			}
 		}
 	}
+	
 	public void sqlDoesDatabaseExist()
 	{
-
 		try {
 			boolean enable = config.getBoolean("database.mysql_enabled");
-			if(enable)
+			if(enable) //MYSQL
 			{
-				getdb().query("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(32), author VARCHAR(32), type INT, loc INT, amt INT, primary key (id));");
+				getdb().query("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(32), author VARCHAR(32), lore VARCHAR(32), type INT, loc INT, amt INT, primary key (id));");
 				getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text VARCHAR(1000));");
 				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
@@ -295,9 +295,9 @@ public class BookShelf extends JavaPlugin{
 				getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name VARCHAR(64));");
 			}
-			else
+			else //SQLITE
 			{
-				getdb().query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, type INT, loc INT, amt INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, lore STRING, type INT, loc INT, amt INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text STRING);");
 				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
@@ -307,12 +307,12 @@ public class BookShelf extends JavaPlugin{
 				getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name STRING);");	
 			}
-
+			System.out.println("[BookShelf] Database Loaded.");
 		} catch (SQLException e) {
+			System.out.println("[BookShelf] Database could not load! Check server log.");
 			e.printStackTrace();
 		}
-
-		System.out.println("[BookShelf] Database Loaded.");
+		
 	}	
 
 	public boolean isConsole(CommandSender sender)

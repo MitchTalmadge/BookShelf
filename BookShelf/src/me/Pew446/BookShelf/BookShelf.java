@@ -282,7 +282,7 @@ public class BookShelf extends JavaPlugin{
 	public void sqlDoesDatabaseExist()
 	{
 		try {
-			updateDb(3.0);
+			updateDb();
 			boolean enable = config.getBoolean("database.mysql_enabled");
 			if(enable) //MYSQL
 			{
@@ -308,7 +308,7 @@ public class BookShelf extends JavaPlugin{
 				getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name STRING);");	
 			}
-			System.out.println("[BookShelf] Database Loaded.");
+			logger.info("[BookShelf] Database Loaded.");
 		} catch (SQLException e) {
 			System.out.println("[BookShelf] Database could not load! Check server log.");
 			e.printStackTrace();
@@ -316,31 +316,70 @@ public class BookShelf extends JavaPlugin{
 
 	}	
 
-	private void updateDb(double d) {
-		if(d == 3.0)
-		{
-			if(!new File(getDataFolder(), "databaseVersion.dat").exists())
-			{
-				if(getdb() instanceof MySQL)
-				{
-					try {
-						ResultSet r = getdb().query("SHOW TABLES LIKE 'items'");
-						if(!r.next())
-						{
+	private void updateDb() {
 
-						}
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-				}
+		sqlDoesVersionExist();
+		
+		try {
+			ResultSet r = getdb().query("SELECT * FROM version");
+			r.next();
+			int version = r.getInt("version");
+			close(r);
+			
+			switch(version)
+			{
+			case 1:
+				break;
 			}
-
-			else
-			{
-
+			
+			logger.info("[BookShelf] Database Version: "+version);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void sqlDoesVersionExist()
+	{
+		if(getdb() instanceof MySQL)
+		{
+			try {
+				ResultSet r = getdb().query("SHOW TABLES LIKE 'version';");
+				if(!r.next())
+				{
+					close(r);
+					getdb().query("CREATE TABLE IF NOT EXISTS version (version INT);");
+					getdb().query("INSERT INTO version (version) VALUES(1);");
+					getdb().query("ALTER TABLE items ADD lore VARCHAR(32) AFTER author;");
+				}
+				else
+				{
+					close(r);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		else if(getdb() instanceof SQLite)
+		{
+			try {
+				ResultSet r = getdb().query("SELECT name FROM sqlite_master WHERE type='table' AND name='version';");
+				if(!r.next())
+				{
+					close(r);
+					getdb().query("CREATE TABLE IF NOT EXISTS version (version INT);");
+					getdb().query("INSERT INTO version (version) VALUES(1);");
+					getdb().query("ALTER TABLE items ADD lore STRING;");
+				}
+				else
+				{
+					close(r);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
 			}
 		}
 	}
+	
 	public boolean isConsole(CommandSender sender)
 	{
 		return sender instanceof ConsoleCommandSender;

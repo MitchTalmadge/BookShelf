@@ -104,6 +104,7 @@ public abstract class Database {
 		Statement statement = this.getConnection().createStatement();
 	    if (statement.execute(query)) {
 	    	this.shouldWait = true;
+	    	System.out.println("We should wait at "+query);
 	    	return statement.getResultSet();
 	    } else {
 	    	int uc = statement.getUpdateCount();

@@ -94,7 +94,7 @@ public class BookShelf extends JavaPlugin{
 	static Towny towny;
 	public boolean useTowny = false;
 	private WorldEditPlugin worldEdit;
-	private WorldGuardPlugin worldGuard;
+	static WorldGuardPlugin worldGuard;
 	public static boolean LWCEnabled;
 	public static File townyConfigPath;
 	public static FileConfiguration townyConfig;
@@ -107,9 +107,6 @@ public class BookShelf extends JavaPlugin{
 	@Override
 	public void onDisable() {
 
-		if(this.useTowny)
-			TownyHandler.saveConfig();
-
 		try {
 			if(me.Pew446.BookShelf.BookListener.r != null)
 				close(me.Pew446.BookShelf.BookListener.r);
@@ -120,6 +117,10 @@ public class BookShelf extends JavaPlugin{
 		}
 
 		getdb().close();
+		
+		if(this.useTowny)
+			TownyHandler.saveConfig();
+		
 	}
 	@Override
 	public void onEnable() {

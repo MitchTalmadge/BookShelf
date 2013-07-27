@@ -12,6 +12,8 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
+import static com.sk89q.worldguard.bukkit.BukkitUtil.*;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -37,6 +39,12 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+
 import me.Pew446.BookShelf.BookShelf;
 
 public class BookListener implements Listener {
@@ -69,6 +77,7 @@ public class BookListener implements Listener {
 		Player p = j.getPlayer();
 		if(j.isCancelled())
 			return;
+		
 		if(j.getClickedBlock() != null)
 		{
 			if(j.getClickedBlock().getType() == Material.BOOKSHELF)
@@ -81,6 +90,7 @@ public class BookListener implements Listener {
 					}
 					if(j.getAction() == Action.RIGHT_CLICK_BLOCK && !loading)
 					{
+						
 						Location loc = j.getClickedBlock().getLocation();
 						if(!plugin.getConfig().getBoolean("top-bottom_access"))
 						{
@@ -139,7 +149,42 @@ public class BookListener implements Listener {
 							}
 							else
 							{
-								close(r);
+								if(r.getBoolean("bool") && BookShelf.economy != null)
+								{ //Enabled
+									close(r);
+									if(BookShelf.worldGuard != null)
+									{
+										RegionManager regionManager = BookShelf.worldGuard.getRegionManager(j.getPlayer().getWorld());
+										if(regionManager != null)
+										{
+											ApplicableRegionSet set = regionManager.getApplicableRegions(j.getClickedBlock().getLocation());
+											if(!set.allows(DefaultFlag.ENABLE_SHOP, BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !set.isOwnerOfAll(BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !j.getPlayer().isOp())
+											{
+												j.getPlayer().sendMessage("You are not allowed to open BookShops here!");
+												j.setCancelled(true);
+												return;
+											}
+										}
+									}
+								}
+								else
+								{ //Disabled
+									close(r);
+									if(BookShelf.worldGuard != null)
+									{
+										RegionManager regionManager = BookShelf.worldGuard.getRegionManager(j.getPlayer().getWorld());
+										if(regionManager != null)
+										{
+											ApplicableRegionSet set = regionManager.getApplicableRegions(j.getClickedBlock().getLocation());
+											if(!set.allows(DefaultFlag.CHEST_ACCESS, BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !set.isOwnerOfAll(BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !j.getPlayer().isOp())
+											{
+												j.getPlayer().sendMessage("You are not allowed to open bookshelves here!");
+												j.setCancelled(true);
+												return;
+											}
+										}
+									}
+								}
 							}
 							//							r = BookShelf.getdb().query("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							//							if(!r.next())

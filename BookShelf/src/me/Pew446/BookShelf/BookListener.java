@@ -3,6 +3,7 @@ package me.Pew446.BookShelf;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +54,8 @@ public class BookListener implements Listener {
 	HashMap<Location, Inventory> map = new HashMap<Location, Inventory>();
 	HashMap<Location, InventoryHolder> map2 = new HashMap<Location, InventoryHolder>();
 	HashMap<Player, Location> map3 = new HashMap<Player, Location>();
+	private String lore;
+	private int damage;
 	static ResultSet r;
 		
 	private void close(ResultSet r) throws SQLException
@@ -231,6 +234,9 @@ public class BookListener implements Listener {
 									ArrayList<Integer> id = new ArrayList<Integer>();
 									ArrayList<Integer> loca = new ArrayList<Integer>();
 									ArrayList<Integer> amt = new ArrayList<Integer>();
+									ArrayList<String> lore = new ArrayList<String>();
+									ArrayList<Integer> dmg = new ArrayList<Integer>();
+									
 									while(r.next())
 									{
 										auth.add(r.getString("author"));
@@ -239,6 +245,8 @@ public class BookListener implements Listener {
 										type.add(r.getInt("type"));
 										loca.add(r.getInt("loc"));
 										amt.add(r.getInt("amt"));
+										lore.add(r.getString("lore"));
+										dmg.add(r.getInt("damage"));
 									}
 									close(r);
 									ArrayList<String> pages = new ArrayList<String>();
@@ -279,13 +287,13 @@ public class BookListener implements Listener {
 											thepages = pages.toArray(thepages);
 											if(type.get(i) == Material.WRITTEN_BOOK.getId())
 											{
-												Book(titl.get(i), auth.get(i), thepages);
+												Book(titl.get(i), auth.get(i), thepages, lore.get(i), dmg.get(i));
 												inv.setItem(loca.get(i), generateItemStack(0));
 												pages.clear();
 											}
 											else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
 											{
-												Book(titl.get(i), auth.get(i), thepages);
+												Book(titl.get(i), auth.get(i), thepages, lore.get(i), dmg.get(i));
 												inv.setItem(loca.get(i), generateItemStack(1));
 												pages.clear();
 											}
@@ -437,13 +445,15 @@ public class BookListener implements Listener {
 							{
 								if(cont[i].getType() == Material.BOOK_AND_QUILL || cont[i].getType() == Material.WRITTEN_BOOK)
 								{
-									BookMeta meta = (BookMeta) cont[i].getItemMeta();
-									
 									Book(cont[i]);
 									String title = getTitle().replaceAll("'", "''");
 									String author = getAuthor().replaceAll("'", "''");
+									String lore = "";
+									if(getLore() != null)
+										lore = getLore().replaceAll("'", "''");
+									int damage = getDamage();
 									int type = cont[i].getTypeId(); 
-									BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+",'"+author+"','"+title+"',"+type+","+i+",1);");	
+									BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt,lore,damage) VALUES ("+x+","+y+","+z+",'"+author+"','"+title+"',"+type+","+i+",1,'"+lore+"', "+damage+");");	
 									int id = getidxyz(x,y,z);
 									BookShelf.getdb().query("DELETE FROM pages WHERE id="+id+";");
 									if(getPages() != null)
@@ -526,6 +536,8 @@ public class BookListener implements Listener {
 				ArrayList<Integer> type = new ArrayList<Integer>();
 				ArrayList<Integer> id = new ArrayList<Integer>();
 				ArrayList<Integer> amt = new ArrayList<Integer>();
+				ArrayList<String> lore = new ArrayList<String>();
+				ArrayList<Integer> dmg = new ArrayList<Integer>();
 				while(r.next())
 				{
 					auth.add(r.getString("author"));
@@ -533,6 +545,9 @@ public class BookListener implements Listener {
 					id.add(r.getInt("id"));
 					type.add(r.getInt("type"));
 					amt.add(r.getInt("amt"));
+					lore.add(r.getString("lore"));
+					dmg.add(r.getInt("damage"));
+					
 				}
 				close(r);
 				ArrayList<String> pages = new ArrayList<String>();
@@ -583,14 +598,14 @@ public class BookListener implements Listener {
 						}
 						if(type.get(i) == Material.WRITTEN_BOOK.getId())
 						{
-							Book(titl.get(i), auth.get(i), thepages);
+							Book(titl.get(i), auth.get(i), thepages, lore.get(i), dmg.get(i));
 							if(dropItems)
 								dropItem(generateItemStack(0).clone(), loc);
 							pages.clear();
 						}
 						else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
 						{
-							Book("null", "null", thepages);
+							Book("null", "null", thepages, lore.get(i), dmg.get(i));
 							if(dropItems)
 								dropItem(generateItemStack(1).clone(), loc);
 							pages.clear();
@@ -1078,7 +1093,6 @@ public class BookListener implements Listener {
 			{
 				this.title = bookData.getTitle();
 			}
-
 		}
 		else
 		{
@@ -1110,13 +1124,22 @@ public class BookListener implements Listener {
 		}
 
 		this.pages = sPages;
+		
+		if(bookData.getLore() != null)
+			this.lore = bookData.getLore().get(0);
+		else
+			this.lore = null;
+		this.damage = bookItem.getDurability();
+		
 	}
 	
-	void Book(String title, String author, String[] pages) 
+	void Book(String title, String author, String[] pages, String lore, int damage) 
 	{
 		this.title = title;
 		this.author = author;
 		this.pages = pages;
+		this.lore = lore;
+		this.damage = damage;
 	}
 	
 	public String getAuthor()
@@ -1139,6 +1162,16 @@ public class BookListener implements Listener {
 		return pages;
 	}
 	
+	public String getLore()
+	{
+		return lore;
+	}
+	
+	public int getDamage()
+	{
+		return damage;
+	}
+	
 	public ItemStack generateItemStack(int type)
 	{
 		switch(type)
@@ -1150,6 +1183,8 @@ public class BookListener implements Listener {
 			new_written_book.setAuthor(author);
 			new_written_book.setTitle(title);
 			new_written_book.setDisplayName(title);
+			if(lore != null && !lore.equals(""))
+				new_written_book.setLore(Arrays.asList(lore));
 			if(pages != null)
 			{
 				for(int i = 0;i<pages.length;i++)
@@ -1162,6 +1197,7 @@ public class BookListener implements Listener {
 				new_written_book.addPage("");
 			}
 			written_book.setItemMeta(new_written_book);
+			written_book.setDurability((short) damage);
 			return written_book;
 		case 1:
 			ItemStack baq = new ItemStack(Material.BOOK_AND_QUILL);
@@ -1169,7 +1205,8 @@ public class BookListener implements Listener {
 			
 			newbaq.setAuthor(author);
 			newbaq.setTitle(title);
-			
+			if(lore != null && !lore.equals(""))
+				newbaq.setLore(Arrays.asList(lore));
 			if(!title.equals("null"))
 			{
 				newbaq.setDisplayName(title);
@@ -1187,6 +1224,7 @@ public class BookListener implements Listener {
 			}
 			
 			baq.setItemMeta(newbaq);
+			baq.setDurability((short) damage);
 			return baq;
 		case 2:
 			ItemStack enchanted_book = new ItemStack(Material.ENCHANTED_BOOK);

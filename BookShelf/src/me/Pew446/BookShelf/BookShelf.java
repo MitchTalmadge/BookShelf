@@ -297,7 +297,7 @@ public class BookShelf extends JavaPlugin{
 			boolean enable = config.getBoolean("database.mysql_enabled");
 			if(enable) //MYSQL
 			{
-				getdb().query("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(32), author VARCHAR(32), lore VARCHAR(32), type INT, loc INT, amt INT, primary key (id));");
+				getdb().query("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(32), author VARCHAR(32), lore VARCHAR(32), damage INT, type INT, loc INT, amt INT, primary key (id));");
 				getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text VARCHAR(1000));");
 				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
@@ -309,7 +309,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else //SQLITE
 			{
-				getdb().query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, lore STRING, type INT, loc INT, amt INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, lore STRING, damage INT, type INT, loc INT, amt INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text STRING);");
 				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
@@ -341,13 +341,19 @@ public class BookShelf extends JavaPlugin{
 			{
 			case 0:
 				if(usingMySQL())
+				{
 					getdb().query("ALTER TABLE items ADD lore VARCHAR(32) AFTER author;");
+					getdb().query("ALTER TABLE items ADD damage INT AFTER lore;");
+				}
 				else
+				{
 					getdb().query("ALTER TABLE items ADD lore STRING;");
+					getdb().query("ALTER TABLE items ADD damage INT;");
+				}
 				getdb().query("UPDATE version SET version=1");
 				updateDb();
 				break;
-			case 1:
+			default:
 				break;
 			}
 		} catch (SQLException e) {

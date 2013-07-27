@@ -311,6 +311,18 @@ public class TownyHandler {
 		return BookShelf.townyConfig.get("towns."+townName+"."+permission);
 	}
 	
+	public static void setDefaultConfigValue(Town t, String location)
+	{
+		if(location.startsWith("plot"))
+		{
+			setTownPermission(t, location, BookShelf.townyConfig.get("defaults."+"resident"+location.split("_")[1].substring(location.split("_")[1].indexOf("."))));
+		}
+		else
+		{
+			setTownPermission(t, location, BookShelf.townyConfig.get("defaults."+location));
+		}
+	}
+	
 	public static Object getDefaultConfigValue(String location)
 	{
 		if(location.startsWith("plot"))

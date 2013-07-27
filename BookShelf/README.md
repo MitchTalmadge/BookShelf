@@ -5,20 +5,8 @@ http://dev.bukkit.org/server-mods/bookshelf/
 
 What is it for?
 ---------------
-This plugin allows players to store books - whether they be Signed, Unsigned, or just plain old Books - in those once useless bookshelves. This plugin encourages players to write books and store them in shelves. Book Shelves are opened like a chest, by right clicking on the shelf. This opens a chest-like inventory that only allows the storage of Books. The books are stored in a SQLite database, so no setup is required. :)
+This plugin allows players to store books, maps, and more into those once useless bookshelves. It encourages players to write books and store them in shelves, and can build onto your economy with libraries and bookstores by using the built in Vault support. Unlimited bookshelves make rule walls a thing of the past; store rule books inside an unlimited shelf, and every player can have one! Book Shelves are opened like a chest, by right clicking on the shelf. This opens a chest-like inventory that only allows the storage of books, maps, records, and paper. The items are stored in an SQLite database, so no setup is required to use this plugin! MySQL support is optional. These are just a few of the many features of BookShelf.
 
 What are the Features?
 ----------------------
-Store books in book shelves
-You can only access bookshelves from the sides; hide them in your wooden floors! :)
-You can only store books, unlike chests.
-Runs on SQLite - No setup!
-Configurable shelf sizes (Rows of 9, Max 6 rows)
-Configurable shelf names!
-Configure what types of books can be put into shelves!
-When the shelf is broken, books drop like a chest.
-Reloading does not break the plugin.
-Create shelves that never run out of books (Great for rule books, libraries, newspapers, etc)
-Compatible with LWC! (Check the config page)
-Permissions
-Commands
+See list at http://dev.bukkit.org/bukkit-plugins/bookshelf/

@@ -13,5 +13,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/GriefPrevention.jar"/>
 	<classpathentry kind="lib" path="lib/WorldEdit.jar"/>
+	<classpathentry kind="lib" path="lib/WorldGuard.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -35,6 +35,7 @@ import com.griefcraft.lwc.LWCPlugin;
 import com.palmergames.bukkit.towny.Towny;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
 import me.Pew446.SimpleSQL.Database;
 import me.Pew446.SimpleSQL.MySQL;
@@ -70,7 +71,8 @@ public class BookShelf extends JavaPlugin{
 			Material.WRITTEN_BOOK.getId(),
 			Material.ENCHANTED_BOOK.getId(),
 			Material.PAPER.getId(),
-			Material.MAP.getId()));
+			Material.MAP.getId(),
+			Material.EMPTY_MAP.getId()));
 
 	/* ECONOMY */
 	static Economy economy;
@@ -92,6 +94,7 @@ public class BookShelf extends JavaPlugin{
 	static Towny towny;
 	public boolean useTowny = false;
 	private WorldEditPlugin worldEdit;
+	private WorldGuardPlugin worldGuard;
 	public static boolean LWCEnabled;
 	public static File townyConfigPath;
 	public static FileConfiguration townyConfig;
@@ -110,6 +113,8 @@ public class BookShelf extends JavaPlugin{
 		try {
 			if(me.Pew446.BookShelf.BookListener.r != null)
 				close(me.Pew446.BookShelf.BookListener.r);
+			if(r != null)
+				close(r);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -159,6 +164,11 @@ public class BookShelf extends JavaPlugin{
 			worldEdit.getWorldEdit().setEditSessionFactory(new WorldEdit_EditSessionFactoryHandler());
 		}
 
+		if(setupWorldGuard())
+		{
+			logger.info("[BookShelf] WorldGuard found and hooked.");
+		}
+		
 		getServer().getPluginManager().registerEvents(BookListener, this);
 		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info("["+pdfFile.getName() + "] Enabled BookShelf V" + pdfFile.getVersion());
@@ -238,6 +248,11 @@ public class BookShelf extends JavaPlugin{
 		worldEdit = (WorldEditPlugin) getServer().getPluginManager().getPlugin("WorldEdit");
 		return worldEdit != null;
 	}
+	
+	private boolean setupWorldGuard() {
+		worldGuard = (WorldGuardPlugin) getServer().getPluginManager().getPlugin("WorldGuard");
+		return worldGuard != null;
+	}
 
 	public boolean isUsingTowny() {
 		return this.useTowny;
@@ -289,7 +304,7 @@ public class BookShelf extends JavaPlugin{
 	{
 		try {
 			updateDb();
-			ResultSet r = getdb().query("SELECT * FROM version");
+			r = getdb().query("SELECT * FROM version");
 			r.next();
 			int version = r.getInt("version");
 			close(r);
@@ -332,7 +347,7 @@ public class BookShelf extends JavaPlugin{
 		sqlDoesVersionExist();
 
 		try {
-			ResultSet r = getdb().query("SELECT * FROM version");
+			r = getdb().query("SELECT * FROM version");
 			r.next();
 			int version = r.getInt("version");
 			close(r);
@@ -366,7 +381,7 @@ public class BookShelf extends JavaPlugin{
 		if(usingMySQL())
 		{
 			try {
-				ResultSet r = getdb().query("SHOW TABLES LIKE 'items';");
+				r = getdb().query("SHOW TABLES LIKE 'items';");
 				if(!r.next())
 				{
 					close(r); //Looks like we are making a new database.
@@ -395,7 +410,7 @@ public class BookShelf extends JavaPlugin{
 		else
 		{
 			try {
-				ResultSet r = getdb().query("SELECT name FROM sqlite_master WHERE type='table' AND name='items';");
+				r = getdb().query("SELECT name FROM sqlite_master WHERE type='table' AND name='items';");
 				if(!r.next())
 				{
 					close(r); //Looks like we are making a new database.
@@ -463,7 +478,7 @@ public class BookShelf extends JavaPlugin{
 						}
 					}
 					try {
-						ResultSet r = getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						r = getdb().query("SELECT * FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!r.next())
 						{
 							close(r);
@@ -648,7 +663,7 @@ public class BookShelf extends JavaPlugin{
 						}
 					}
 					try {
-						ResultSet r = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						r = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!r.next())
 						{
 							close(r);
@@ -730,7 +745,7 @@ public class BookShelf extends JavaPlugin{
 					int price = 0;
 					try
 					{
-						ResultSet r = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						r = getdb().query("SELECT * FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						r.next();
 						price = r.getInt("price");
 						close(r);
@@ -775,7 +790,7 @@ public class BookShelf extends JavaPlugin{
 						}
 					}
 					try {
-						ResultSet r = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						r = getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!r.next())
 						{
 							close(r);
@@ -825,7 +840,7 @@ public class BookShelf extends JavaPlugin{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
 					try {
-						ResultSet r = getdb().query("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+						r = getdb().query("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						if(!r.next())
 						{
 							getdb().query("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 1);");
@@ -868,7 +883,7 @@ public class BookShelf extends JavaPlugin{
 	public static int toggleBookShelf(Location loc) {
 		try 
 		{
-			ResultSet r = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			r = getdb().query("SELECT * FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 			if(!r.next())
 			{
 				int def = 1;
@@ -920,8 +935,7 @@ public class BookShelf extends JavaPlugin{
 			if(name.equals(config.getString("default_shelf_name")+" "))
 				name = name.substring(0, name.length()-1);
 		}
-
-		ResultSet r;
+		
 		try 
 		{
 			r = getdb().query("SELECT * FROM names WHERE name='"+name+"';");

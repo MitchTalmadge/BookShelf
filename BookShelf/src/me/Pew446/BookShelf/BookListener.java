@@ -677,7 +677,7 @@ public class BookListener implements Listener {
 			}
 			if(BookShelf.config.getBoolean(prefix+"maps"))
 			{
-				if(j.getCurrentItem().getType() == Material.MAP || j.getCursor().getType() == Material.MAP)
+				if(j.getCurrentItem().getType() == Material.MAP || j.getCursor().getType() == Material.MAP || j.getCurrentItem().getType() == Material.EMPTY_MAP || j.getCursor().getType() == Material.EMPTY_MAP)
 				{
 					j.setCancelled(true);
 					p.sendMessage("Maps may only be stored in bookshelves.");
@@ -777,7 +777,7 @@ public class BookListener implements Listener {
 						}
 						if(plugin.getConfig().getBoolean("permissions.allow_maps") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.maps"))
 						{
-							if(j.getCurrentItem().getType() == Material.MAP || j.getCursor().getType() == Material.MAP)
+							if(j.getCurrentItem().getType() == Material.MAP || j.getCursor().getType() == Material.MAP || j.getCurrentItem().getType() == Material.EMPTY_MAP || j.getCursor().getType() == Material.EMPTY_MAP)
 							{
 								j.setCancelled(true);
 								return;

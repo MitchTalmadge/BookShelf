@@ -259,7 +259,7 @@ public class BookShelf extends JavaPlugin{
 		return this.useTowny;
 	}
 
-	public boolean usingMySQL()
+	public static boolean usingMySQL()
 	{
 		return getdb() instanceof MySQL;
 	}
@@ -474,7 +474,7 @@ public class BookShelf extends JavaPlugin{
 						Resident res = TownyHandler.convertToResident(p);
 						if(!TownyHandler.checkCanDoAction(loc.getBlock(), res, TownyHandler.UNLIMITED))
 						{
-							sender.sendMessage("You do not have permissions to use that command for this plot.");
+							sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
 							return true;
 						}
 					}
@@ -494,13 +494,13 @@ public class BookShelf extends JavaPlugin{
 						if(r.getInt("bool") == 1)
 						{
 							close(r);
-							p.sendMessage("The bookshelf you are looking at is now limited.");
+							p.sendMessage("The bookshelf you are looking at is now §6limited.");
 							getdb().query("UPDATE copy SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 						else
 						{
 							close(r);
-							p.sendMessage("The bookshelf you are looking at is now unlimited.");
+							p.sendMessage("The bookshelf you are looking at is now §6unlimited.");
 							getdb().query("UPDATE copy SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 					} catch (SQLException e) {
@@ -509,12 +509,12 @@ public class BookShelf extends JavaPlugin{
 				}
 				else
 				{
-					p.sendMessage("Please look at a bookshelf when using this command");
+					p.sendMessage("§cPlease look at a bookshelf when using this command");
 				}
 			}
 			else
 			{
-				p.sendMessage("You don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command!");
 			}
 			return true;
 		}
@@ -524,7 +524,7 @@ public class BookShelf extends JavaPlugin{
 			{
 				if(!(args.length >= 1))
 				{
-					sender.sendMessage("Must include a shelf name!");
+					sender.sendMessage("§cMust include a shelf name!");
 					return false;
 				}
 				else
@@ -536,7 +536,7 @@ public class BookShelf extends JavaPlugin{
 					}
 
 					toggleBookShelvesByName(name);
-					sender.sendMessage("All bookshelves with the name "+name+"have been toggled.");
+					sender.sendMessage("All bookshelves with the name §6"+name+"§fhave been toggled.");
 				}
 			}
 			else
@@ -554,25 +554,30 @@ public class BookShelf extends JavaPlugin{
 								Resident res = TownyHandler.convertToResident(p);
 								if(!TownyHandler.checkCanDoAction(loc.getBlock(), res, TownyHandler.TOGGLE))
 								{
-									sender.sendMessage("You do not have permissions to use that command for this plot.");
+									sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
 									return true;
 								}
 							}
 							int result = toggleBookShelf(loc);
 							if(result == -1)
-								p.sendMessage("An error occured while processing this command. Check server logs.");
+								p.sendMessage("§cAn error occured while processing this command. Check server logs.");
 							if(result == 0)
-								p.sendMessage("The bookshelf you are looking at is now disabled.");
+								p.sendMessage("The bookshelf you are looking at is now §cdisabled.");
 							else
-								p.sendMessage("The bookshelf you are looking at is now enabled.");
+								p.sendMessage("The bookshelf you are looking at is now §aenabled.");
 						}
 						else
 						{
-							p.sendMessage("Please look at a bookshelf when using this command.");
+							p.sendMessage("§cPlease look at a bookshelf when using this command.");
 						}
 					}
 					else
 					{
+						if(!p.isOp())
+						{
+							p.sendMessage("§cYou must be an op to toggle shelves by name.");
+							return true;
+						}
 						String name = "";
 						for(int i = 0;i<args.length;i++)
 						{
@@ -580,12 +585,12 @@ public class BookShelf extends JavaPlugin{
 						}
 
 						toggleBookShelvesByName(name);
-						sender.sendMessage("All bookshelves with the name "+name+"have been toggled.");
+						sender.sendMessage("All bookshelves with the name §6"+name+"§fhave been toggled.");
 					}
 				}
 				else
 				{
-					p.sendMessage("You don't have permission to use this command!");
+					p.sendMessage("§cYou don't have permission to use this command!");
 				}
 			}
 			return true;
@@ -616,11 +621,11 @@ public class BookShelf extends JavaPlugin{
 					if(LWCPluginHandler != null)
 						LWCEnabled = false;
 
-				p.sendMessage("BookShelf config successfully reloaded.");
+				p.sendMessage("§aBookShelf config successfully reloaded.");
 			}
 			else
 			{
-				p.sendMessage("You don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command!");
 			}
 			return true;
 		}
@@ -648,7 +653,7 @@ public class BookShelf extends JavaPlugin{
 				}
 				if(economy == null)
 				{
-					p.sendMessage("Vault is not installed! Aborting...");
+					p.sendMessage("§cVault is not installed! Aborting...");
 					return true;
 				}
 				Location loc = p.getTargetBlock(null, 10).getLocation();
@@ -659,7 +664,7 @@ public class BookShelf extends JavaPlugin{
 						Resident res = TownyHandler.convertToResident(p);
 						if(!TownyHandler.checkCanDoAction(loc.getBlock(), res, TownyHandler.SHOP))
 						{
-							sender.sendMessage("You do not have permissions to use that command for this plot.");
+							sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
 							return true;
 						}
 					}
@@ -707,7 +712,7 @@ public class BookShelf extends JavaPlugin{
 								close(r);
 								getdb().query("UPDATE names SET name='"+config.getString("default_shop_name").replace("%$", price+" "+BookShelf.economy.currencyNamePlural())+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 							}
-							p.sendMessage("The bookshelf you are looking at is now a shop selling at "+price+" "+economy.currencyNamePlural()+" each.");
+							p.sendMessage("The bookshelf you are looking at is now a shop selling at §6"+price+" "+economy.currencyNamePlural()+" §feach.");
 							getdb().query("UPDATE shop SET bool=1, price="+price+" WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
 						}
 					} catch (SQLException e) {
@@ -716,12 +721,12 @@ public class BookShelf extends JavaPlugin{
 				}
 				else
 				{
-					p.sendMessage("Please look at a bookshelf when using this command");
+					p.sendMessage("§cPlease look at a bookshelf when using this command");
 				}
 			}
 			else
 			{
-				p.sendMessage("You don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command!");
 			}
 			return true;
 		}
@@ -786,7 +791,7 @@ public class BookShelf extends JavaPlugin{
 						Resident res = TownyHandler.convertToResident(p);
 						if(!TownyHandler.checkCanDoAction(loc.getBlock(), res, TownyHandler.NAME))
 						{
-							sender.sendMessage("You do not have permissions to use that command for this plot.");
+							sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
 							return true;
 						}
 					}
@@ -796,13 +801,13 @@ public class BookShelf extends JavaPlugin{
 						{
 							close(r);
 							getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+name+"');");
-							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
+							p.sendMessage("§cThe name of the bookshelf you are looking at has been changed to §6"+name);
 						}
 						else
 						{
 							close(r);
 							getdb().query("UPDATE names SET name='"+name+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-							p.sendMessage("The name of the bookshelf you are looking at has been changed.");
+							p.sendMessage("§cThe name of the bookshelf you are looking at has been changed to §6"+name);
 						}
 					} catch (SQLException e) {
 						e.printStackTrace();
@@ -810,12 +815,12 @@ public class BookShelf extends JavaPlugin{
 				}
 				else
 				{
-					p.sendMessage("Please look at a bookshelf when using this command");
+					p.sendMessage("§cPlease look at a bookshelf when using this command");
 				}
 			}
 			else
 			{
-				p.sendMessage("You don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command!");
 			}
 			return true;
 		}
@@ -829,7 +834,7 @@ public class BookShelf extends JavaPlugin{
 			if(useTowny)
 				return TownyCommands.onCommand(sender, label, args, this);
 
-			sender.sendMessage("Towny is not enabled on this server.");
+			sender.sendMessage("§cTowny Support is not enabled on this server.");
 			return true;
 		}
 		/*		else if(cmd.getName().equalsIgnoreCase("bsdisplay") || cmd.getName().equalsIgnoreCase("bsd"))
@@ -874,7 +879,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				p.sendMessage("You don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command!");
 			}
 			return true;
 		}*/

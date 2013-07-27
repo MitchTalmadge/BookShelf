@@ -157,7 +157,7 @@ public class BookListener implements Listener {
 									{
 										if(!TownyHandler.checkCanDoAction(j.getClickedBlock(), TownyHandler.convertToResident(j.getPlayer()), TownyHandler.OPEN_SHOP))
 										{
-											j.getPlayer().sendMessage("You are not allowed to open BookShops here!");
+											j.getPlayer().sendMessage("§cYou are not allowed to open BookShops here!");
 											j.setCancelled(true);
 											return;
 										}
@@ -170,7 +170,7 @@ public class BookListener implements Listener {
 											ApplicableRegionSet set = regionManager.getApplicableRegions(j.getClickedBlock().getLocation());
 											if(!set.allows(DefaultFlag.ENABLE_SHOP, BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !set.isOwnerOfAll(BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !j.getPlayer().isOp())
 											{
-												j.getPlayer().sendMessage("You are not allowed to open BookShops here!");
+												j.getPlayer().sendMessage("§cYou are not allowed to open BookShops here!");
 												j.setCancelled(true);
 												return;
 											}
@@ -184,7 +184,7 @@ public class BookListener implements Listener {
 									{
 										if(!TownyHandler.checkCanDoAction(j.getClickedBlock(), TownyHandler.convertToResident(j.getPlayer()), TownyHandler.OPEN_SHELF))
 										{
-											j.getPlayer().sendMessage("You are not allowed to open bookshelves here!");
+											j.getPlayer().sendMessage("§cYou are not allowed to open bookshelves here!");
 											j.setCancelled(true);
 											return;
 										}
@@ -197,7 +197,7 @@ public class BookListener implements Listener {
 											ApplicableRegionSet set = regionManager.getApplicableRegions(j.getClickedBlock().getLocation());
 											if(!set.allows(DefaultFlag.CHEST_ACCESS, BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !set.isOwnerOfAll(BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !j.getPlayer().isOp())
 											{
-												j.getPlayer().sendMessage("You are not allowed to open bookshelves here!");
+												j.getPlayer().sendMessage("§cYou are not allowed to open bookshelves here!");
 												j.setCancelled(true);
 												return;
 											}
@@ -717,7 +717,7 @@ public class BookListener implements Listener {
 				if(j.getCurrentItem().getType() == Material.BOOK || j.getCursor().getType() == Material.BOOK)
 				{
 					j.setCancelled(true);
-					p.sendMessage("Books may only be stored in bookshelves.");
+					p.sendMessage("§cBooks may only be stored in bookshelves.");
 					return;
 				}
 			}
@@ -726,7 +726,7 @@ public class BookListener implements Listener {
 				if(j.getCurrentItem().getType() == Material.BOOK_AND_QUILL || j.getCursor().getType() == Material.BOOK_AND_QUILL)
 				{
 					j.setCancelled(true);
-					p.sendMessage("Book and Quills may only be stored in bookshelves.");
+					p.sendMessage("§cBook and Quills may only be stored in bookshelves.");
 					return;
 				}
 			}
@@ -735,7 +735,7 @@ public class BookListener implements Listener {
 				if(j.getCurrentItem().getType() == Material.WRITTEN_BOOK || j.getCursor().getType() == Material.WRITTEN_BOOK)
 				{
 					j.setCancelled(true);
-					p.sendMessage("Signed Books may only be stored in bookshelves.");
+					p.sendMessage("§cSigned Books may only be stored in bookshelves.");
 					return;
 				}
 			}
@@ -744,7 +744,7 @@ public class BookListener implements Listener {
 				if(j.getCurrentItem().getType() == Material.MAP || j.getCursor().getType() == Material.MAP || j.getCurrentItem().getType() == Material.EMPTY_MAP || j.getCursor().getType() == Material.EMPTY_MAP)
 				{
 					j.setCancelled(true);
-					p.sendMessage("Maps may only be stored in bookshelves.");
+					p.sendMessage("§cMaps may only be stored in bookshelves.");
 					return;
 				}
 			}
@@ -753,7 +753,7 @@ public class BookListener implements Listener {
 				if(j.getCurrentItem().getType() == Material.ENCHANTED_BOOK || j.getCursor().getType() == Material.ENCHANTED_BOOK)
 				{
 					j.setCancelled(true);
-					p.sendMessage("Enchanted Books may only be stored in bookshelves.");
+					p.sendMessage("§cEnchanted Books may only be stored in bookshelves.");
 					return;
 				}
 			}
@@ -762,7 +762,7 @@ public class BookListener implements Listener {
 				if(BookShelf.records.contains(j.getCurrentItem().getType().getId()) || BookShelf.records.contains(j.getCursor().getType().getId()))
 				{
 					j.setCancelled(true);
-					p.sendMessage("Records may only be stored in bookshelves.");
+					p.sendMessage("§cRecords may only be stored in bookshelves.");
 					return;
 				}
 			}
@@ -771,7 +771,7 @@ public class BookListener implements Listener {
 				if(j.getCurrentItem().getType() == Material.PAPER || j.getCursor().getType() == Material.PAPER)
 				{
 					j.setCancelled(true);
-					p.sendMessage("Paper may only be stored in bookshelves.");
+					p.sendMessage("§cPaper may only be stored in bookshelves.");
 					return;
 				}
 			}
@@ -813,10 +813,10 @@ public class BookListener implements Listener {
 						if(money >= price)
 						{
 							BookShelf.economy.withdrawPlayer(j.getWhoClicked().getName(), price);
-							p.sendMessage("Current balance: "+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
+							p.sendMessage("New balance: §6"+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
 							return;
 						}
-						p.sendMessage("Insufficient funds! Current balance: "+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
+						p.sendMessage("§cInsufficient funds! Current balance: §6"+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
 						j.setCancelled(true);
 					}
 					else

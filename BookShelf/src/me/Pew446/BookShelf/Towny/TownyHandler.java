@@ -40,6 +40,8 @@ public class TownyHandler {
 	public static final int TOGGLE = 1;
 	public static final int SHOP = 2;
 	public static final int NAME = 3;
+	public static final int OPEN_SHELF = 4;
+	public static final int OPEN_SHOP = 5;
 
 	public static Resident convertToResident(Player p)
 	{
@@ -63,7 +65,7 @@ public class TownyHandler {
 		}
 	}
 
-	public static boolean checkCanUseCommand(Block b, Resident r, int type)
+	public static boolean checkCanDoAction(Block b, Resident r, int type)
 	{
 		Player p = Bukkit.getPlayer(r.getName());
 		String typeString = null;
@@ -77,6 +79,10 @@ public class TownyHandler {
 			typeString = "shop.";
 		case NAME:
 			typeString = "name.";
+		case OPEN_SHELF:
+			typeString = "open_shelf.";
+		case OPEN_SHOP:
+			typeString = "open_shop.";
 		}
 		TownBlock plot = TownyUniverse.getTownBlock(b.getLocation());
 		if(plot == null)
@@ -315,7 +321,7 @@ public class TownyHandler {
 	{
 		if(location.startsWith("plot"))
 		{
-			setTownPermission(t, location, BookShelf.townyConfig.get("defaults."+"resident"+location.split("_")[1].substring(location.split("_")[1].indexOf("."))));
+			setTownPermission(t, location, BookShelf.townyConfig.get("defaults."+"resident"+location.substring(location.split("_")[1].indexOf(".")+location.split("_")[0].length()+1)));
 		}
 		else
 		{
@@ -327,7 +333,7 @@ public class TownyHandler {
 	{
 		if(location.startsWith("plot"))
 		{
-			return BookShelf.townyConfig.get("defaults."+"resident"+location.split("_")[1].substring(location.split("_")[1].indexOf(".")));
+			return BookShelf.townyConfig.get("defaults."+"resident"+location.substring(location.split("_")[1].indexOf(".")+location.split("_")[0].length()+1));
 		}
 		else
 		{

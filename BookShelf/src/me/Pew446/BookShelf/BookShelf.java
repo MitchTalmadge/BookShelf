@@ -472,7 +472,7 @@ public class BookShelf extends JavaPlugin{
 					if(useTowny)
 					{
 						Resident res = TownyHandler.convertToResident(p);
-						if(!TownyHandler.checkCanUseCommand(loc.getBlock(), res, TownyHandler.UNLIMITED))
+						if(!TownyHandler.checkCanDoAction(loc.getBlock(), res, TownyHandler.UNLIMITED))
 						{
 							sender.sendMessage("You do not have permissions to use that command for this plot.");
 							return true;
@@ -552,7 +552,7 @@ public class BookShelf extends JavaPlugin{
 							if(useTowny)
 							{
 								Resident res = TownyHandler.convertToResident(p);
-								if(!TownyHandler.checkCanUseCommand(loc.getBlock(), res, TownyHandler.TOGGLE))
+								if(!TownyHandler.checkCanDoAction(loc.getBlock(), res, TownyHandler.TOGGLE))
 								{
 									sender.sendMessage("You do not have permissions to use that command for this plot.");
 									return true;
@@ -657,7 +657,7 @@ public class BookShelf extends JavaPlugin{
 					if(useTowny)
 					{
 						Resident res = TownyHandler.convertToResident(p);
-						if(!TownyHandler.checkCanUseCommand(loc.getBlock(), res, TownyHandler.SHOP))
+						if(!TownyHandler.checkCanDoAction(loc.getBlock(), res, TownyHandler.SHOP))
 						{
 							sender.sendMessage("You do not have permissions to use that command for this plot.");
 							return true;
@@ -784,7 +784,7 @@ public class BookShelf extends JavaPlugin{
 					if(useTowny)
 					{
 						Resident res = TownyHandler.convertToResident(p);
-						if(!TownyHandler.checkCanUseCommand(loc.getBlock(), res, TownyHandler.NAME))
+						if(!TownyHandler.checkCanDoAction(loc.getBlock(), res, TownyHandler.NAME))
 						{
 							sender.sendMessage("You do not have permissions to use that command for this plot.");
 							return true;

@@ -21,7 +21,7 @@ import com.palmergames.bukkit.towny.object.TownBlock;
 public class TownyCommands {
 
 	static ArrayList<String> level0 = new ArrayList<String>(Arrays.asList("town", "resident", "plot"));
-	static ArrayList<String> level1 = new ArrayList<String>(Arrays.asList("unlimited", "toggle", "shop", "name"));
+	static ArrayList<String> level1 = new ArrayList<String>(Arrays.asList("unlimited", "toggle", "shop", "name", "open_shelf", "open_shop"));
 	static ArrayList<String> level2a = new ArrayList<String>(Arrays.asList("resident", "ally", "outsider"));
 	static ArrayList<String> level2b = new ArrayList<String>(Arrays.asList("friend", "ally", "outsider"));
 	static ArrayList<String> level3 = new ArrayList<String>(Arrays.asList("on", "off"));	
@@ -60,7 +60,7 @@ public class TownyCommands {
 								TownBlock currentPlot = TownyHandler.getPlotFromResidentCoords(res);
 								if(!TownyHandler.checkPlotInResidentsTown(currentPlot, res))
 								{
-									sender.sendMessage("This plot does not belong to "+res.getTown().getName()+".");
+									sender.sendMessage("This plot does not belong to §6"+res.getTown().getName()+"§f.");
 									return true;
 								}
 								if(!TownyHandler.checkPlotIsOwned(currentPlot))

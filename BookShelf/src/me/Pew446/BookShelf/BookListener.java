@@ -46,6 +46,7 @@ import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 
 import me.Pew446.BookShelf.BookShelf;
+import me.Pew446.BookShelf.Towny.TownyHandler;
 
 public class BookListener implements Listener {
 	public static BookShelf plugin;
@@ -65,19 +66,19 @@ public class BookListener implements Listener {
 	private String lore;
 	private int damage;
 	static ResultSet r;
-		
+
 	private void close(ResultSet r) throws SQLException
 	{
 		BookShelf.close(r);
 	}
-	
+
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onClick(PlayerInteractEvent j)
 	{
 		Player p = j.getPlayer();
 		if(j.isCancelled())
 			return;
-		
+
 		if(j.getClickedBlock() != null)
 		{
 			if(j.getClickedBlock().getType() == Material.BOOKSHELF)
@@ -90,7 +91,7 @@ public class BookListener implements Listener {
 					}
 					if(j.getAction() == Action.RIGHT_CLICK_BLOCK && !loading)
 					{
-						
+
 						Location loc = j.getClickedBlock().getLocation();
 						if(!plugin.getConfig().getBoolean("top-bottom_access"))
 						{
@@ -152,6 +153,15 @@ public class BookListener implements Listener {
 								if(r.getBoolean("bool") && BookShelf.economy != null)
 								{ //Enabled
 									close(r);
+									if(plugin.useTowny)
+									{
+										if(!TownyHandler.checkCanDoAction(j.getClickedBlock(), TownyHandler.convertToResident(j.getPlayer()), TownyHandler.OPEN_SHOP))
+										{
+											j.getPlayer().sendMessage("You are not allowed to open BookShops here!");
+											j.setCancelled(true);
+											return;
+										}
+									}
 									if(BookShelf.worldGuard != null)
 									{
 										RegionManager regionManager = BookShelf.worldGuard.getRegionManager(j.getPlayer().getWorld());
@@ -170,6 +180,15 @@ public class BookListener implements Listener {
 								else
 								{ //Disabled
 									close(r);
+									if(plugin.useTowny)
+									{
+										if(!TownyHandler.checkCanDoAction(j.getClickedBlock(), TownyHandler.convertToResident(j.getPlayer()), TownyHandler.OPEN_SHELF))
+										{
+											j.getPlayer().sendMessage("You are not allowed to open bookshelves here!");
+											j.setCancelled(true);
+											return;
+										}
+									}
 									if(BookShelf.worldGuard != null)
 									{
 										RegionManager regionManager = BookShelf.worldGuard.getRegionManager(j.getPlayer().getWorld());
@@ -281,7 +300,7 @@ public class BookListener implements Listener {
 									ArrayList<Integer> amt = new ArrayList<Integer>();
 									ArrayList<String> lore = new ArrayList<String>();
 									ArrayList<Integer> dmg = new ArrayList<Integer>();
-									
+
 									while(r.next())
 									{
 										auth.add(r.getString("author"));
@@ -563,7 +582,7 @@ public class BookListener implements Listener {
 			return;
 		breakShelf(j.getBlock().getLocation(), true);
 	}
-	
+
 	public void breakShelf(Location loc, boolean dropItems) {
 		if(map.containsKey(loc))
 		{
@@ -574,115 +593,115 @@ public class BookListener implements Listener {
 				viewers.get(i).closeInventory();
 			}
 		}
-			try {
-				r = BookShelf.getdb().query("SELECT * FROM items WHERE x=" + loc.getBlockX() + " AND y=" + loc.getBlockY() + " AND z=" + loc.getBlockZ() + ";");
-				ArrayList<String> auth = new ArrayList<String>();
-				ArrayList<String> titl = new ArrayList<String>();
-				ArrayList<Integer> type = new ArrayList<Integer>();
-				ArrayList<Integer> id = new ArrayList<Integer>();
-				ArrayList<Integer> amt = new ArrayList<Integer>();
-				ArrayList<String> lore = new ArrayList<String>();
-				ArrayList<Integer> dmg = new ArrayList<Integer>();
-				while(r.next())
-				{
-					auth.add(r.getString("author"));
-					titl.add(r.getString("title"));
-					id.add(r.getInt("id"));
-					type.add(r.getInt("type"));
-					amt.add(r.getInt("amt"));
-					lore.add(r.getString("lore"));
-					dmg.add(r.getInt("damage"));
-					
-				}
-				close(r);
-				ArrayList<String> pages = new ArrayList<String>();
-				String enchant = "";
-				BookShelf.getdb().getConnection().setAutoCommit(false);
-				for(int i=0;i<id.size();i++)
-				{
-					if(type.get(i) == Material.ENCHANTED_BOOK.getId())
-					{
-						r = BookShelf.getdb().query("SELECT * FROM enchant WHERE id="+id.get(i)+";");
-						while(r.next())
-						{
-							enchant = r.getString("type");
-							elvl = r.getInt("level");
-						}
-						close(r);
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						etype = Enchantment.getByName(enchant);
-						if(dropItems)
-							dropItem(generateItemStack(2).clone(), loc);
-					}
-					else if(type.get(i) == Material.MAP.getId())
-					{
-						r = BookShelf.getdb().query("SELECT * FROM maps WHERE id="+id.get(i)+";");
-						while(r.next())
-						{
-							mapdur = r.getShort("durability");
-						}
-						close(r);
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						if(dropItems)
-							dropItem(generateItemStack(3).clone(), loc);
-					}
-					else if(type.get(i) == Material.WRITTEN_BOOK.getId() || type.get(i) == Material.BOOK_AND_QUILL.getId())
-					{
-						r = BookShelf.getdb().query("SELECT * FROM pages WHERE id="+id.get(i)+";");
-						while(r.next())
-						{
-							pages.add(r.getString("text"));
-						}
-						close(r);
-						String[] thepages = null;
-						
-						if(pages.size() > 0)
-						{
-							thepages = new String[pages.size()];
-							thepages = pages.toArray(thepages);
-						}
-						if(type.get(i) == Material.WRITTEN_BOOK.getId())
-						{
-							Book(titl.get(i), auth.get(i), thepages, lore.get(i), dmg.get(i));
-							if(dropItems)
-								dropItem(generateItemStack(0).clone(), loc);
-							pages.clear();
-						}
-						else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
-						{
-							Book("null", "null", thepages, lore.get(i), dmg.get(i));
-							if(dropItems)
-								dropItem(generateItemStack(1).clone(), loc);
-							pages.clear();
-						}
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						BookShelf.getdb().query("DELETE FROM pages WHERE id=" + id.get(i) + ";");
-					}
-					else if(BookShelf.allowedItems.contains(type.get(i)))
-					{
-						BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-						if(dropItems)
-							dropItem(new ItemStack(type.get(i)), loc);
-					}
-				}
-				BookShelf.getdb().query("DELETE FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-				BookShelf.getdb().query("DELETE FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-				BookShelf.getdb().query("DELETE FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-				BookShelf.getdb().query("DELETE FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-				//BookShelf.getdb().query("DELETE FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-				BookShelf.getdb().getConnection().commit();
-				BookShelf.getdb().getConnection().setAutoCommit(true);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			if(plugin.autoToggle)
+		try {
+			r = BookShelf.getdb().query("SELECT * FROM items WHERE x=" + loc.getBlockX() + " AND y=" + loc.getBlockY() + " AND z=" + loc.getBlockZ() + ";");
+			ArrayList<String> auth = new ArrayList<String>();
+			ArrayList<String> titl = new ArrayList<String>();
+			ArrayList<Integer> type = new ArrayList<Integer>();
+			ArrayList<Integer> id = new ArrayList<Integer>();
+			ArrayList<Integer> amt = new ArrayList<Integer>();
+			ArrayList<String> lore = new ArrayList<String>();
+			ArrayList<Integer> dmg = new ArrayList<Integer>();
+			while(r.next())
 			{
-				if(plugin.autoToggleMap1.containsKey(loc))
+				auth.add(r.getString("author"));
+				titl.add(r.getString("title"));
+				id.add(r.getInt("id"));
+				type.add(r.getInt("type"));
+				amt.add(r.getInt("amt"));
+				lore.add(r.getString("lore"));
+				dmg.add(r.getInt("damage"));
+
+			}
+			close(r);
+			ArrayList<String> pages = new ArrayList<String>();
+			String enchant = "";
+			BookShelf.getdb().getConnection().setAutoCommit(false);
+			for(int i=0;i<id.size();i++)
+			{
+				if(type.get(i) == Material.ENCHANTED_BOOK.getId())
 				{
-					plugin.autoToggleMap1.remove(loc);
-					plugin.autoToggleMap2.remove(loc);
+					r = BookShelf.getdb().query("SELECT * FROM enchant WHERE id="+id.get(i)+";");
+					while(r.next())
+					{
+						enchant = r.getString("type");
+						elvl = r.getInt("level");
+					}
+					close(r);
+					BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
+					etype = Enchantment.getByName(enchant);
+					if(dropItems)
+						dropItem(generateItemStack(2).clone(), loc);
+				}
+				else if(type.get(i) == Material.MAP.getId())
+				{
+					r = BookShelf.getdb().query("SELECT * FROM maps WHERE id="+id.get(i)+";");
+					while(r.next())
+					{
+						mapdur = r.getShort("durability");
+					}
+					close(r);
+					BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
+					if(dropItems)
+						dropItem(generateItemStack(3).clone(), loc);
+				}
+				else if(type.get(i) == Material.WRITTEN_BOOK.getId() || type.get(i) == Material.BOOK_AND_QUILL.getId())
+				{
+					r = BookShelf.getdb().query("SELECT * FROM pages WHERE id="+id.get(i)+";");
+					while(r.next())
+					{
+						pages.add(r.getString("text"));
+					}
+					close(r);
+					String[] thepages = null;
+
+					if(pages.size() > 0)
+					{
+						thepages = new String[pages.size()];
+						thepages = pages.toArray(thepages);
+					}
+					if(type.get(i) == Material.WRITTEN_BOOK.getId())
+					{
+						Book(titl.get(i), auth.get(i), thepages, lore.get(i), dmg.get(i));
+						if(dropItems)
+							dropItem(generateItemStack(0).clone(), loc);
+						pages.clear();
+					}
+					else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
+					{
+						Book("null", "null", thepages, lore.get(i), dmg.get(i));
+						if(dropItems)
+							dropItem(generateItemStack(1).clone(), loc);
+						pages.clear();
+					}
+					BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
+					BookShelf.getdb().query("DELETE FROM pages WHERE id=" + id.get(i) + ";");
+				}
+				else if(BookShelf.allowedItems.contains(type.get(i)))
+				{
+					BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
+					if(dropItems)
+						dropItem(new ItemStack(type.get(i)), loc);
 				}
 			}
+			BookShelf.getdb().query("DELETE FROM copy WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			BookShelf.getdb().query("DELETE FROM shop WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			BookShelf.getdb().query("DELETE FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			BookShelf.getdb().query("DELETE FROM enable WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			//BookShelf.getdb().query("DELETE FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			BookShelf.getdb().getConnection().commit();
+			BookShelf.getdb().getConnection().setAutoCommit(true);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		if(plugin.autoToggle)
+		{
+			if(plugin.autoToggleMap1.containsKey(loc))
+			{
+				plugin.autoToggleMap1.remove(loc);
+				plugin.autoToggleMap2.remove(loc);
+			}
+		}
 	}
 
 	@EventHandler
@@ -971,7 +990,7 @@ public class BookListener implements Listener {
 		double zs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
 		loc.getWorld().dropItem(new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys, loc.getZ() + zs), item);
 	}
-	
+
 	@EventHandler
 	public void onPlace(BlockPlaceEvent j)
 	{
@@ -1169,15 +1188,15 @@ public class BookListener implements Listener {
 		}
 
 		this.pages = sPages;
-		
+
 		if(bookData.getLore() != null)
 			this.lore = bookData.getLore().get(0);
 		else
 			this.lore = null;
 		this.damage = bookItem.getDurability();
-		
+
 	}
-	
+
 	void Book(String title, String author, String[] pages, String lore, int damage) 
 	{
 		this.title = title;
@@ -1186,37 +1205,37 @@ public class BookListener implements Listener {
 		this.lore = lore;
 		this.damage = damage;
 	}
-	
+
 	public String getAuthor()
 	{
 		return author;
 	}
-	
+
 	public void setAuthor(String sAuthor)
 	{
 		author = sAuthor;
 	}
-	
+
 	public String getTitle()
 	{
 		return title;
 	}
-	
+
 	public String[] getPages()
 	{
 		return pages;
 	}
-	
+
 	public String getLore()
 	{
 		return lore;
 	}
-	
+
 	public int getDamage()
 	{
 		return damage;
 	}
-	
+
 	public ItemStack generateItemStack(int type)
 	{
 		switch(type)
@@ -1224,7 +1243,7 @@ public class BookListener implements Listener {
 		case 0:
 			ItemStack written_book = new ItemStack(Material.WRITTEN_BOOK);
 			BookMeta new_written_book = (BookMeta)written_book.getItemMeta();
-			
+
 			new_written_book.setAuthor(author);
 			new_written_book.setTitle(title);
 			new_written_book.setDisplayName(title);
@@ -1247,7 +1266,7 @@ public class BookListener implements Listener {
 		case 1:
 			ItemStack baq = new ItemStack(Material.BOOK_AND_QUILL);
 			BookMeta newbaq = (BookMeta)baq.getItemMeta();
-			
+
 			newbaq.setAuthor(author);
 			newbaq.setTitle(title);
 			if(lore != null && !lore.equals(""))
@@ -1267,14 +1286,14 @@ public class BookListener implements Listener {
 			{
 				newbaq.addPage("");
 			}
-			
+
 			baq.setItemMeta(newbaq);
 			baq.setDurability((short) damage);
 			return baq;
 		case 2:
 			ItemStack enchanted_book = new ItemStack(Material.ENCHANTED_BOOK);
 			EnchantmentStorageMeta new_enchanted_book = (EnchantmentStorageMeta)enchanted_book.getItemMeta();
-			
+
 			new_enchanted_book.addStoredEnchant(etype, elvl, false);
 			enchanted_book.setItemMeta(new_enchanted_book);
 			return enchanted_book;
@@ -1286,5 +1305,5 @@ public class BookListener implements Listener {
 		}
 		return null;
 	}
-	
+
 }

@@ -7,19 +7,27 @@
 defaults:
     town:
         unlimited:
-            resident: false
+            resident: true
             ally: false
             outsider: false
         toggle:
-            resident: false
+            resident: true
             ally: false
             outsider: false
         shop:
-            resident: false
+            resident: true
             ally: false
             outsider: false
         name:
-            resident: false
+            resident: true
+            ally: false
+            outsider: false
+        open_shelf:
+            resident: true
+            ally: false
+            outsider: false
+        open_shop:
+            resident: true
             ally: false
             outsider: false
     resident:
@@ -39,5 +47,12 @@ defaults:
             friend: true
             ally: false
             outsider: false
-    
+        open_shelf:
+            friend: true
+            ally: false
+            outsider: false
+        open_shop:
+            resident: true
+            ally: false
+            outsider: false
 towns:     

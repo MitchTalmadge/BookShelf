@@ -8,6 +8,7 @@ package me.Pew446.BookShelf.Towny;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import me.Pew446.BookShelf.BookShelf;
 
@@ -258,14 +259,21 @@ public class TownyCommands {
 	private static void showPermissions(Resident res, int type, CommandSender sender)
 	{
 		TownBlock block = TownyHandler.getPlotFromResidentCoords(res);
+		if(type == 2 && block == null)
+		{
+			sender.sendMessage("You are not standing on a plot!");
+			return;
+		}
 		if(block != null)
 		{
 			if(!block.hasTown())
 			{
+				sender.sendMessage("You are not standing on a plot!");
 				return;
 			}
 			if(!TownyHandler.checkPlotInAnyTown(block))
 			{
+				sender.sendMessage("You are not standing on a plot!");
 				return;
 			}
 			if(type == 2)
@@ -273,80 +281,102 @@ public class TownyCommands {
 				if(TownyHandler.checkPlotIsOwned(block))
 				{
 					String plotString = TownyHandler.getPlotStringFromCoords(block.getCoord());
-					String permString = "";
-					for(String s : level1)
+					ArrayList<String> permStrings = new ArrayList<String>();
+					permStrings.add("§2Plot Permissions: ");
+					String currPermString = "";
+					for(int i = 0; i<level1.size(); i++)
 					{
-						permString += "§a"+s+" = §7";
+						currPermString += "§a"+level1.get(i)+" = §7";
 						for(String s2 : level2b)
 						{
 							String value = "-";
 							try {
-								if((Boolean)TownyHandler.getTownPermission(block.getTown(), "plot."+plotString+"."+s+"."+s2))
+								if((Boolean)TownyHandler.getTownPermission(block.getTown(), "plot."+plotString+"."+level1.get(i)+"."+s2))
 								{
 									value = s2.substring(0, 1);
 								}
 							} catch (NotRegisteredException e) {
 								value = "?";
 							}
-							permString += value;
+							currPermString += value;
 						}
-						permString += " ";
+						currPermString += " ";
+						if((i+1) % 4 == 0)
+						{
+							permStrings.add(new String(currPermString));
+							currPermString = "";
+						}
 					}
-					sender.sendMessage(new String[] {
-							"§2Plot Permissions: ",
-							permString});
+					permStrings.add(currPermString);
+					sender.sendMessage(permStrings.toArray(new String[permStrings.size()]));
+				}
+				else
+				{
+					sender.sendMessage("You are not standing on a plot!");
 				}
 			}
 		}
 		if(type == 0)
 		{
-			String permString = "";
-			for(String s : level1)
+			ArrayList<String> permStrings = new ArrayList<String>();
+			String currPermString = "";
+			permStrings.add("§2Town Permissions: ");
+			for(int i = 0; i<level1.size(); i++)
 			{
-				permString += "§a"+s+" = §7";
+				currPermString += "§a"+level1.get(i)+" = §7";
 				for(String s2 : level2a)
 				{
 					String value = "-";
 					try {
-						if((Boolean)TownyHandler.getTownPermission(res.getTown(), "town."+s+"."+s2))
+						if((Boolean)TownyHandler.getTownPermission(res.getTown(), "town."+level1.get(i)+"."+s2))
 						{
 							value = s2.substring(0, 1);
 						}
 					} catch (NotRegisteredException e) {
 						value = "?";
 					}
-					permString += value;
+					currPermString += value;
 				}
-				permString += " ";
+				currPermString += " ";
+				if((i+1) % 4 == 0)
+				{
+					permStrings.add(new String(currPermString));
+					currPermString = "";
+				}
 			}
-			sender.sendMessage(new String[] {
-					"§2Town Permissions: ",
-					permString});
+			permStrings.add(currPermString);
+			sender.sendMessage(permStrings.toArray(new String[permStrings.size()]));
 		}
 		else if(type == 1)
 		{
-			String permString = "";
-			for(String s : level1)
+			ArrayList<String> permStrings = new ArrayList<String>();
+			String currPermString = "";
+			permStrings.add("§2Resident Permissions: ");
+			for(int i = 0; i<level1.size(); i++)
 			{
-				permString += "§a"+s+" = §7";
+				currPermString += "§a"+level1.get(i)+" = §7";
 				for(String s2 : level2b)
 				{
 					String value = "-";
 					try {
-						if((Boolean)TownyHandler.getTownPermission(res.getTown(), "resident."+s+"."+s2))
+						if((Boolean)TownyHandler.getTownPermission(res.getTown(), "resident."+level1.get(i)+"."+s2))
 						{
 							value = s2.substring(0, 1);
 						}
 					} catch (NotRegisteredException e) {
 						value = "?";
 					}
-					permString += value;
+					currPermString += value;
 				}
-				permString += " ";
+				currPermString += " ";
+				if((i+1) % 4 == 0)
+				{
+					permStrings.add(new String(currPermString));
+					currPermString = "";
+				}
 			}
-			sender.sendMessage(new String[] {
-					"§2Resident Permissions: ",
-					permString});
+			permStrings.add(currPermString);
+			sender.sendMessage(permStrings.toArray(new String[permStrings.size()]));
 		}
 	}
 }

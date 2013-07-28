@@ -52,7 +52,7 @@ defaults:
             ally: false
             outsider: false
         open_shop:
-            resident: true
+            friend: true
             ally: false
             outsider: false
 towns:     

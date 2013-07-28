@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import me.Pew446.BookShelf.BookListener;
+import me.Pew446.BookShelf.DBUpdates.DBUpdate;
+import me.Pew446.BookShelf.DBUpdates.Version0To1;
 import me.Pew446.BookShelf.LWC.LWCPluginHandler;
 import me.Pew446.BookShelf.Towny.TownyCommands;
 import me.Pew446.BookShelf.Towny.TownyHandler;
@@ -350,175 +352,11 @@ public class BookShelf extends JavaPlugin{
 			r.next();
 			int version = r.getInt("version");
 			close(r);
-
+			DBUpdate updater = new DBUpdate(logger, r);
 			switch(version)
 			{
 			case 0:
-				logger.info("[BookShelf] Updating Database to Version 1.");
-				getdb().query("ALTER TABLE items ADD lore TEXT;");
-				getdb().query("ALTER TABLE items ADD damage INT;");	
-				getdb().query("ALTER TABLE items ADD pages TEXT;");
-				
-				if(usingMySQL())
-				{
-					getdb().query("ALTER TABLE items MODIFY title VARCHAR(128);");
-					getdb().query("ALTER TABLE items MODIFY author VARCHAR(128);");
-				}
-				
-				getdb().query("UPDATE version SET version=1");
-
-				/* CONVERT PAGES SYSTEM */
-				logger.info("[BookShelf] Converting pages.");
-				ArrayList<Integer> idlist = new ArrayList<Integer>();
-				r = getdb().query("SELECT * FROM items WHERE type=386 OR type=387;");
-				while(r.next())
-				{
-					idlist.add(r.getInt("id"));
-				}
-				close(r);
-				if(idlist.size() > 0)
-				{
-					for(int id : idlist)
-					{
-						ArrayList<String> pagelist = new ArrayList<String>();
-						r = getdb().query("SELECT * FROM pages WHERE id="+id+";");
-						while(r.next())
-						{
-							pagelist.add(r.getString("text"));
-						}
-						close(r);
-						String pageString = "";
-						for(String page : pagelist)
-						{
-							pageString+=page+":";
-						}
-						if(pageString.endsWith(":"))
-							pageString = pageString.substring(0, pageString.length()-1);
-						getdb().query("UPDATE items SET pages='"+pageString+"' WHERE id="+id+";");
-					}
-				}
-
-				/* CONVERT ENCHANTMENT SYSTEM */
-				logger.info("[BookShelf] Converting enchanted books.");
-				getdb().query("ALTER TABLE enchant ADD x INT;");
-				getdb().query("ALTER TABLE enchant ADD y INT;");
-				getdb().query("ALTER TABLE enchant ADD z INT;");
-				getdb().query("ALTER TABLE enchant ADD loc INT;");
-
-				idlist = new ArrayList<Integer>();
-				ArrayList<Integer> loclist = new ArrayList<Integer>();
-				ArrayList<Vector> locationlist = new ArrayList<Vector>();
-
-				r = getdb().query("SELECT * FROM items WHERE type=403;");
-				while(r.next())
-				{
-					idlist.add(r.getInt("id"));
-					loclist.add(r.getInt("loc"));
-					locationlist.add(new Vector(r.getInt("x"), r.getInt("y"), r.getInt("z")));
-				}
-				close(r);
-				ArrayList<Integer> loctokeep = new ArrayList<Integer>();
-				ArrayList<Integer> leveltokeep = new ArrayList<Integer>();
-				ArrayList<String> typetokeep = new ArrayList<String>();
-				ArrayList<Vector> locationtokeep = new ArrayList<Vector>();
-				if(idlist.size() > 0)
-				{
-					for(int i = 0; i<idlist.size(); i++)
-					{
-						getdb().query("UPDATE enchant SET x="+locationlist.get(i).getBlockX()+", y="+locationlist.get(i).getBlockY()+", z="+locationlist.get(i).getBlockZ()+", loc="+loclist.get(i)+" WHERE id="+idlist.get(i)+";");
-						r = getdb().query("SELECT * FROM enchant WHERE x="+locationlist.get(i).getBlockX()+" AND y="+locationlist.get(i).getBlockY()+" AND z="+locationlist.get(i).getBlockZ()+" AND loc="+loclist.get(i)+";");
-						int currloctokeep = 0;
-						int currleveltokeep = 0;
-						String currtypetokeep = null;
-						Vector currlocationtokeep = null;
-						
-						while(r.next())
-						{
-							currloctokeep = r.getInt("loc");
-							currleveltokeep = r.getInt("level");
-							currtypetokeep = r.getString("type");
-							currlocationtokeep = new Vector(r.getInt("x"), r.getInt("y"), r.getInt("z"));
-						}
-						close(r);
-						if(currlocationtokeep != null)
-						{
-							loctokeep.add(currloctokeep);
-							leveltokeep.add(currleveltokeep);
-							typetokeep.add(currtypetokeep);
-							locationtokeep.add(currlocationtokeep);
-						}
-					}
-				}
-				
-				getdb().query("DELETE FROM enchant;");
-				
-				if(idlist.size() > 0)
-				{
-					for(int i = 0; i<loctokeep.size(); i++)
-					{
-						getdb().query("INSERT INTO enchant (x,y,z,loc,type,level) VALUES("+locationtokeep.get(i).getBlockX()+","+locationtokeep.get(i).getBlockY()+","+locationtokeep.get(i).getBlockZ()+","+loctokeep.get(i)+",'"+typetokeep.get(i)+"',"+leveltokeep.get(i)+");");
-					}
-				}
-
-
-				/* CONVERT MAPS SYSTEM */
-				logger.info("[BookShelf] Converting maps.");
-				getdb().query("ALTER TABLE maps ADD x INT;");
-				getdb().query("ALTER TABLE maps ADD y INT;");
-				getdb().query("ALTER TABLE maps ADD z INT;");
-				getdb().query("ALTER TABLE maps ADD loc INT;");
-
-				idlist = new ArrayList<Integer>();
-				loclist = new ArrayList<Integer>();
-				locationlist = new ArrayList<Vector>();
-
-				r = getdb().query("SELECT * FROM items WHERE type=358;");
-				while(r.next())
-				{
-					idlist.add(r.getInt("id"));
-					loclist.add(r.getInt("loc"));
-					locationlist.add(new Vector(r.getInt("x"), r.getInt("y"), r.getInt("z")));
-				}
-				close(r);
-				loctokeep = new ArrayList<Integer>();
-				ArrayList<Short> durabilitytokeep = new ArrayList<Short>();
-				locationtokeep = new ArrayList<Vector>();
-				if(idlist.size() > 0)
-				{
-					for(int i = 0; i<idlist.size(); i++)
-					{
-						getdb().query("UPDATE maps SET x="+locationlist.get(i).getBlockX()+", y="+locationlist.get(i).getBlockY()+", z="+locationlist.get(i).getBlockZ()+", loc="+loclist.get(i)+" WHERE id="+idlist.get(i)+";");
-						r = getdb().query("SELECT * FROM maps WHERE x="+locationlist.get(i).getBlockX()+" AND y="+locationlist.get(i).getBlockY()+" AND z="+locationlist.get(i).getBlockZ()+" AND loc="+loclist.get(i)+";");
-						int currloctokeep = 0;
-						short currdurabilitytokeep = 0;
-						Vector currlocationtokeep = null;
-						while(r.next())
-						{
-							currloctokeep = r.getInt("loc");
-							currdurabilitytokeep = r.getShort("durability");
-							currlocationtokeep = new Vector(r.getInt("x"), r.getInt("y"), r.getInt("z"));
-						}
-						close(r);
-						if(currlocationtokeep != null)
-						{
-							loctokeep.add(currloctokeep);
-							durabilitytokeep.add(currdurabilitytokeep);
-							locationtokeep.add(currlocationtokeep);
-						}
-					}
-				}
-				getdb().query("DELETE FROM maps;");
-
-				if(idlist.size() > 0)
-				{
-					for(int i = 0; i<loctokeep.size(); i++)
-					{
-						getdb().query("INSERT INTO maps (x,y,z,loc,durability) VALUES("+locationtokeep.get(i).getBlockX()+","+locationtokeep.get(i).getBlockY()+","+locationtokeep.get(i).getBlockZ()+","+loctokeep.get(i)+","+durabilitytokeep.get(i)+");");
-					}
-				}
-
-				logger.info("[BookShelf] Update to Version 1 Complete.");
-
+				updater.doUpdate(version);
 				updateDb();
 				break;
 			default:

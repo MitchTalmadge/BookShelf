@@ -117,10 +117,10 @@ public class BookShelf extends JavaPlugin{
 		}
 
 		getdb().close();
-		
+
 		if(this.useTowny)
 			TownyHandler.saveConfig();
-		
+
 	}
 	@Override
 	public void onEnable() {
@@ -169,7 +169,7 @@ public class BookShelf extends JavaPlugin{
 		{
 			logger.info("[BookShelf] WorldGuard found and hooked.");
 		}
-		
+
 		getServer().getPluginManager().registerEvents(BookListener, this);
 		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info("["+pdfFile.getName() + "] Enabled BookShelf V" + pdfFile.getVersion());
@@ -249,7 +249,7 @@ public class BookShelf extends JavaPlugin{
 		worldEdit = (WorldEditPlugin) getServer().getPluginManager().getPlugin("WorldEdit");
 		return worldEdit != null;
 	}
-	
+
 	private boolean setupWorldGuard() {
 		worldGuard = (WorldGuardPlugin) getServer().getPluginManager().getPlugin("WorldGuard");
 		return worldGuard != null;
@@ -263,7 +263,7 @@ public class BookShelf extends JavaPlugin{
 	{
 		return getdb() instanceof MySQL;
 	}
-	
+
 	public void sqlConnection() 
 	{
 		boolean enable = config.getBoolean("database.mysql_enabled");
@@ -313,27 +313,25 @@ public class BookShelf extends JavaPlugin{
 			boolean enable = config.getBoolean("database.mysql_enabled");
 			if(enable) //MYSQL
 			{
-				getdb().query("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(32), author VARCHAR(32), lore VARCHAR(32), damage INT, type INT, loc INT, amt INT, primary key (id));");
-				getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text VARCHAR(1000));");
+				getdb().query("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(128), author VARCHAR(128), lore TEXT, damage INT, type INT, loc INT, amt INT, pages TEXT primary key (id));");
 				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
-				getdb().query("CREATE TABLE IF NOT EXISTS enchant (id INT, type VARCHAR(64), level INT);");
-				getdb().query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS enchant (x INT, y INT, z INT, loc INT, type VARCHAR(64), level INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS maps (x INT, y INT, z INT, loc INT, durability SMALLINT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name VARCHAR(64));");
 			}
 			else //SQLITE
 			{
-				getdb().query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title STRING, author STRING, lore STRING, damage INT, type INT, loc INT, amt INT);");
-				getdb().query("CREATE TABLE IF NOT EXISTS pages (id INT, text STRING);");
+				getdb().query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title TEXT, author TEXT, lore TEXT, damage INT, type INT, loc INT, amt INT, pages TEXT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
-				getdb().query("CREATE TABLE IF NOT EXISTS enchant (id INT, type STRING, level INT);");
-				getdb().query("CREATE TABLE IF NOT EXISTS maps (id INT, durability SMALLINT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS enchant (x INT, y INT, z INT, loc INT, type STRING, level INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS maps (x INT, y INT, z INT, loc INT, durability SMALLINT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
-				getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name STRING);");	
+				getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name TEXT);");	
 			}
 			logger.info("[BookShelf] Database Loaded.");
 		} catch (SQLException e) {
@@ -356,17 +354,171 @@ public class BookShelf extends JavaPlugin{
 			switch(version)
 			{
 			case 0:
+				logger.info("[BookShelf] Updating Database to Version 1.");
+				getdb().query("ALTER TABLE items ADD lore TEXT;");
+				getdb().query("ALTER TABLE items ADD damage INT;");	
+				getdb().query("ALTER TABLE items ADD pages TEXT;");
+				
 				if(usingMySQL())
 				{
-					getdb().query("ALTER TABLE items ADD lore VARCHAR(32) AFTER author;");
-					getdb().query("ALTER TABLE items ADD damage INT AFTER lore;");
+					getdb().query("ALTER TABLE items MODIFY title VARCHAR(128);");
+					getdb().query("ALTER TABLE items MODIFY author VARCHAR(128);");
 				}
-				else
-				{
-					getdb().query("ALTER TABLE items ADD lore STRING;");
-					getdb().query("ALTER TABLE items ADD damage INT;");
-				}
+				
 				getdb().query("UPDATE version SET version=1");
+
+				/* CONVERT PAGES SYSTEM */
+				logger.info("[BookShelf] Converting pages.");
+				ArrayList<Integer> idlist = new ArrayList<Integer>();
+				r = getdb().query("SELECT * FROM items WHERE type=386 OR type=387;");
+				while(r.next())
+				{
+					idlist.add(r.getInt("id"));
+				}
+				close(r);
+				if(idlist.size() > 0)
+				{
+					for(int id : idlist)
+					{
+						ArrayList<String> pagelist = new ArrayList<String>();
+						r = getdb().query("SELECT * FROM pages WHERE id="+id+";");
+						while(r.next())
+						{
+							pagelist.add(r.getString("text"));
+						}
+						close(r);
+						String pageString = "";
+						for(String page : pagelist)
+						{
+							pageString+=page+":";
+						}
+						if(pageString.endsWith(":"))
+							pageString = pageString.substring(0, pageString.length()-1);
+						getdb().query("UPDATE items SET pages='"+pageString+"' WHERE id="+id+";");
+					}
+				}
+
+				/* CONVERT ENCHANTMENT SYSTEM */
+				logger.info("[BookShelf] Converting enchanted books.");
+				getdb().query("ALTER TABLE enchant ADD x INT;");
+				getdb().query("ALTER TABLE enchant ADD y INT;");
+				getdb().query("ALTER TABLE enchant ADD z INT;");
+				getdb().query("ALTER TABLE enchant ADD loc INT;");
+
+				idlist = new ArrayList<Integer>();
+				ArrayList<Integer> loclist = new ArrayList<Integer>();
+				ArrayList<Vector> locationlist = new ArrayList<Vector>();
+
+				r = getdb().query("SELECT * FROM items WHERE type=403;");
+				while(r.next())
+				{
+					idlist.add(r.getInt("id"));
+					loclist.add(r.getInt("loc"));
+					locationlist.add(new Vector(r.getInt("x"), r.getInt("y"), r.getInt("z")));
+				}
+				close(r);
+				ArrayList<Integer> loctokeep = new ArrayList<Integer>();
+				ArrayList<Integer> leveltokeep = new ArrayList<Integer>();
+				ArrayList<String> typetokeep = new ArrayList<String>();
+				ArrayList<Vector> locationtokeep = new ArrayList<Vector>();
+				if(idlist.size() > 0)
+				{
+					for(int i = 0; i<idlist.size(); i++)
+					{
+						getdb().query("UPDATE enchant SET x="+locationlist.get(i).getBlockX()+", y="+locationlist.get(i).getBlockY()+", z="+locationlist.get(i).getBlockZ()+", loc="+loclist.get(i)+" WHERE id="+idlist.get(i)+";");
+						r = getdb().query("SELECT * FROM enchant WHERE x="+locationlist.get(i).getBlockX()+" AND y="+locationlist.get(i).getBlockY()+" AND z="+locationlist.get(i).getBlockZ()+" AND loc="+loclist.get(i)+";");
+						int currloctokeep = 0;
+						int currleveltokeep = 0;
+						String currtypetokeep = null;
+						Vector currlocationtokeep = null;
+						
+						while(r.next())
+						{
+							currloctokeep = r.getInt("loc");
+							currleveltokeep = r.getInt("level");
+							currtypetokeep = r.getString("type");
+							currlocationtokeep = new Vector(r.getInt("x"), r.getInt("y"), r.getInt("z"));
+						}
+						close(r);
+						if(currlocationtokeep != null)
+						{
+							loctokeep.add(currloctokeep);
+							leveltokeep.add(currleveltokeep);
+							typetokeep.add(currtypetokeep);
+							locationtokeep.add(currlocationtokeep);
+						}
+					}
+				}
+				
+				getdb().query("DELETE FROM enchant;");
+				
+				if(idlist.size() > 0)
+				{
+					for(int i = 0; i<loctokeep.size(); i++)
+					{
+						getdb().query("INSERT INTO enchant (x,y,z,loc,type,level) VALUES("+locationtokeep.get(i).getBlockX()+","+locationtokeep.get(i).getBlockY()+","+locationtokeep.get(i).getBlockZ()+","+loctokeep.get(i)+",'"+typetokeep.get(i)+"',"+leveltokeep.get(i)+");");
+					}
+				}
+
+
+				/* CONVERT MAPS SYSTEM */
+				logger.info("[BookShelf] Converting maps.");
+				getdb().query("ALTER TABLE maps ADD x INT;");
+				getdb().query("ALTER TABLE maps ADD y INT;");
+				getdb().query("ALTER TABLE maps ADD z INT;");
+				getdb().query("ALTER TABLE maps ADD loc INT;");
+
+				idlist = new ArrayList<Integer>();
+				loclist = new ArrayList<Integer>();
+				locationlist = new ArrayList<Vector>();
+
+				r = getdb().query("SELECT * FROM items WHERE type=358;");
+				while(r.next())
+				{
+					idlist.add(r.getInt("id"));
+					loclist.add(r.getInt("loc"));
+					locationlist.add(new Vector(r.getInt("x"), r.getInt("y"), r.getInt("z")));
+				}
+				close(r);
+				loctokeep = new ArrayList<Integer>();
+				ArrayList<Short> durabilitytokeep = new ArrayList<Short>();
+				locationtokeep = new ArrayList<Vector>();
+				if(idlist.size() > 0)
+				{
+					for(int i = 0; i<idlist.size(); i++)
+					{
+						getdb().query("UPDATE maps SET x="+locationlist.get(i).getBlockX()+", y="+locationlist.get(i).getBlockY()+", z="+locationlist.get(i).getBlockZ()+", loc="+loclist.get(i)+" WHERE id="+idlist.get(i)+";");
+						r = getdb().query("SELECT * FROM maps WHERE x="+locationlist.get(i).getBlockX()+" AND y="+locationlist.get(i).getBlockY()+" AND z="+locationlist.get(i).getBlockZ()+" AND loc="+loclist.get(i)+";");
+						int currloctokeep = 0;
+						short currdurabilitytokeep = 0;
+						Vector currlocationtokeep = null;
+						while(r.next())
+						{
+							currloctokeep = r.getInt("loc");
+							currdurabilitytokeep = r.getShort("durability");
+							currlocationtokeep = new Vector(r.getInt("x"), r.getInt("y"), r.getInt("z"));
+						}
+						close(r);
+						if(currlocationtokeep != null)
+						{
+							loctokeep.add(currloctokeep);
+							durabilitytokeep.add(currdurabilitytokeep);
+							locationtokeep.add(currlocationtokeep);
+						}
+					}
+				}
+				getdb().query("DELETE FROM maps;");
+
+				if(idlist.size() > 0)
+				{
+					for(int i = 0; i<loctokeep.size(); i++)
+					{
+						getdb().query("INSERT INTO maps (x,y,z,loc,durability) VALUES("+locationtokeep.get(i).getBlockX()+","+locationtokeep.get(i).getBlockY()+","+locationtokeep.get(i).getBlockZ()+","+loctokeep.get(i)+","+durabilitytokeep.get(i)+");");
+					}
+				}
+
+				logger.info("[BookShelf] Update to Version 1 Complete.");
+
 				updateDb();
 				break;
 			default:
@@ -386,12 +538,14 @@ public class BookShelf extends JavaPlugin{
 				if(!r.next())
 				{
 					close(r); //Looks like we are making a new database.
+					logger.info("[BookShelf] Creating Database...");
 					getdb().query("CREATE TABLE IF NOT EXISTS version (version INT);");
 					getdb().query("INSERT INTO version (version) VALUES("+currentDatabaseVersion+");");
 				}
 				else
 				{ //We aren't making a new database, but version doesn't exist.... Let's add it.
 					close(r);
+					logger.info("[BookShelf] Adding version to Database...");
 					r = getdb().query("SHOW TABLES LIKE 'version';");
 					if(!r.next())
 					{
@@ -415,6 +569,7 @@ public class BookShelf extends JavaPlugin{
 				if(!r.next())
 				{
 					close(r); //Looks like we are making a new database.
+					logger.info("[BookShelf] Creating Database...");
 					getdb().query("CREATE TABLE IF NOT EXISTS version (version INT);");
 					getdb().query("INSERT INTO version (version) VALUES("+currentDatabaseVersion+");");
 				}
@@ -425,6 +580,7 @@ public class BookShelf extends JavaPlugin{
 					if(!r.next())
 					{
 						close(r);
+						logger.info("[BookShelf] Adding version to Database...");
 						getdb().query("CREATE TABLE IF NOT EXISTS version (version INT);");
 						getdb().query("INSERT INTO version (version) VALUES(0);");
 					}
@@ -941,7 +1097,7 @@ public class BookShelf extends JavaPlugin{
 			if(name.equals(config.getString("default_shelf_name")+" "))
 				name = name.substring(0, name.length()-1);
 		}
-		
+
 		try 
 		{
 			r = getdb().query("SELECT * FROM names WHERE name='"+name+"';");

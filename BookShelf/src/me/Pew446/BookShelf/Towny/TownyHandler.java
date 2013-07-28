@@ -311,7 +311,7 @@ public class TownyHandler {
 		Object result = BookShelf.townyConfig.get("towns."+townName+"."+permission);
 		if(result == null)
 		{
-			return getDefaultConfigValue(permission);
+			return getDefaultConfigValue(t, permission);
 		}
 		
 		return BookShelf.townyConfig.get("towns."+townName+"."+permission);
@@ -329,11 +329,11 @@ public class TownyHandler {
 		}
 	}
 	
-	public static Object getDefaultConfigValue(String location)
+	public static Object getDefaultConfigValue(Town t, String location)
 	{
 		if(location.startsWith("plot"))
 		{
-			return BookShelf.townyConfig.get("defaults."+"resident"+location.substring(location.split("_")[1].indexOf(".")+location.split("_")[0].length()+1));
+			return getTownPermission(t, "resident"+location.substring(location.split("_")[1].indexOf(".")+location.split("_")[0].length()+1));
 		}
 		else
 		{

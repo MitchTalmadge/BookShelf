@@ -957,13 +957,13 @@ public class BookShelf extends JavaPlugin{
 						{
 							close(r);
 							getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+name+"');");
-							p.sendMessage("§cThe name of the bookshelf you are looking at has been changed to §6"+name);
+							p.sendMessage("The name of the bookshelf you are looking at has been changed to §6"+name);
 						}
 						else
 						{
 							close(r);
 							getdb().query("UPDATE names SET name='"+name+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-							p.sendMessage("§cThe name of the bookshelf you are looking at has been changed to §6"+name);
+							p.sendMessage("The name of the bookshelf you are looking at has been changed to §6"+name);
 						}
 					} catch (SQLException e) {
 						e.printStackTrace();

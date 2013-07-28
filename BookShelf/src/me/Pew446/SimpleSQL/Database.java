@@ -23,8 +23,8 @@ public abstract class Database {
 	protected String prefix;
 	protected String dbprefix;
 	private int lastUpdate;
-	private Object syncObject = new Object();
-	private boolean shouldWait = false;
+	private volatile Object syncObject = new Object();
+	private volatile boolean shouldWait = false;
 	
 	/**
 	 * Used for child class super

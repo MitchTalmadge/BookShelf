@@ -10,6 +10,7 @@ default_shelf_name: "BookShelf"
 default_shop_name: "BookShop - %$ each"
 default_openable: true
 top-bottom_access: false
+shelves_can_burn: true
 
 shelf_only_items:
     book: false

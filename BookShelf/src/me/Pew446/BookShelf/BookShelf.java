@@ -63,8 +63,8 @@ public class BookShelf extends JavaPlugin{
 			Material.RECORD_10.getId(),
 			Material.RECORD_11.getId(),
 			Material.RECORD_12.getId(),
-			2256,
-			2257));
+			Material.GOLD_RECORD.getId(),
+			Material.GREEN_RECORD.getId()));
 	public static ArrayList<Integer> allowedItems = new ArrayList<Integer>(Arrays.asList(
 			Material.BOOK.getId(), 
 			Material.BOOK_AND_QUILL.getId(), 

@@ -13,11 +13,6 @@ import com.sk89q.worldedit.bags.BlockBag;
 
 public class WorldEdit_EditSessionFactoryHandler extends EditSessionFactory{
 	
-	public WorldEdit_EditSessionFactoryHandler()
-	{
-		
-	}
-	
 	@Override
 	public EditSession getEditSession(LocalWorld world, int maxBlocks) 
 	{

@@ -6,12 +6,18 @@ Date Created:
 
 package me.Pew446.BookShelf.WorldEdit;
 
-import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.EditSessionFactory;
+import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.LocalWorld;
 import com.sk89q.worldedit.bags.BlockBag;
 
 public class WorldEdit_EditSessionFactoryHandler extends EditSessionFactory{
+	
+	public WorldEdit_EditSessionFactoryHandler()
+	{
+		
+	}
+	
 	@Override
 	public EditSession getEditSession(LocalWorld world, int maxBlocks) 
 	{

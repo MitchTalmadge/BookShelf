@@ -167,8 +167,7 @@ public class BookShelf extends JavaPlugin{
 		if(setupWorldEdit())
 		{
 			logger.info("[BookShelf] WorldEdit found and hooked.");
-			WorldEdit_EditSessionFactoryHandler factory = new WorldEdit_EditSessionFactoryHandler();
-			worldEdit.getWorldEdit().setEditSessionFactory(factory);
+			worldEdit.getWorldEdit().setEditSessionFactory(new WorldEdit_EditSessionFactoryHandler());
 		}
 		
 		if(setupWorldGuard())
@@ -252,16 +251,10 @@ public class BookShelf extends JavaPlugin{
 	}
 
 	private boolean setupWorldEdit() {
-		Plugin test = getServer().getPluginManager().getPlugin("WorldEdit");
-		if(test != null)
-		{
-			worldEdit = (WorldEditPlugin) test;
-			return true;
-		}
-		else
-			return false;
+		worldEdit = (WorldEditPlugin) getServer().getPluginManager().getPlugin("WorldEdit");
+		return worldEdit != null;
 	}
-
+	
 	private boolean setupWorldGuard() {
 		worldGuard = (WorldGuardPlugin) getServer().getPluginManager().getPlugin("WorldGuard");
 		return worldGuard != null;

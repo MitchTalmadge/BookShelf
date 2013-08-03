@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 
 import me.Pew446.BookShelf.BookListener;
 import me.Pew446.BookShelf.DBUpdates.DBUpdate;
-import me.Pew446.BookShelf.DBUpdates.Version0To1;
 import me.Pew446.BookShelf.LWC.LWCPluginHandler;
 import me.Pew446.BookShelf.Towny.TownyCommands;
 import me.Pew446.BookShelf.Towny.TownyHandler;
@@ -82,7 +81,8 @@ public class BookShelf extends JavaPlugin{
 	/* LWC */
 	static LWCPlugin LWC;
 	static LWCPluginHandler LWCPluginHandler;
-
+	public static boolean LWCEnabled;
+	
 	/* AUTO TOGGLE (For shaythegoon) */
 	boolean autoToggle = false;
 	int autoToggleFreq = 10;
@@ -95,12 +95,15 @@ public class BookShelf extends JavaPlugin{
 	/* TOWNY */
 	static Towny towny;
 	public boolean useTowny = false;
-	private WorldEditPlugin worldEdit;
-	static WorldGuardPlugin worldGuard;
-	public static boolean LWCEnabled;
 	public static File townyConfigPath;
 	public static FileConfiguration townyConfig;
 
+	/* WORLD EDIT */
+	private WorldEditPlugin worldEdit;
+	
+	/* WORLD GUARD */
+	static WorldGuardPlugin worldGuard;
+	
 	/* DATABASE */
 	static MySQL mysql;
 	static SQLite sqlite;
@@ -160,13 +163,14 @@ public class BookShelf extends JavaPlugin{
 				loadTownyConfig();
 			}
 		}
-
+		
 		if(setupWorldEdit())
 		{
 			logger.info("[BookShelf] WorldEdit found and hooked.");
-			worldEdit.getWorldEdit().setEditSessionFactory(new WorldEdit_EditSessionFactoryHandler());
+			WorldEdit_EditSessionFactoryHandler factory = new WorldEdit_EditSessionFactoryHandler();
+			worldEdit.getWorldEdit().setEditSessionFactory(factory);
 		}
-
+		
 		if(setupWorldGuard())
 		{
 			logger.info("[BookShelf] WorldGuard found and hooked.");
@@ -248,8 +252,14 @@ public class BookShelf extends JavaPlugin{
 	}
 
 	private boolean setupWorldEdit() {
-		worldEdit = (WorldEditPlugin) getServer().getPluginManager().getPlugin("WorldEdit");
-		return worldEdit != null;
+		Plugin test = getServer().getPluginManager().getPlugin("WorldEdit");
+		if(test != null)
+		{
+			worldEdit = (WorldEditPlugin) test;
+			return true;
+		}
+		else
+			return false;
 	}
 
 	private boolean setupWorldGuard() {

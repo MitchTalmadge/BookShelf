@@ -11,9 +11,6 @@ import org.bukkit.util.Vector;
 
 public class Version0To1 extends Version{
 
-	private Logger logger;
-	private ResultSet r;
-
 	public Version0To1(Logger logger, ResultSet r)
 	{
 		super(logger, r);

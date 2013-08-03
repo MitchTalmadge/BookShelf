@@ -7,8 +7,8 @@ import java.util.logging.Logger;
 import me.Pew446.BookShelf.BookShelf;
 
 public abstract class Version {
-	private ResultSet r;
-	private Logger logger;
+	protected ResultSet r;
+	protected Logger logger;
 
 	public Version(Logger logger, ResultSet r)
 	{

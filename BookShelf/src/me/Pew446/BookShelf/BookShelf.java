@@ -99,7 +99,7 @@ public class BookShelf extends JavaPlugin{
 	public static FileConfiguration townyConfig;
 
 	/* WORLD EDIT */
-	private WorldEditPlugin worldEdit;
+	static WorldEditPlugin worldEdit = null;
 	
 	/* WORLD GUARD */
 	static WorldGuardPlugin worldGuard;
@@ -108,7 +108,6 @@ public class BookShelf extends JavaPlugin{
 	static MySQL mysql;
 	static SQLite sqlite;
 	static ResultSet r;
-
 	@Override
 	public void onDisable() {
 
@@ -164,17 +163,17 @@ public class BookShelf extends JavaPlugin{
 			}
 		}
 		
-		if(setupWorldEdit())
-		{
-			logger.info("[BookShelf] WorldEdit found and hooked.");
-			worldEdit.getWorldEdit().setEditSessionFactory(new WorldEdit_EditSessionFactoryHandler());
-		}
-		
 		if(setupWorldGuard())
 		{
 			logger.info("[BookShelf] WorldGuard found and hooked.");
 		}
-
+		
+		/*if(setupWorldEdit())
+		{
+			logger.info("[BookShelf] WorldEdit found and hooked.");
+		    worldEdit.getWorldEdit().setEditSessionFactory(new WorldEdit_EditSessionFactoryHandler());
+		}*/
+		
 		getServer().getPluginManager().registerEvents(BookListener, this);
 		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info("["+pdfFile.getName() + "] Enabled BookShelf V" + pdfFile.getVersion());
@@ -768,7 +767,7 @@ public class BookShelf extends JavaPlugin{
 					{
 						for(int i = 0;i<args.length;i++)
 						{
-							name1 += args[i]+" ";
+							name1 += args[i].replace("%^", "§")+" ";
 						}
 					}
 					name1.trim();
@@ -798,13 +797,13 @@ public class BookShelf extends JavaPlugin{
 						{
 							close(r);
 							getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+name+"');");
-							p.sendMessage("The name of the bookshelf you are looking at has been changed to §6"+name);
+							p.sendMessage("The name of the bookshelf you are looking at has been changed to "+name);
 						}
 						else
 						{
 							close(r);
 							getdb().query("UPDATE names SET name='"+name+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-							p.sendMessage("The name of the bookshelf you are looking at has been changed to §6"+name);
+							p.sendMessage("The name of the bookshelf you are looking at has been changed to "+name);
 						}
 					} catch (SQLException e) {
 						e.printStackTrace();

@@ -17,6 +17,7 @@ import me.Pew446.BookShelf.Towny.TownyHandler;
 import me.Pew446.BookShelf.WorldEdit.WorldEdit_EditSessionFactoryHandler;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -767,7 +768,7 @@ public class BookShelf extends JavaPlugin{
 					{
 						for(int i = 0;i<args.length;i++)
 						{
-							name1 += args[i].replace("%^", "§")+" ";
+							name1 += args[i]+" ";
 						}
 					}
 					name1.trim();
@@ -779,6 +780,7 @@ public class BookShelf extends JavaPlugin{
 					{
 						name = name1;
 					}
+					name = ChatColor.translateAlternateColorCodes('&', name);
 				}
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{

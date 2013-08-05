@@ -73,6 +73,8 @@ public class BookListener implements Listener {
 		BookShelf.close(r);
 	}
 
+
+	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onClick(PlayerInteractEvent j)
 	{
@@ -1237,7 +1239,7 @@ public class BookListener implements Listener {
 		case 0:
 			ItemStack written_book = new ItemStack(Material.WRITTEN_BOOK);
 			BookMeta new_written_book = (BookMeta)written_book.getItemMeta();
-
+			
 			new_written_book.setAuthor(author);
 			new_written_book.setTitle(title);
 			new_written_book.setDisplayName(title);

@@ -345,7 +345,7 @@ public class BookListener implements Listener {
 										}
 										else if(type.get(i) == Material.WRITTEN_BOOK.getId() || type.get(i) == Material.BOOK_AND_QUILL.getId())
 										{
-											String[] thepages = pages.get(i).split(":");
+											String[] thepages = pages.get(i).split("¬");
 											if(type.get(i) == Material.WRITTEN_BOOK.getId())
 											{
 												Book(titl.get(i), auth.get(i), thepages, lore.get(i), dmg.get(i));
@@ -514,9 +514,9 @@ public class BookListener implements Listener {
 							{
 								for(int k=0;k<getPages().length;k++)
 								{
-									pageString += getPages()[k].replaceAll("'", "''")+":";
+									pageString += getPages()[k].replaceAll("'", "''")+"¬";
 								}
-								if(pageString.endsWith(":"))
+								if(pageString.endsWith("¬"))
 									pageString = pageString.substring(0, pageString.length()-1);
 							}
 							BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt,lore,damage,pages) VALUES ("+x+","+y+","+z+",'"+author+"','"+title+"',"+type+","+i+",1,'"+lore+"', "+damage+", '"+pageString+"');");
@@ -653,7 +653,7 @@ public class BookListener implements Listener {
 				}
 				else if(type.get(i) == Material.WRITTEN_BOOK.getId() || type.get(i) == Material.BOOK_AND_QUILL.getId())
 				{
-					String[] thepages = pages.get(i).split(":");
+					String[] thepages = pages.get(i).split("¬");
 
 					if(type.get(i) == Material.WRITTEN_BOOK.getId())
 					{

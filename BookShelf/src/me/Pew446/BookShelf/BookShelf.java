@@ -52,7 +52,7 @@ public class BookShelf extends JavaPlugin{
 	public static BookShelf plugin;
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public static BookListener BookListener;
-	public static final int currentDatabaseVersion = 1;
+	public static final int currentDatabaseVersion = 2;
 
 	public static ArrayList<Integer> records = new ArrayList<Integer>(Arrays.asList(
 			Material.RECORD_3.getId(),
@@ -305,16 +305,30 @@ public class BookShelf extends JavaPlugin{
 			}
 		}
 	}
-
-	public void sqlDoesDatabaseExist()
+	
+	private int getDbVersion()
 	{
 		try {
-			updateDb();
+			sqlDoesVersionExist();
 			r = getdb().query("SELECT * FROM version");
 			r.next();
 			int version = r.getInt("version");
 			close(r);
-			logger.info("[BookShelf] Current Database Version: "+version);
+			return version;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return -1;
+	}
+
+	public void sqlDoesDatabaseExist()
+	{
+		try {
+			if(getDbVersion() == 1)
+				doDelimiterFix();
+			updateDb();
+			logger.info("[BookShelf] Current Database Version: "+getDbVersion());
 			boolean enable = config.getBoolean("database.mysql_enabled");
 			if(enable) //MYSQL
 			{
@@ -346,6 +360,32 @@ public class BookShelf extends JavaPlugin{
 
 	}	
 
+	private void doDelimiterFix() {
+		try {
+			ArrayList<Integer> ids = new ArrayList<Integer>();
+			ArrayList<String> pageStrings = new ArrayList<String>();
+			r = BookShelf.getdb().query("SELECT * FROM items;");
+			while(r.next())
+			{
+				ids.add(r.getInt("id"));
+				pageStrings.add(r.getString("pages"));
+			}
+			close(r);
+			for(int i = 0; i < ids.size(); i++)
+			{
+				if(pageStrings.get(i) != null)
+				{
+					String pages = pageStrings.get(i).replaceAll(":", "¬");
+					pages = pages.replaceAll("'", "''");
+					BookShelf.getdb().query("UPDATE items SET pages='"+pages+"' WHERE id="+ids.get(i)+";");
+				}
+			}
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	private void updateDb() {
 
 		sqlDoesVersionExist();
@@ -359,6 +399,10 @@ public class BookShelf extends JavaPlugin{
 			switch(version)
 			{
 			case 0:
+				updater.doUpdate(version);
+				updateDb();
+				break;
+			case 1:
 				updater.doUpdate(version);
 				updateDb();
 				break;

@@ -61,10 +61,11 @@ public class Version0To1 extends Version{
 				String pageString = "";
 				for(String page : pagelist)
 				{
-					pageString+=page+":";
+					pageString+=page+"¬";
 				}
-				if(pageString.endsWith(":"))
+				if(pageString.endsWith("¬"))
 					pageString = pageString.substring(0, pageString.length()-1);
+				pageString = pageString.replaceAll("'", "''");
 				BookShelf.getdb().query("UPDATE items SET pages='"+pageString+"' WHERE id="+id+";");
 			}
 		}

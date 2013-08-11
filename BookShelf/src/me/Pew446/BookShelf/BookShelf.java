@@ -325,6 +325,7 @@ public class BookShelf extends JavaPlugin{
 	public void sqlDoesDatabaseExist()
 	{
 		try {
+			sqlDoesVersionExist();
 			if(getDbVersion() == 1)
 				doDelimiterFix();
 			updateDb();
@@ -387,8 +388,6 @@ public class BookShelf extends JavaPlugin{
 		}
 	}
 	private void updateDb() {
-
-		sqlDoesVersionExist();
 
 		try {
 			r = getdb().query("SELECT * FROM version");

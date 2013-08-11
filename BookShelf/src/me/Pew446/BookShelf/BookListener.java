@@ -171,12 +171,13 @@ public class BookListener implements Listener {
 										if(regionManager != null)
 										{
 											ApplicableRegionSet set = regionManager.getApplicableRegions(j.getClickedBlock().getLocation());
-											if(!set.allows(DefaultFlag.ENABLE_SHOP, BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !set.isOwnerOfAll(BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !j.getPlayer().isOp())
-											{
-												j.getPlayer().sendMessage("§cYou are not allowed to open BookShops here!");
-												j.setCancelled(true);
-												return;
-											}
+											if(set.size() > 0)
+												if(!set.allows(DefaultFlag.ENABLE_SHOP, BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !set.isOwnerOfAll(BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !j.getPlayer().isOp())
+												{
+													j.getPlayer().sendMessage("§cYou are not allowed to open BookShops here!");
+													j.setCancelled(true);
+													return;
+												}
 										}
 									}
 								}
@@ -198,12 +199,13 @@ public class BookListener implements Listener {
 										if(regionManager != null)
 										{
 											ApplicableRegionSet set = regionManager.getApplicableRegions(j.getClickedBlock().getLocation());
-											if(!set.allows(DefaultFlag.CHEST_ACCESS, BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !set.isOwnerOfAll(BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !j.getPlayer().isOp())
-											{
-												j.getPlayer().sendMessage("§cYou are not allowed to open bookshelves here!");
-												j.setCancelled(true);
-												return;
-											}
+											if(set.size() > 0)
+												if(!set.allows(DefaultFlag.CHEST_ACCESS, BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !set.isOwnerOfAll(BookShelf.worldGuard.wrapPlayer(j.getPlayer())) && !j.getPlayer().isOp())
+												{
+													j.getPlayer().sendMessage("§cYou are not allowed to open bookshelves here!");
+													j.setCancelled(true);
+													return;
+												}
 										}
 									}
 								}

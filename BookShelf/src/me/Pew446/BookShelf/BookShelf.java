@@ -823,7 +823,7 @@ public class BookShelf extends JavaPlugin{
 						name = name1;
 					}
 					name = ChatColor.translateAlternateColorCodes('&', name);
-					StringEscapeUtils.escapeSql(name);
+					name = name.replaceAll("'", "''");
 				}
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{

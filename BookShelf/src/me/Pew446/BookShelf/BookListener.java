@@ -565,7 +565,7 @@ public class BookListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBreak(BlockBreakEvent j)
 	{
 		if(j.isCancelled())

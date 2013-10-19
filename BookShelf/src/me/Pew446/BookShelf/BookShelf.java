@@ -781,9 +781,11 @@ public class BookShelf extends JavaPlugin{
 			{
 				Location loc = p.getTargetBlock(null, 10).getLocation();
 				String name;
+				String queryName;
 				if(!(args.length >= 1))
 				{
 					name = config.getString("default_shelf_name");
+					queryName = name.replaceAll("'", "''");
 				}
 				else
 				{
@@ -823,7 +825,7 @@ public class BookShelf extends JavaPlugin{
 						name = name1;
 					}
 					name = ChatColor.translateAlternateColorCodes('&', name);
-					name = name.replaceAll("'", "''");
+					queryName = name.replaceAll("'", "''");
 				}
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
@@ -841,14 +843,14 @@ public class BookShelf extends JavaPlugin{
 						if(!r.next())
 						{
 							close(r);
-							getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+name+"');");
-							p.sendMessage("The name of the bookshelf you are looking at has been changed to "+name);
+							getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+queryName+"');");
+							p.sendMessage("The name of the bookshelf you are looking at has been changed to §6"+name);
 						}
 						else
 						{
 							close(r);
-							getdb().query("UPDATE names SET name='"+name+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-							p.sendMessage("The name of the bookshelf you are looking at has been changed to "+name);
+							getdb().query("UPDATE names SET name='"+queryName+"' WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+							p.sendMessage("The name of the bookshelf you are looking at has been changed to §6"+name);
 						}
 					} catch (SQLException e) {
 						e.printStackTrace();

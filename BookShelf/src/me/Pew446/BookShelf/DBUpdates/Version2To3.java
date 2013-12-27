@@ -33,17 +33,11 @@ public class Version2To3 extends Version{
 		{
 			typeID.put(r.getInt("id"), r.getInt("type"));
 		}
-		r.close();
+		close(r);
 		
 		logger.info("[BookShelf] Altering table 'items'...");
-		if(BookShelf.usingMySQL())
-		{
-			BookShelf.getdb().query("ALTER TABLE items ADD enumType VARCHAR(64);");
-		}
-		else
-		{
-			BookShelf.getdb().query("ALTER TABLE items ADD enumType TEXT;");
-		}
+		
+		BookShelf.getdb().query("ALTER TABLE items ADD enumType TEXT;");
 		
 		logger.info("[BookShelf] Updating table 'items'...");
 		for(int i=0; i<typeID.size(); i++)

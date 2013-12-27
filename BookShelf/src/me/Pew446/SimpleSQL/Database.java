@@ -13,8 +13,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Logger;
 
-import me.Pew446.BookShelf.BookShelf;
-
 public abstract class Database {
 	
 	protected Logger logger;

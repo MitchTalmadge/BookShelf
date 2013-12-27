@@ -35,6 +35,10 @@ public class DBUpdate {
 			version = new Version1To2(logger, r);
 			version.doUpdate();
 			break;
+		case 2:
+			version = new Version2To3(logger, r);
+			version.doUpdate();
+			break;
 		}
 	}
 

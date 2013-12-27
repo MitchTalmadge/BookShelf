@@ -2,12 +2,9 @@ package me.Pew446.BookShelf.DBUpdates;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import me.Pew446.BookShelf.BookShelf;
-
-import org.bukkit.util.Vector;
 
 public class Version1To2 extends Version{
 

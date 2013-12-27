@@ -10,7 +10,6 @@ import me.Pew446.BookShelf.BookShelf;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.LocalWorld;

@@ -12,14 +12,14 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
+import me.Pew446.BookShelf.Towny.TownyHandler;
+
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,26 +29,21 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.PlayerBucketEmptyEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
 
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
-
-import me.Pew446.BookShelf.BookShelf;
-import me.Pew446.BookShelf.Towny.TownyHandler;
 
 public class BookListener implements Listener {
 	public static BookShelf plugin;
@@ -299,7 +294,7 @@ public class BookListener implements Listener {
 									r = BookShelf.getdb().query("SELECT * FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
 									ArrayList<String> auth = new ArrayList<String>();
 									ArrayList<String> titl = new ArrayList<String>();
-									ArrayList<Integer> type = new ArrayList<Integer>();
+									ArrayList<String> type = new ArrayList<String>();
 									ArrayList<Integer> id = new ArrayList<Integer>();
 									ArrayList<Integer> loca = new ArrayList<Integer>();
 									ArrayList<Integer> amt = new ArrayList<Integer>();
@@ -312,7 +307,7 @@ public class BookListener implements Listener {
 										auth.add(r.getString("author"));
 										titl.add(r.getString("title"));
 										id.add(r.getInt("id"));
-										type.add(r.getInt("type"));
+										type.add(r.getString("enumType"));
 										loca.add(r.getInt("loc"));
 										amt.add(r.getInt("amt"));
 										lore.add(r.getString("lore"));
@@ -322,7 +317,7 @@ public class BookListener implements Listener {
 									close(r);
 									for(int i=0;i<id.size();i++)
 									{
-										if(type.get(i) == Material.MAP.getId())
+										if(type.get(i) == Material.MAP.name())
 										{
 											r = BookShelf.getdb().query("SELECT * FROM maps WHERE x=" + x + " AND y=" + y + " AND z=" + z + " AND loc=" + loca.get(i)+ ";");
 											while(r.next())
@@ -332,7 +327,7 @@ public class BookListener implements Listener {
 											close(r);
 											inv.setItem(loca.get(i), generateItemStack(3));
 										}
-										else if(type.get(i) == Material.ENCHANTED_BOOK.getId())
+										else if(type.get(i) == Material.ENCHANTED_BOOK.name())
 										{
 											r = BookShelf.getdb().query("SELECT * FROM enchant WHERE x=" + x + " AND y=" + y + " AND z=" + z + " AND loc=" + loca.get(i)+ ";");
 											String enchant = "";
@@ -345,15 +340,15 @@ public class BookListener implements Listener {
 											etype = Enchantment.getByName(enchant);
 											inv.setItem(loca.get(i), generateItemStack(2));
 										}
-										else if(type.get(i) == Material.WRITTEN_BOOK.getId() || type.get(i) == Material.BOOK_AND_QUILL.getId())
+										else if(type.get(i) == Material.WRITTEN_BOOK.name() || type.get(i) == Material.BOOK_AND_QUILL.name())
 										{
 											String[] thepages = pages.get(i).split("¬");
-											if(type.get(i) == Material.WRITTEN_BOOK.getId())
+											if(type.get(i) == Material.WRITTEN_BOOK.name())
 											{
 												Book(titl.get(i), auth.get(i), thepages, lore.get(i), dmg.get(i));
 												inv.setItem(loca.get(i), generateItemStack(0));
 											}
-											else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
+											else if(type.get(i) == Material.BOOK_AND_QUILL.name())
 											{
 												Book(titl.get(i), auth.get(i), thepages, lore.get(i), dmg.get(i));
 												inv.setItem(loca.get(i), generateItemStack(1));
@@ -361,7 +356,7 @@ public class BookListener implements Listener {
 										}
 										else if(BookShelf.allowedItems.contains(type.get(i)))
 										{
-											inv.setItem(loca.get(i), new ItemStack(type.get(i), amt.get(i)));
+											inv.setItem(loca.get(i), new ItemStack(Material.getMaterial(type.get(i)), amt.get(i)));
 										}
 									}
 									auth.clear();
@@ -501,6 +496,7 @@ public class BookListener implements Listener {
 					{
 						if(cont[i] != null)
 						{
+							String type = cont[i].getType().name();
 							if(cont[i].getType() == Material.BOOK_AND_QUILL || cont[i].getType() == Material.WRITTEN_BOOK)
 							{
 								Book(cont[i]);
@@ -510,7 +506,6 @@ public class BookListener implements Listener {
 								if(getLore() != null)
 									lore = getLore().replaceAll("'", "''");
 								int damage = getDamage();
-								int type = cont[i].getTypeId();
 								String pageString = "";
 								if(getPages() != null)
 								{
@@ -525,7 +520,6 @@ public class BookListener implements Listener {
 							}
 							else if(cont[i].getType() == Material.ENCHANTED_BOOK)
 							{
-								int type = cont[i].getTypeId(); 
 								BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
 								EnchantmentStorageMeta book = (EnchantmentStorageMeta)cont[i].getItemMeta();
 								Map<Enchantment, Integer> enchants = book.getStoredEnchants();
@@ -539,15 +533,13 @@ public class BookListener implements Listener {
 							}
 							else if(cont[i].getType() == Material.MAP)
 							{
-								int type = cont[i].getTypeId();
 								ItemStack mapp = cont[i];
 								int dur = mapp.getDurability();
 								BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
 								BookShelf.getdb().query("INSERT INTO maps (x,y,z,loc,durability) VALUES ("+x+","+y+","+z+","+i+",'"+dur+"');");
 							}
-							else if(BookShelf.allowedItems.contains(cont[i].getType().getId()))
+							else if(BookShelf.allowedItems.contains(cont[i].getType()))
 							{
-								int type = cont[i].getTypeId(); 
 								BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
 							}
 						}
@@ -603,7 +595,7 @@ public class BookListener implements Listener {
 			r = BookShelf.getdb().query("SELECT * FROM items WHERE x=" + loc.getBlockX() + " AND y=" + loc.getBlockY() + " AND z=" + loc.getBlockZ() + ";");
 			ArrayList<String> auth = new ArrayList<String>();
 			ArrayList<String> titl = new ArrayList<String>();
-			ArrayList<Integer> type = new ArrayList<Integer>();
+			ArrayList<String> type = new ArrayList<String>();
 			ArrayList<Integer> id = new ArrayList<Integer>();
 			ArrayList<Integer> amt = new ArrayList<Integer>();
 			ArrayList<Integer> loca = new ArrayList<Integer>();
@@ -615,7 +607,7 @@ public class BookListener implements Listener {
 				auth.add(r.getString("author"));
 				titl.add(r.getString("title"));
 				id.add(r.getInt("id"));
-				type.add(r.getInt("type"));
+				type.add(r.getString("enumType"));
 				amt.add(r.getInt("amt"));
 				loca.add(r.getInt("loc"));
 				lore.add(r.getString("lore"));
@@ -627,7 +619,7 @@ public class BookListener implements Listener {
 			BookShelf.getdb().getConnection().setAutoCommit(false);
 			for(int i=0;i<id.size();i++)
 			{
-				if(type.get(i) == Material.ENCHANTED_BOOK.getId())
+				if(type.get(i) == Material.ENCHANTED_BOOK.name())
 				{
 					r = BookShelf.getdb().query("SELECT * FROM enchant WHERE x=" + loc.getBlockX() + " AND y=" + loc.getBlockY() + " AND z=" + loc.getBlockZ() + " AND loc=" + loca.get(i)+ ";");
 					while(r.next())
@@ -641,7 +633,7 @@ public class BookListener implements Listener {
 					if(dropItems)
 						dropItem(generateItemStack(2).clone(), loc);
 				}
-				else if(type.get(i) == Material.MAP.getId())
+				else if(type.get(i) == Material.MAP.name())
 				{
 					r = BookShelf.getdb().query("SELECT * FROM maps WHERE x=" + loc.getBlockX() + " AND y=" + loc.getBlockY() + " AND z=" + loc.getBlockZ() + " AND loc=" + loca.get(i)+ ";");
 					while(r.next())
@@ -653,17 +645,17 @@ public class BookListener implements Listener {
 					if(dropItems)
 						dropItem(generateItemStack(3).clone(), loc);
 				}
-				else if(type.get(i) == Material.WRITTEN_BOOK.getId() || type.get(i) == Material.BOOK_AND_QUILL.getId())
+				else if(type.get(i) == Material.WRITTEN_BOOK.name() || type.get(i) == Material.BOOK_AND_QUILL.name())
 				{
 					String[] thepages = pages.get(i).split("¬");
 
-					if(type.get(i) == Material.WRITTEN_BOOK.getId())
+					if(type.get(i) == Material.WRITTEN_BOOK.name())
 					{
 						Book(titl.get(i), auth.get(i), thepages, lore.get(i), dmg.get(i));
 						if(dropItems)
 							dropItem(generateItemStack(0).clone(), loc);
 					}
-					else if(type.get(i) == Material.BOOK_AND_QUILL.getId())
+					else if(type.get(i) == Material.BOOK_AND_QUILL.name())
 					{
 						Book("null", "null", thepages, lore.get(i), dmg.get(i));
 						if(dropItems)
@@ -674,7 +666,7 @@ public class BookListener implements Listener {
 				else if(BookShelf.allowedItems.contains(type.get(i)))
 				{
 					BookShelf.getdb().query("DELETE FROM items WHERE id=" + id.get(i) + ";");
-					ItemStack stack = new ItemStack(type.get(i));
+					ItemStack stack = new ItemStack(Material.getMaterial(type.get(i)));
 					stack.setAmount(amt.get(i));
 					if(dropItems)
 						dropItem(stack, loc);
@@ -757,7 +749,7 @@ public class BookListener implements Listener {
 			}
 			if(BookShelf.config.getBoolean(prefix+"records"))
 			{
-				if(BookShelf.records.contains(j.getCurrentItem().getType().getId()) || BookShelf.records.contains(j.getCursor().getType().getId()))
+				if(BookShelf.records.contains(j.getCurrentItem().getType()) || BookShelf.records.contains(j.getCursor().getType()))
 				{
 					j.setCancelled(true);
 					p.sendMessage("§cRecords may only be stored in bookshelves.");
@@ -879,7 +871,7 @@ public class BookListener implements Listener {
 								}
 								if(plugin.getConfig().getBoolean("permissions.allow_records") == false || !Bukkit.getPlayer(j.getWhoClicked().getName()).hasPermission("bookshelf.records"))
 								{
-									if(BookShelf.records.contains(j.getCurrentItem().getType().getId()) || BookShelf.records.contains(j.getCursor().getType().getId()))
+									if(BookShelf.records.contains(j.getCurrentItem().getType()) || BookShelf.records.contains(j.getCursor().getType()))
 									{
 										j.setCancelled(true);
 										return;
@@ -893,7 +885,7 @@ public class BookListener implements Listener {
 										return;
 									}
 								}
-								if(BookShelf.allowedItems.contains(j.getCurrentItem().getType().getId()) || BookShelf.allowedItems.contains(j.getCursor().getType().getId()))
+								if(BookShelf.allowedItems.contains(j.getCurrentItem().getType()) || BookShelf.allowedItems.contains(j.getCursor().getType()))
 								{
 									return;
 								}

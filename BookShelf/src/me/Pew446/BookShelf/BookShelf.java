@@ -9,12 +9,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-import me.Pew446.BookShelf.BookListener;
 import me.Pew446.BookShelf.DBUpdates.DBUpdate;
 import me.Pew446.BookShelf.LWC.LWCPluginHandler;
 import me.Pew446.BookShelf.Towny.TownyCommands;
 import me.Pew446.BookShelf.Towny.TownyHandler;
-import org.apache.commons.lang.StringEscapeUtils;
+import me.Pew446.SimpleSQL.Database;
+import me.Pew446.SimpleSQL.MySQL;
+import me.Pew446.SimpleSQL.SQLite;
+import net.milkbowl.vault.economy.Economy;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -37,12 +40,6 @@ import com.palmergames.bukkit.towny.object.Resident;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
-import me.Pew446.SimpleSQL.Database;
-import me.Pew446.SimpleSQL.MySQL;
-import me.Pew446.SimpleSQL.SQLite;
-
-import net.milkbowl.vault.economy.Economy;
-
 public class BookShelf extends JavaPlugin{
 
 	/* SETUP */
@@ -52,27 +49,27 @@ public class BookShelf extends JavaPlugin{
 	public static BookListener BookListener;
 	public static final int currentDatabaseVersion = 2;
 
-	public static ArrayList<Integer> records = new ArrayList<Integer>(Arrays.asList(
-			Material.RECORD_3.getId(),
-			Material.RECORD_4.getId(),
-			Material.RECORD_5.getId(),
-			Material.RECORD_6.getId(),
-			Material.RECORD_7.getId(),
-			Material.RECORD_8.getId(),
-			Material.RECORD_9.getId(),
-			Material.RECORD_10.getId(),
-			Material.RECORD_11.getId(),
-			Material.RECORD_12.getId(),
-			Material.GOLD_RECORD.getId(),
-			Material.GREEN_RECORD.getId()));
-	public static ArrayList<Integer> allowedItems = new ArrayList<Integer>(Arrays.asList(
-			Material.BOOK.getId(), 
-			Material.BOOK_AND_QUILL.getId(), 
-			Material.WRITTEN_BOOK.getId(),
-			Material.ENCHANTED_BOOK.getId(),
-			Material.PAPER.getId(),
-			Material.MAP.getId(),
-			Material.EMPTY_MAP.getId()));
+	public static ArrayList<Material> records = new ArrayList<Material>(Arrays.asList(
+			Material.RECORD_3,
+			Material.RECORD_4,
+			Material.RECORD_5,
+			Material.RECORD_6,
+			Material.RECORD_7,
+			Material.RECORD_8,
+			Material.RECORD_9,
+			Material.RECORD_10,
+			Material.RECORD_11,
+			Material.RECORD_12,
+			Material.GOLD_RECORD,
+			Material.GREEN_RECORD));
+	public static ArrayList<Material> allowedItems = new ArrayList<Material>(Arrays.asList(
+			Material.BOOK, 
+			Material.BOOK_AND_QUILL, 
+			Material.WRITTEN_BOOK,
+			Material.ENCHANTED_BOOK,
+			Material.PAPER,
+			Material.MAP,
+			Material.EMPTY_MAP));
 
 	/* ECONOMY */
 	static Economy economy;
@@ -332,7 +329,7 @@ public class BookShelf extends JavaPlugin{
 			boolean enable = config.getBoolean("database.mysql_enabled");
 			if(enable) //MYSQL
 			{
-				getdb().query("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(128), author VARCHAR(128), lore TEXT, damage INT, type INT, loc INT, amt INT, pages TEXT, PRIMARY KEY (id));");
+				getdb().query("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(128), author VARCHAR(128), lore TEXT, damage INT, enumType VARCHAR(64), loc INT, amt INT, pages TEXT, PRIMARY KEY (id));");
 				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS enchant (x INT, y INT, z INT, loc INT, type VARCHAR(64), level INT);");
@@ -343,7 +340,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else //SQLITE
 			{
-				getdb().query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title TEXT, author TEXT, lore TEXT, damage INT, type INT, loc INT, amt INT, pages TEXT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title TEXT, author TEXT, lore TEXT, damage INT, enumType TEXT, loc INT, amt INT, pages TEXT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS enchant (x INT, y INT, z INT, loc INT, type STRING, level INT);");
@@ -401,6 +398,10 @@ public class BookShelf extends JavaPlugin{
 				updateDb();
 				break;
 			case 1:
+				updater.doUpdate(version);
+				updateDb();
+				break;
+			case 2:
 				updater.doUpdate(version);
 				updateDb();
 				break;

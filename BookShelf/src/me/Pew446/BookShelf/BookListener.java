@@ -516,11 +516,11 @@ public class BookListener implements Listener {
 									if(pageString.endsWith("¬"))
 										pageString = pageString.substring(0, pageString.length()-1);
 								}
-								BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt,lore,damage,pages) VALUES ("+x+","+y+","+z+",'"+author+"','"+title+"',"+type+","+i+",1,'"+lore+"', "+damage+", '"+pageString+"');");
+								BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,enumType,loc,amt,lore,damage,pages) VALUES ("+x+","+y+","+z+",'"+author+"','"+title+"',"+type+","+i+",1,'"+lore+"', "+damage+", '"+pageString+"');");
 							}
 							else if(cont[i].getType() == Material.ENCHANTED_BOOK)
 							{
-								BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
+								BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,enumType,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
 								EnchantmentStorageMeta book = (EnchantmentStorageMeta)cont[i].getItemMeta();
 								Map<Enchantment, Integer> enchants = book.getStoredEnchants();
 								Enchantment enchant = null;
@@ -535,7 +535,7 @@ public class BookListener implements Listener {
 							{
 								ItemStack mapp = cont[i];
 								int dur = mapp.getDurability();
-								BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,type,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
+								BookShelf.getdb().query("INSERT INTO items (x,y,z,author,title,enumType,loc,amt) VALUES ("+x+","+y+","+z+", 'null', 'null',"+type+","+i+","+cont[i].getAmount()+");");
 								BookShelf.getdb().query("INSERT INTO maps (x,y,z,loc,durability) VALUES ("+x+","+y+","+z+","+i+",'"+dur+"');");
 							}
 							else if(BookShelf.allowedItems.contains(cont[i].getType()))

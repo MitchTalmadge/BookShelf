@@ -47,7 +47,7 @@ public class BookShelf extends JavaPlugin{
 	public static BookShelf plugin;
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public static BookListener BookListener;
-	public static final int currentDatabaseVersion = 2;
+	public static final int currentDatabaseVersion = 3;
 
 	public static ArrayList<Material> records = new ArrayList<Material>(Arrays.asList(
 			Material.RECORD_3,
@@ -384,6 +384,8 @@ public class BookShelf extends JavaPlugin{
 		}
 	}
 	private void updateDb() {
+		
+		//Note to self: Update currentDatabaseVersion!! :)
 		int version = -1;
 		try {
 			r = getdb().query("SELECT * FROM version");

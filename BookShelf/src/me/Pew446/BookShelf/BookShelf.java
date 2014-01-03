@@ -49,27 +49,27 @@ public class BookShelf extends JavaPlugin{
 	public static BookListener BookListener;
 	public static final int currentDatabaseVersion = 3;
 
-	public static ArrayList<Material> records = new ArrayList<Material>(Arrays.asList(
-			Material.RECORD_3,
-			Material.RECORD_4,
-			Material.RECORD_5,
-			Material.RECORD_6,
-			Material.RECORD_7,
-			Material.RECORD_8,
-			Material.RECORD_9,
-			Material.RECORD_10,
-			Material.RECORD_11,
-			Material.RECORD_12,
-			Material.GOLD_RECORD,
-			Material.GREEN_RECORD));
-	public static ArrayList<Material> allowedItems = new ArrayList<Material>(Arrays.asList(
-			Material.BOOK, 
-			Material.BOOK_AND_QUILL, 
-			Material.WRITTEN_BOOK,
-			Material.ENCHANTED_BOOK,
-			Material.PAPER,
-			Material.MAP,
-			Material.EMPTY_MAP));
+	public static ArrayList<String> records = new ArrayList<String>(Arrays.asList(
+			Material.RECORD_3.name(),
+			Material.RECORD_4.name(),
+			Material.RECORD_5.name(),
+			Material.RECORD_6.name(),
+			Material.RECORD_7.name(),
+			Material.RECORD_8.name(),
+			Material.RECORD_9.name(),
+			Material.RECORD_10.name(),
+			Material.RECORD_11.name(),
+			Material.RECORD_12.name(),
+			Material.GOLD_RECORD.name(),
+			Material.GREEN_RECORD.name()));
+	public static ArrayList<String> allowedItems = new ArrayList<String>(Arrays.asList(
+			Material.BOOK.name(), 
+			Material.BOOK_AND_QUILL.name(), 
+			Material.WRITTEN_BOOK.name(),
+			Material.ENCHANTED_BOOK.name(),
+			Material.PAPER.name(),
+			Material.MAP.name(),
+			Material.EMPTY_MAP.name()));
 
 	/* ECONOMY */
 	static Economy economy;
@@ -420,6 +420,15 @@ public class BookShelf extends JavaPlugin{
 		if(usingMySQL())
 		{
 			try {
+				r = getdb().query("SHOW TABLES LIKE 'version';");
+				if(r.next())
+				{
+					close(r);
+					return;
+				}
+				else
+					close(r);
+				
 				r = getdb().query("SHOW TABLES LIKE 'items';");
 				if(!r.next())
 				{
@@ -451,6 +460,16 @@ public class BookShelf extends JavaPlugin{
 		else
 		{
 			try {
+				
+				r = getdb().query("SELECT name FROM sqlite_master WHERE type='table' AND name='version';");
+				if(r.next())
+				{
+					close(r);
+					return;
+				}
+				else
+					close(r);
+				
 				r = getdb().query("SELECT name FROM sqlite_master WHERE type='table' AND name='items';");
 				if(!r.next())
 				{

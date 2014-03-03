@@ -18,6 +18,10 @@ defaults:
             resident: true
             ally: false
             outsider: false
+        donate:
+            resident: true
+            ally: false
+            outsider: false
         name:
             resident: true
             ally: false
@@ -41,6 +45,10 @@ defaults:
             outsider: false
         shop:
             friend: true
+            ally: false
+            outsider: false
+        donate:
+            resident: true
             ally: false
             outsider: false
         name:

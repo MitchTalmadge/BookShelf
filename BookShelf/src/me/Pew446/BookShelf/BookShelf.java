@@ -530,7 +530,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			Player p = Bukkit.getPlayer(sender.getName());
 			Location loc = p.getTargetBlock(null, 10).getLocation();
-			if(p.hasPermission("bookshelf.unlimited") || BookShelf.isOwner(loc, p))
+			if(p.hasPermission("bookshelf.unlimited") && BookShelf.isOwner(loc, p))
 			{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
@@ -596,7 +596,7 @@ public class BookShelf extends JavaPlugin{
 				if(!(args.length >= 1))
 				{
 					Location loc = p.getTargetBlock(null, 10).getLocation();
-					if(p.hasPermission("bookshelf.toggle") || BookShelf.isOwner(loc, p))
+					if(p.hasPermission("bookshelf.toggle") && BookShelf.isOwner(loc, p))
 					{
 						if(loc.getBlock().getType() == Material.BOOKSHELF)
 						{
@@ -689,7 +689,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			Player p = Bukkit.getPlayer(sender.getName());
 			Location loc = p.getTargetBlock(null, 10).getLocation();
-			if(p.hasPermission("bookshelf.shop") || BookShelf.isOwner(loc, p))
+			if(p.hasPermission("bookshelf.shop") && BookShelf.isOwner(loc, p))
 			{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
@@ -776,7 +776,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			Player p = Bukkit.getPlayer(sender.getName());
 			Location loc = p.getTargetBlock(null, 10).getLocation();
-			if(p.hasPermission("bookshelf.name") || BookShelf.isOwner(loc, p))
+			if(p.hasPermission("bookshelf.name") && BookShelf.isOwner(loc, p))
 			{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
@@ -893,7 +893,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			Player p = Bukkit.getPlayer(sender.getName());
 			Location loc = p.getTargetBlock(null, 10).getLocation();
-			if(p.hasPermission("bookshelf.donate") || BookShelf.isOwner(loc, p))
+			if(p.hasPermission("bookshelf.donate") && BookShelf.isOwner(loc, p))
 			{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
@@ -963,7 +963,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			Player p = Bukkit.getPlayer(sender.getName());
 			Location loc = p.getTargetBlock(null, 10).getLocation();
-			if(p.hasPermission("bookshelf.setowners") || BookShelf.isOwner(loc, p))
+			if(p.hasPermission("bookshelf.setowners") && BookShelf.isOwner(loc, p))
 			{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
@@ -1003,7 +1003,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			Player p = Bukkit.getPlayer(sender.getName());
 			Location loc = p.getTargetBlock(null, 10).getLocation();
-			if(p.hasPermission("bookshelf.addowners") || BookShelf.isOwner(loc, p))
+			if(p.hasPermission("bookshelf.addowners") && BookShelf.isOwner(loc, p))
 			{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
@@ -1043,7 +1043,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			Player p = Bukkit.getPlayer(sender.getName());
 			Location loc = p.getTargetBlock(null, 10).getLocation();
-			if(p.hasPermission("bookshelf.removeowners") || BookShelf.isOwner(loc, p))
+			if(p.hasPermission("bookshelf.removeowners") && BookShelf.isOwner(loc, p))
 			{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
@@ -1083,7 +1083,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			Player p = Bukkit.getPlayer(sender.getName());
 			Location loc = p.getTargetBlock(null, 10).getLocation();
-			if(p.hasPermission("bookshelf.getowners") || BookShelf.isOwner(loc, p))
+			if(p.hasPermission("bookshelf.getowners") && BookShelf.isOwner(loc, p))
 			{
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{

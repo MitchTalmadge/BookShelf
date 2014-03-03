@@ -86,31 +86,31 @@ permissions:
         default: op
     bookshelf.toggle:
         description: Allows player to toggle shelves enabled/disabled.
-        default: op
+        default: true
     bookshelf.reload:
         description: Allows player to reload the config.
         default: op
     bookshelf.shop:
         description: Allows player to create shop shelves.
-        default: op
+        default: true
     bookshelf.name:
         description: Allows player to change names of bookshelves.
-        default: op
+        default: true
     bookshelf.towny:
         description: Allows players to use /bstowny command for Towny.
         default: true
     bookshelf.donate:
-        description: Allows player to turn bookshelves into a donation box.
-        default: op
+        description: Allows player to turn bookshelves into a donation shelf.
+        default: true
     bookshelf.setowners:
         description: Allows player to set the owners of any shelf.
-        default: op
+        default: true
     bookshelf.addowners:
         description: Allows player to add owners to any shelf.
-        default: op
+        default: true
     bookshelf.removeowners:
         description: Allows player to remove owners from any shelf.
-        default: op
+        default: true
     bookshelf.getowners:
         description: Allows player to get the owners of any shelf.
         default: true

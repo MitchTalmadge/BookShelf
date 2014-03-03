@@ -358,7 +358,7 @@ public class TownyHandler {
 
 	private static void saveDefaultConfig(Town t) {
 		ArrayList<String> level1 = new ArrayList<String>(Arrays.asList("town.", "resident."));
-		ArrayList<String> level2 = new ArrayList<String>(Arrays.asList("unlimited.", "toggle.", "shop.", "name."));
+		ArrayList<String> level2 = new ArrayList<String>(Arrays.asList("unlimited.", "toggle.", "shop.", "name.", "donate."));
 		ArrayList<String> level3a = new ArrayList<String>(Arrays.asList("resident", "ally", "outsider"));
 		ArrayList<String> level3b = new ArrayList<String>(Arrays.asList("friend", "ally", "outsider"));
 

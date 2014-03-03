@@ -565,7 +565,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				p.sendMessage("§cYou don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command here!");
 			}
 			return true;
 		}
@@ -624,7 +624,7 @@ public class BookShelf extends JavaPlugin{
 					}
 					else
 					{
-						p.sendMessage("§cYou don't have permission to use this command!");
+						p.sendMessage("§cYou don't have permission to use this command here!");
 					}
 				}
 				else
@@ -676,7 +676,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				p.sendMessage("§cYou don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command here!");
 			}
 			return true;
 		}
@@ -763,7 +763,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				p.sendMessage("§cYou don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command here!");
 			}
 			return true;
 		}
@@ -861,7 +861,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				p.sendMessage("§cYou don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command here!");
 			}
 			return true;
 		}
@@ -877,7 +877,7 @@ public class BookShelf extends JavaPlugin{
 					return TownyCommands.onCommand(sender, label, args, this);
 				else
 				{
-					sender.sendMessage("§cYou don't have permission to use this command!");
+					sender.sendMessage("§cYou don't have permission to use this command here!");
 					return true;
 				}
 
@@ -950,7 +950,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				p.sendMessage("§cYou don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command here!");
 			}
 			return true;
 		}
@@ -990,7 +990,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				p.sendMessage("§cYou don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command here!");
 			}
 			return true;
 		}
@@ -1030,7 +1030,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				p.sendMessage("§cYou don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command here!");
 			}
 			return true;
 		}
@@ -1070,7 +1070,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				p.sendMessage("§cYou don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command here!");
 			}
 			return true;
 		}
@@ -1102,7 +1102,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				p.sendMessage("§cYou don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command here!");
 			}
 			return true;
 		}
@@ -1149,7 +1149,7 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				p.sendMessage("§cYou don't have permission to use this command!");
+				p.sendMessage("§cYou don't have permission to use this command here!");
 			}
 			return true;
 		}*/

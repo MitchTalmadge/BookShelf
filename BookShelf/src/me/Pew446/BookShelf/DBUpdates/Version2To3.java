@@ -40,12 +40,15 @@ public class Version2To3 extends Version{
 		BookShelf.getdb().query("ALTER TABLE items ADD enumType TEXT;");
 		
 		logger.info("[BookShelf] Updating table 'items'...");
+		BookShelf.getdb().getConnection().setAutoCommit(false);
 		for(int i=0; i<typeID.size(); i++)
 		{
 			for (Map.Entry<Integer,Integer> entry : typeID.entrySet()) {
 			    BookShelf.getdb().query("UPDATE items SET enumType='"+OldIDEnum.getMaterialById(entry.getValue()).name()+"' WHERE id="+entry.getKey());
 			}
 		}
+		BookShelf.getdb().getConnection().commit();
+		BookShelf.getdb().getConnection().setAutoCommit(true);
 		
 		BookShelf.getdb().query("UPDATE version SET version=3");
 		logger.info("[BookShelf] Update to Version 3 Complete.");

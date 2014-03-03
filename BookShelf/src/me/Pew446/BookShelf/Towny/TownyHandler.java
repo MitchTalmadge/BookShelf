@@ -42,6 +42,7 @@ public class TownyHandler {
 	public static final int NAME = 3;
 	public static final int OPEN_SHELF = 4;
 	public static final int OPEN_SHOP = 5;
+	public static final int DONATE = 6;
 
 	public static Resident convertToResident(Player p)
 	{
@@ -73,16 +74,25 @@ public class TownyHandler {
 		{
 		case UNLIMITED:
 			typeString = "unlimited.";
+			break;
 		case TOGGLE:
 			typeString = "toggle.";
+			break;
 		case SHOP:
 			typeString = "shop.";
+			break;
 		case NAME:
 			typeString = "name.";
+			break;
 		case OPEN_SHELF:
 			typeString = "open_shelf.";
+			break;
 		case OPEN_SHOP:
 			typeString = "open_shop.";
+			break;
+		case DONATE:
+			typeString = "donate.";
+			break;
 		}
 		TownBlock plot = TownyUniverse.getTownBlock(b.getLocation());
 		if(plot == null)

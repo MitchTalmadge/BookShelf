@@ -1,6 +1,6 @@
 name: BookShelf
 main: me.Pew446.BookShelf.BookShelf
-version: 3.3
+version: 3.4
 description: Allows players to store books in bookshelves.
 author: Pew446
 dev-url: http://dev.bukkit.org/server-mods/BookShelf
@@ -10,13 +10,11 @@ commands:
       description: Sets target bookshelf to never run out of books.
       usage: /<command>
       aliases: ['bsu']
-      permission: bookshelf.unlimited
       permission-message: You don't have permission for that command!
    bstoggle:
       description: Toggles target bookshelf enabled/disabled, or all shelves with the same specified name.
       usage: /<command> [shelf name]
       aliases: ['bst']
-      permission: bookshelf.toggle
       permission-message: You don't have permission for that command!
    bsreload:
       description: Reloads the BookShelf configuration file.
@@ -28,18 +26,37 @@ commands:
       description: Toggles target bookshelf as shop or normal.
       usage: /<command> price
       aliases: ['bss']
-      permission: bookshelf.shop
       permission-message: You don't have permission for that command!
    bsname:
       description: Changes name of target bookshelf.
       usage: /<command> name
       aliases: ['bsn']
-      permission: bookshelf.name
       permission-message: You don't have permission for that command!
    bstowny:
       description: Multiple commands for Towny support.
       usage: /<command>
       permission: bookshelf.towny
+      permission-message: You don't have permission for that command!
+   bsdonate:
+      description: Sets target bookshelf to be a donation shelf.
+      usage: /<command>
+      aliases: ['bsd']
+      permission-message: You don't have permission for that command!
+   bssetowners:
+      description: Sets the owners of the target bookshelf.
+      usage: /<command> Owner1 [Owner2] [Owner3] ...
+      permission-message: You don't have permission for that command!
+   bsaddowners:
+      description: Adds to the owners of the target bookshelf.
+      usage: /<command> Owner1 [Owner2] [Owner3] ...
+      permission-message: You don't have permission for that command!
+   bsremoveowners:
+      description: Removes from the owners of the target bookshelf.
+      usage: /<command> Owner1 [Owner2] [Owner3] ...
+      permission-message: You don't have permission for that command!
+   bsgetowners:
+      description: Gets the owners of the target bookshelf.
+      usage: /<command>
       permission-message: You don't have permission for that command!
 permissions:
     bookshelf.*:
@@ -51,6 +68,11 @@ permissions:
             bookshelf.shop: true
             bookshelf.name: true
             bookshelf.towny: true
+            bookshelf.donate: true
+            bookshelf.setowners: true
+            bookshelf.addowners: true
+            bookshelf.removeowners: true
+            bookshelf.getowners: true
             bookshelf.book: true
             bookshelf.baq: true
             bookshelf.signed: true
@@ -60,7 +82,7 @@ permissions:
             bookshelf.paper: true
             
     bookshelf.unlimited:
-        description: Allows player to make bookshelf never stop giving books.
+        description: Allows player to make bookshelves never run out of books.
         default: op
     bookshelf.toggle:
         description: Allows player to toggle shelves enabled/disabled.
@@ -76,6 +98,21 @@ permissions:
         default: op
     bookshelf.towny:
         description: Allows players to use /bstowny command for Towny.
+        default: true
+    bookshelf.donate:
+        description: Allows player to turn bookshelves into a donation box.
+        default: op
+    bookshelf.setowners:
+        description: Allows player to set the owners of any shelf.
+        default: op
+    bookshelf.addowners:
+        description: Allows player to add owners to any shelf.
+        default: op
+    bookshelf.removeowners:
+        description: Allows player to remove owners from any shelf.
+        default: op
+    bookshelf.getowners:
+        description: Allows player to get the owners of any shelf.
         default: true
     bookshelf.book:
         description: Allows player to add plain books to shelves.

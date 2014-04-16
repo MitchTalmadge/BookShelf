@@ -12,6 +12,8 @@ default_openable: true
 top-bottom_access: false
 shelves_can_burn: true
 
+use_built_in_ownership: true
+
 shelf_only_items:
     book: false
     book_and_quill: false

@@ -48,6 +48,7 @@ public class BookShelf extends JavaPlugin{
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public static BookListener BookListener;
 	public static final int currentDatabaseVersion = 3;
+	public static ArrayList<Player> editingPlayers = new ArrayList<Player>();
 
 	public static ArrayList<String> records = new ArrayList<String>(Arrays.asList(
 			Material.RECORD_3.name(),
@@ -104,6 +105,7 @@ public class BookShelf extends JavaPlugin{
 	static MySQL mysql;
 	static SQLite sqlite;
 	static ResultSet r;
+
 	@Override
 	public void onDisable() {
 
@@ -337,7 +339,7 @@ public class BookShelf extends JavaPlugin{
 				getdb().query("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name VARCHAR(64));");
-				getdb().query("CREATE TABLE IF NOT EXISTS donation (x INT, y INT, z INT, bool INT);");
+				getdb().query("CREATE TABLE IF NOT EXISTS donate (x INT, y INT, z INT, bool INT);");
 				getdb().query("CREATE TABLE IF NOT EXISTS owners (x INT, y INT, z INT, ownerString TEXT);");
 			}
 			else //SQLITE
@@ -954,6 +956,26 @@ public class BookShelf extends JavaPlugin{
 			}
 			return true;
 		}
+		else if(cmd.getName().equalsIgnoreCase("bsedit") || cmd.getName().equalsIgnoreCase("bse"))
+		{
+			if(!this.isPlayer(sender))
+			{
+				sender.sendMessage("This command may only be used by players.");
+				return true;
+			}
+			Player p = Bukkit.getPlayer(sender.getName());
+			if(editingPlayers.contains(p))
+			{
+				editingPlayers.remove(p);
+				p.sendMessage("You are no longer in shelf editing mode!");
+			}
+			else
+			{
+				editingPlayers.add(p);
+				p.sendMessage("You are now in shelf editing mode!");
+			}
+			return true;
+		}
 		else if(cmd.getName().equalsIgnoreCase("bssetowners"))
 		{
 			if(!this.isPlayer(sender))
@@ -965,6 +987,8 @@ public class BookShelf extends JavaPlugin{
 			Location loc = p.getTargetBlock(null, 10).getLocation();
 			if(p.hasPermission("bookshelf.setowners") && BookShelf.isOwner(loc, p))
 			{
+				if(!config.getBoolean("use_built_in_ownership"))
+					return true;
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
 					if(args.length >= 1)
@@ -1005,6 +1029,8 @@ public class BookShelf extends JavaPlugin{
 			Location loc = p.getTargetBlock(null, 10).getLocation();
 			if(p.hasPermission("bookshelf.addowners") && BookShelf.isOwner(loc, p))
 			{
+				if(!config.getBoolean("use_built_in_ownership"))
+					return true;
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
 					if(args.length >= 1)
@@ -1045,6 +1071,8 @@ public class BookShelf extends JavaPlugin{
 			Location loc = p.getTargetBlock(null, 10).getLocation();
 			if(p.hasPermission("bookshelf.removeowners") && BookShelf.isOwner(loc, p))
 			{
+				if(!config.getBoolean("use_built_in_ownership"))
+					return true;
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
 					if(args.length >= 1)
@@ -1085,6 +1113,8 @@ public class BookShelf extends JavaPlugin{
 			Location loc = p.getTargetBlock(null, 10).getLocation();
 			if(p.hasPermission("bookshelf.getowners") && BookShelf.isOwner(loc, p))
 			{
+				if(!config.getBoolean("use_built_in_ownership"))
+					return true;
 				if(loc.getBlock().getType() == Material.BOOKSHELF)
 				{
 					String ownerString = "";
@@ -1166,6 +1196,8 @@ public class BookShelf extends JavaPlugin{
 	{
 		if(p.isOp())
 			return true;
+		if(!config.getBoolean("use_built_in_ownership"))
+			return true;
 		try
 		{
 			r = getdb().query("SELECT * FROM owners WHERE x="+x+" AND y="+y+" AND z="+z+";");
@@ -1176,11 +1208,11 @@ public class BookShelf extends JavaPlugin{
 			}
 			else
 			{
-				String owners = r.getString("ownerString");
+				String owners = r.getString("ownerString").toLowerCase();
 				close(r);
 
 				String[] splitOwners = owners.split("§");
-				if(Arrays.asList(splitOwners).contains(p.getName()) || Arrays.asList(splitOwners).contains("all"))
+				if(Arrays.asList(splitOwners).contains(p.getName().toLowerCase()) || Arrays.asList(splitOwners).contains("all"))
 					return true;
 			}
 		}

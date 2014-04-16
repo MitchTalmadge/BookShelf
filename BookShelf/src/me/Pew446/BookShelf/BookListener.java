@@ -102,7 +102,7 @@ public class BookListener implements Listener {
 
 						if(!BookShelf.isShelfShop(loc) && !BookShelf.isShelfUnlimited(loc) && !BookShelf.isShelfDonate(loc))
 						{
-							if(!BookShelf.isOwner(loc, p))
+							if(!BookShelf.isOwner(loc, p) && !p.hasPermission("bookshelf.openshelf"))
 							{
 								p.sendMessage("§cYou are not allowed to open this shelf!");
 								return;
@@ -232,7 +232,7 @@ public class BookListener implements Listener {
 							map3.put(j.getPlayer(), loc);
 
 							try {
-								if(!BookShelf.isShelfUnlimited(loc) || BookShelf.isShelfDonate(loc) || BookShelf.isOwner(loc, j.getPlayer()))
+								if(!BookShelf.isShelfUnlimited(loc) || BookShelf.isShelfDonate(loc) || (BookShelf.isOwner(loc, j.getPlayer()) && BookShelf.editingPlayers.contains(p)))
 								{
 									map.put(cl.getLocation(), inv);
 									map2.put(cl.getLocation(), inv.getHolder());
@@ -439,9 +439,9 @@ public class BookListener implements Listener {
 		int y = loc.getBlockY();
 		int z = loc.getBlockZ();
 		try {
-			BookShelf.getdb().getConnection().setAutoCommit(false);
-			if(BookShelf.isShelfUnlimited(loc) || BookShelf.isShelfDonate(loc) || BookShelf.isOwner(loc, (Player)j.getPlayer()))
+			if(BookShelf.isShelfUnlimited(loc) || BookShelf.isShelfDonate(loc) || (BookShelf.isOwner(loc, (Player)j.getPlayer()) && BookShelf.editingPlayers.contains((Player)j.getPlayer())))
 			{
+				BookShelf.getdb().getConnection().setAutoCommit(false);
 				BookShelf.getdb().query("DELETE FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
 				BookShelf.getdb().query("DELETE FROM enchant WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
 				BookShelf.getdb().query("DELETE FROM maps WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
@@ -498,10 +498,6 @@ public class BookListener implements Listener {
 					}
 				}
 				BookShelf.getdb().getConnection().commit();
-				BookShelf.getdb().getConnection().setAutoCommit(true);
-			}
-			else
-			{
 				BookShelf.getdb().getConnection().setAutoCommit(true);
 			}
 		} catch (SQLException e) {
@@ -724,99 +720,7 @@ public class BookListener implements Listener {
 				return;
 			}
 		}
-		String name = null;
-		if(!map3.containsKey((Player)j.getWhoClicked()))
-			return;
-		Location loc = map3.get((Player)j.getWhoClicked());
-		try
-		{
-			r = BookShelf.getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-			if(r.next())
-				name = r.getString("name");
-			close(r);
-		} catch (SQLException e1)
-		{
-			e1.printStackTrace();
-		}
-		if(j.getInventory().getTitle().equals(name))
-		{	
-			boolean isOwner = BookShelf.isOwner(loc, (Player)j.getWhoClicked());
-			if(!BookShelf.isShelfShop(loc) || BookShelf.economy == null || isOwner)
-			{
-				if(!BookShelf.isShelfUnlimited(loc) || isOwner)
-				{
-					if(!BookShelf.isShelfDonate(loc) || isOwner)
-					{
-						this.checkAllowed(j);
-						return;
-					}
-					else
-					{
-						int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
-						if(j.getRawSlot() > slotamt)
-						{
-							this.checkAllowed(j);
-							return;
-						}
-						else
-						{
-							if(j.getCurrentItem().getType() == Material.AIR)
-								return;
-							j.setCancelled(true);
-						}
-					}
-				}
-				else
-				{
-					int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
-					if(j.getRawSlot() <= slotamt)
-					{
-						return;
-					}
-					else
-					{
-						if(j.getCurrentItem().getType() == Material.AIR)
-							return;
-						j.setCancelled(true);
-					}
-				}
-			}
-			else
-			{
-				int price = BookShelf.getShopPrice(loc);
-				int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
-				if(j.getRawSlot() <= slotamt)
-				{
-					if(j.getCurrentItem().getType() == Material.AIR)
-					{
-						j.setCancelled(true);
-						return;
-					}
-					double money = BookShelf.economy.getBalance(j.getWhoClicked().getName());
-					Player p = (Player)j.getWhoClicked();
-					if(BookShelf.isOwner(loc, p))
-					{
-						return;
-					}
-					if(money >= price)
-					{
-						BookShelf.economy.withdrawPlayer(j.getWhoClicked().getName(), price);
-						p.sendMessage("New balance: §6"+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
-						return;
-					}
-					p.sendMessage("§cInsufficient funds! Current balance: §6"+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
-					j.setCancelled(true);
-				}
-				else
-				{
-					if(j.getCurrentItem().getType() == Material.AIR)
-						return;
-					j.setCancelled(true);
-					return;
-				}
-			}
-		}
-		else if(j.getInventory().getTitle() == "mob.villager")
+		if(j.getInventory().getType() == InventoryType.MERCHANT)
 		{
 			if(j.getCurrentItem() == null)
 			{
@@ -870,6 +774,98 @@ public class BookListener implements Listener {
 				}
 				else if(j.getCursor().getType() == Material.PAPER)
 				{
+					j.setCancelled(true);
+					return;
+				}
+			}
+		}
+		String name = null;
+		if(!map3.containsKey((Player)j.getWhoClicked()))
+			return;
+		Location loc = map3.get((Player)j.getWhoClicked());
+		try
+		{
+			r = BookShelf.getdb().query("SELECT * FROM names WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+			if(r.next())
+				name = r.getString("name");
+			close(r);
+		} catch (SQLException e1)
+		{
+			e1.printStackTrace();
+		}
+		if(j.getInventory().getTitle().equals(name))
+		{	
+			boolean isOwner = (BookShelf.isOwner(loc, (Player)j.getWhoClicked()) && BookShelf.editingPlayers.contains((Player)j.getWhoClicked()));
+			if(!BookShelf.isShelfShop(loc) || BookShelf.economy == null || isOwner)
+			{
+				if(!BookShelf.isShelfUnlimited(loc) || isOwner)
+				{
+					if(!BookShelf.isShelfDonate(loc) || isOwner)
+					{
+						this.checkAllowed(j);
+						return;
+					}
+					else
+					{
+						int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
+						if(j.getRawSlot() > slotamt)
+						{
+							this.checkAllowed(j);
+							return;
+						}
+						else
+						{
+							if(j.getCurrentItem().getType() == Material.AIR)
+								return;
+							j.setCancelled(true);
+						}
+					}
+				}
+				else
+				{
+					int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
+					if(j.getRawSlot() <= slotamt)
+					{
+						return;
+					}
+					else
+					{
+						if(j.getCurrentItem().getType() == Material.AIR)
+							return;
+						j.setCancelled(true);
+					}
+				}
+			}
+			else
+			{
+				int price = BookShelf.getShopPrice(loc);
+				int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
+				if(j.getRawSlot() <= slotamt)
+				{
+					if(j.getCurrentItem().getType() == Material.AIR)
+					{
+						j.setCancelled(true);
+						return;
+					}
+					double money = BookShelf.economy.getBalance(j.getWhoClicked().getName());
+					Player p = (Player)j.getWhoClicked();
+					if(BookShelf.isOwner(loc, p) && BookShelf.editingPlayers.contains(p))
+					{
+						return;
+					}
+					if(money >= price)
+					{
+						BookShelf.economy.withdrawPlayer(j.getWhoClicked().getName(), price);
+						p.sendMessage("New balance: §6"+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
+						return;
+					}
+					p.sendMessage("§cInsufficient funds! Current balance: §6"+BookShelf.economy.getBalance(p.getName())+" "+BookShelf.economy.currencyNamePlural());
+					j.setCancelled(true);
+				}
+				else
+				{
+					if(j.getCurrentItem().getType() == Material.AIR)
+						return;
 					j.setCancelled(true);
 					return;
 				}
@@ -967,7 +963,7 @@ public class BookListener implements Listener {
 				BookShelf.getdb().query("INSERT INTO shop (x,y,z,bool,price) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0, "+plugin.getConfig().getInt("economy.default_price")+");");
 				BookShelf.getdb().query("INSERT INTO donate (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
 				BookShelf.getdb().query("INSERT INTO names (x,y,z,name) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+plugin.getConfig().getString("default_shelf_name")+"');");
-				BookShelf.getdb().query("INSERT INTO owners (x,y,z,ownerString) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+j.getPlayer().getName()+"');");
+				BookShelf.getdb().query("INSERT INTO owners (x,y,z,ownerString) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", '"+j.getPlayer().getName().toLowerCase()+"');");
 				//BookShelf.getdb().query("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
 				int def = 1;
 				if(plugin.getConfig().getBoolean("default_openable"))

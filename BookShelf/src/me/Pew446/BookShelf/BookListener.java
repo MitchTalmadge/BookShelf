@@ -232,7 +232,9 @@ public class BookListener implements Listener {
 							map3.put(j.getPlayer(), loc);
 
 							try {
-								if(!BookShelf.isShelfUnlimited(loc) || BookShelf.isShelfDonate(loc) || (BookShelf.isOwner(loc, j.getPlayer()) && BookShelf.editingPlayers.contains(p)))
+								boolean isOwner = BookShelf.isOwner(loc, (Player)j.getPlayer());
+								boolean isOwnerEditing = (isOwner && BookShelf.editingPlayers.contains(j.getPlayer()));
+								if(!BookShelf.isShelfUnlimited(loc) || isOwnerEditing)
 								{
 									map.put(cl.getLocation(), inv);
 									map2.put(cl.getLocation(), inv.getHolder());
@@ -439,7 +441,9 @@ public class BookListener implements Listener {
 		int y = loc.getBlockY();
 		int z = loc.getBlockZ();
 		try {
-			if(BookShelf.isShelfUnlimited(loc) || BookShelf.isShelfDonate(loc) || (BookShelf.isOwner(loc, (Player)j.getPlayer()) && BookShelf.editingPlayers.contains((Player)j.getPlayer())))
+			boolean isOwner = BookShelf.isOwner(loc, (Player)j.getPlayer());
+			boolean isOwnerEditing = (isOwner && BookShelf.editingPlayers.contains(j.getPlayer()));
+			if(!BookShelf.isShelfUnlimited(loc) || isOwnerEditing)
 			{
 				BookShelf.getdb().getConnection().setAutoCommit(false);
 				BookShelf.getdb().query("DELETE FROM items WHERE x=" + x + " AND y=" + y + " AND z=" + z + ";");
@@ -795,17 +799,18 @@ public class BookListener implements Listener {
 		}
 		if(j.getInventory().getTitle().equals(name))
 		{	
-			boolean isOwner = (BookShelf.isOwner(loc, (Player)j.getWhoClicked()) && BookShelf.editingPlayers.contains((Player)j.getWhoClicked()));
-			if(!BookShelf.isShelfShop(loc) || BookShelf.economy == null || isOwner)
+			boolean isOwner = BookShelf.isOwner(loc, (Player)j.getWhoClicked());
+			boolean isOwnerEditing = (BookShelf.isOwner(loc, (Player)j.getWhoClicked()) && BookShelf.editingPlayers.contains((Player)j.getWhoClicked()));
+			if((isOwner && !BookShelf.isShelfShop(loc) && !BookShelf.isShelfUnlimited(loc)) || isOwnerEditing)
 			{
-				if(!BookShelf.isShelfUnlimited(loc) || isOwner)
+				this.checkAllowed(j);
+				return;
+			}
+			if(!BookShelf.isShelfShop(loc) || BookShelf.economy == null)
+			{
+				if(!BookShelf.isShelfUnlimited(loc))
 				{
-					if(!BookShelf.isShelfDonate(loc) || isOwner)
-					{
-						this.checkAllowed(j);
-						return;
-					}
-					else
+					if(BookShelf.isShelfDonate(loc))
 					{
 						int slotamt = (plugin.getConfig().getInt("rows")*9)-1;
 						if(j.getRawSlot() > slotamt)
@@ -849,10 +854,6 @@ public class BookListener implements Listener {
 					}
 					double money = BookShelf.economy.getBalance(j.getWhoClicked().getName());
 					Player p = (Player)j.getWhoClicked();
-					if(BookShelf.isOwner(loc, p) && BookShelf.editingPlayers.contains(p))
-					{
-						return;
-					}
 					if(money >= price)
 					{
 						BookShelf.economy.withdrawPlayer(j.getWhoClicked().getName(), price);

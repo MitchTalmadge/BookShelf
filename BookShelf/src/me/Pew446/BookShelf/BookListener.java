@@ -514,7 +514,8 @@ public class BookListener implements Listener {
 	{
 		if(j.isCancelled())
 			return;
-		breakShelf(j.getBlock().getLocation(), true);
+		if(j.getBlock().getType() == Material.BOOKSHELF)
+			breakShelf(j.getBlock().getLocation(), true);
 	}
 
 	@EventHandler

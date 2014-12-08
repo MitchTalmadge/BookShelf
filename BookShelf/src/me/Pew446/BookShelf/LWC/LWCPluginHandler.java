@@ -1,34 +1,43 @@
 /**
-@author	Mitch Talmadge
-Date Created:
-	Jul 25, 2013
-*/
+ * @author Mitch Talmadge
+ *         Date Created:
+ *         Jul 25, 2013
+ */
 
 package me.Pew446.BookShelf.LWC;
 
+import java.lang.reflect.Field;
+
 import com.griefcraft.lwc.LWCPlugin;
 
-public class LWCPluginHandler extends LWCPlugin
+public class LWCPluginHandler 
 {
-	public LWCHandler LWCHandler;
-	private LWCPlugin plugin;
-
-	public LWCPluginHandler(LWCPlugin plugin)
-	{
-		this.plugin = plugin;
-	}
-	
-	@Override
-	public void onDisable() 
-	{
-		if(LWCHandler != null)
-		{
-			LWCHandler.destruct();
-		}
-		super.onDisable();
-	}
-
-	public void init() {
-		this.LWCHandler = new LWCHandler(plugin);
-	}
+    public LWCPluginHandler(LWCPlugin plugin)
+    {
+        try
+        {
+            Field lwc = plugin.getClass().getDeclaredField("lwc");
+            LWCHandler LWCHandler = new LWCHandler(plugin);
+            lwc.setAccessible(true);
+            lwc.set(plugin, LWCHandler);
+            LWCHandler.load();
+        }
+        catch(SecurityException e)
+        {
+            e.printStackTrace();
+        }
+        catch(NoSuchFieldException e)
+        {
+            e.printStackTrace();
+        }
+        catch(IllegalArgumentException e)
+        {
+            e.printStackTrace();
+        }
+        catch(IllegalAccessException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
 }

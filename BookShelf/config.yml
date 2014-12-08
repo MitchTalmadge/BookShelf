@@ -55,3 +55,6 @@ towny_support:
     
 lwc_support:
     enabled: false
+    
+worldguard_support:
+    enabled: false

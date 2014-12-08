@@ -73,8 +73,6 @@ public class BookListener implements Listener
         BookShelf.close(r);
     }
     
-    
-    
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onClick(PlayerInteractEvent j)
     {
@@ -181,7 +179,7 @@ public class BookListener implements Listener
                                         return;
                                     }
                                 }
-                                if(BookShelf.worldGuard != null)
+                                if(plugin.useWorldGuard)
                                 {
                                     RegionManager regionManager = BookShelf.worldGuard
                                             .getRegionManager(j.getPlayer()
@@ -1124,14 +1122,13 @@ public class BookListener implements Listener
                     }
                     Player p = (Player) j.getWhoClicked();
                     
-                    
                     double money = BookShelf.economy.getBalance(p);
                     if(money >= price)
                     {
                         BookShelf.economy.withdrawPlayer(p, price);
                         p.sendMessage("New balance: §6"
-                                + BookShelf.economy.getBalance(p)
-                                + " " + BookShelf.economy.currencyNamePlural());
+                                + BookShelf.economy.getBalance(p) + " "
+                                + BookShelf.economy.currencyNamePlural());
                         return;
                     }
                     p.sendMessage("§cInsufficient funds! Current balance: §6"
@@ -1160,8 +1157,7 @@ public class BookListener implements Listener
         Player p = (Player) j.getWhoClicked();
         
         if(plugin.getConfig().getBoolean("permissions.allow_maps") == false
-                || !p
-                        .hasPermission("bookshelf.maps"))
+                || !p.hasPermission("bookshelf.maps"))
         {
             if(j.getCurrentItem().getType() == Material.MAP
                     || j.getCursor().getType() == Material.MAP
@@ -1173,8 +1169,7 @@ public class BookListener implements Listener
             }
         }
         if(plugin.getConfig().getBoolean("permissions.allow_book") == false
-                || !p
-                        .hasPermission("bookshelf.book"))
+                || !p.hasPermission("bookshelf.book"))
         {
             if(j.getCurrentItem().getType() == Material.BOOK
                     || j.getCursor().getType() == Material.BOOK)
@@ -1184,8 +1179,7 @@ public class BookListener implements Listener
             }
         }
         if(plugin.getConfig().getBoolean("permissions.allow_enchanted_book") == false
-                || !p
-                        .hasPermission("bookshelf.enchanted_book"))
+                || !p.hasPermission("bookshelf.enchanted_book"))
         {
             if(j.getCurrentItem().getType() == Material.ENCHANTED_BOOK
                     || j.getCursor().getType() == Material.ENCHANTED_BOOK)
@@ -1195,8 +1189,7 @@ public class BookListener implements Listener
             }
         }
         if(plugin.getConfig().getBoolean("permissions.allow_book_and_quill") == false
-                || !p
-                        .hasPermission("bookshelf.baq"))
+                || !p.hasPermission("bookshelf.baq"))
         {
             if(j.getCurrentItem().getType() == Material.BOOK_AND_QUILL
                     || j.getCursor().getType() == Material.BOOK_AND_QUILL)
@@ -1206,8 +1199,7 @@ public class BookListener implements Listener
             }
         }
         if(plugin.getConfig().getBoolean("permissions.allow_signed") == false
-                || !p
-                        .hasPermission("bookshelf.signed"))
+                || !p.hasPermission("bookshelf.signed"))
         {
             if(j.getCurrentItem().getType() == Material.WRITTEN_BOOK
                     || j.getCursor().getType() == Material.WRITTEN_BOOK)
@@ -1217,8 +1209,7 @@ public class BookListener implements Listener
             }
         }
         if(plugin.getConfig().getBoolean("permissions.allow_records") == false
-                || !p
-                        .hasPermission("bookshelf.records"))
+                || !p.hasPermission("bookshelf.records"))
         {
             if(BookShelf.records.contains(j.getCurrentItem().getType())
                     || BookShelf.records.contains(j.getCursor().getType()))
@@ -1228,8 +1219,7 @@ public class BookListener implements Listener
             }
         }
         if(plugin.getConfig().getBoolean("permissions.allow_paper") == false
-                || !p
-                        .hasPermission("bookshelf.paper"))
+                || !p.hasPermission("bookshelf.paper"))
         {
             if(j.getCurrentItem().getType() == Material.PAPER
                     || j.getCursor().getType() == Material.PAPER)

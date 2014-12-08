@@ -19,7 +19,6 @@ import me.Pew446.SimpleSQL.MySQL;
 import me.Pew446.SimpleSQL.SQLite;
 import net.milkbowl.vault.economy.Economy;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -85,6 +84,7 @@ public class BookShelf extends JavaPlugin
     /* TOWNY */
     static Towny towny;
     public boolean useTowny = false;
+    public boolean useWorldGuard = false;
     public static File townyConfigPath;
     public static FileConfiguration townyConfig;
     
@@ -164,6 +164,8 @@ public class BookShelf extends JavaPlugin
         if(setupWorldGuard())
         {
             logger.info("[BookShelf] WorldGuard found and hooked.");
+            useWorldGuard = BookShelf.worldGuard != null
+                    && config.getBoolean("worldguard_support.enabled");
         }
         
         if(setupWorldEdit())
@@ -608,7 +610,7 @@ public class BookShelf extends JavaPlugin
                 sender.sendMessage("This command may only be used by players.");
                 return true;
             }
-            Player p = Bukkit.getPlayer(sender.getName());
+            Player p = (Player) sender;
             Location loc = p.getTargetBlock(null, 10).getLocation();
             if(p.hasPermission("bookshelf.unlimited")
                     && BookShelf.isOwner(loc, p))
@@ -687,7 +689,7 @@ public class BookShelf extends JavaPlugin
             }
             else
             {
-                Player p = Bukkit.getPlayer(sender.getName());
+                Player p = (Player) sender;
                 if(!(args.length >= 1))
                 {
                     Location loc = p.getTargetBlock(null, 10).getLocation();
@@ -771,6 +773,26 @@ public class BookShelf extends JavaPlugin
                 else if(LWCPluginHandler != null)
                     LWCEnabled = false;
                 
+                if(config.getBoolean("worldguard_support.enabled"))
+                {
+                    if(worldGuard != null)
+                        useWorldGuard = true;
+                    else
+                        useWorldGuard = false;
+                }
+                else
+                    useWorldGuard = false;
+                
+                if(config.getBoolean("towny_support.enabled"))
+                {
+                    if(towny != null)
+                        useTowny = true;
+                    else 
+                        useTowny = false;
+                }
+                else 
+                    useTowny = false;
+
                 p.sendMessage("§aBookShelf config successfully reloaded.");
             }
             else
@@ -787,7 +809,7 @@ public class BookShelf extends JavaPlugin
                 sender.sendMessage("This command may only be used by players.");
                 return true;
             }
-            Player p = Bukkit.getPlayer(sender.getName());
+            Player p = (Player) sender;
             Location loc = p.getTargetBlock(null, 10).getLocation();
             if(p.hasPermission("bookshelf.shop") && BookShelf.isOwner(loc, p))
             {
@@ -938,7 +960,7 @@ public class BookShelf extends JavaPlugin
                 sender.sendMessage("This command may only be used by players.");
                 return true;
             }
-            Player p = Bukkit.getPlayer(sender.getName());
+            Player p = (Player) sender;
             Location loc = p.getTargetBlock(null, 10).getLocation();
             if(p.hasPermission("bookshelf.name") && BookShelf.isOwner(loc, p))
             {
@@ -1084,7 +1106,7 @@ public class BookShelf extends JavaPlugin
                 sender.sendMessage("This command may only be used by players.");
                 return true;
             }
-            Player p = Bukkit.getPlayer(sender.getName());
+            Player p = (Player) sender;
             Location loc = p.getTargetBlock(null, 10).getLocation();
             if(p.hasPermission("bookshelf.donate") && BookShelf.isOwner(loc, p))
             {
@@ -1201,7 +1223,7 @@ public class BookShelf extends JavaPlugin
                 sender.sendMessage("This command may only be used by players.");
                 return true;
             }
-            Player p = Bukkit.getPlayer(sender.getName());
+            Player p = (Player) sender;
             if(editingPlayers.contains(p))
             {
                 editingPlayers.remove(p);
@@ -1221,7 +1243,7 @@ public class BookShelf extends JavaPlugin
                 sender.sendMessage("This command may only be used by players.");
                 return true;
             }
-            Player p = Bukkit.getPlayer(sender.getName());
+            Player p = (Player) sender;
             Location loc = p.getTargetBlock(null, 10).getLocation();
             if(p.hasPermission("bookshelf.setowners")
                     && BookShelf.isOwner(loc, p))
@@ -1265,7 +1287,7 @@ public class BookShelf extends JavaPlugin
                 sender.sendMessage("This command may only be used by players.");
                 return true;
             }
-            Player p = Bukkit.getPlayer(sender.getName());
+            Player p = (Player) sender;
             Location loc = p.getTargetBlock(null, 10).getLocation();
             if(p.hasPermission("bookshelf.addowners")
                     && BookShelf.isOwner(loc, p))
@@ -1309,7 +1331,7 @@ public class BookShelf extends JavaPlugin
                 sender.sendMessage("This command may only be used by players.");
                 return true;
             }
-            Player p = Bukkit.getPlayer(sender.getName());
+            Player p = (Player) sender;
             Location loc = p.getTargetBlock(null, 10).getLocation();
             if(p.hasPermission("bookshelf.removeowners")
                     && BookShelf.isOwner(loc, p))
@@ -1353,7 +1375,7 @@ public class BookShelf extends JavaPlugin
                 sender.sendMessage("This command may only be used by players.");
                 return true;
             }
-            Player p = Bukkit.getPlayer(sender.getName());
+            Player p = (Player) sender;
             Location loc = p.getTargetBlock(null, 10).getLocation();
             if(p.hasPermission("bookshelf.getowners")
                     && BookShelf.isOwner(loc, p))

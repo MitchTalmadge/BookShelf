@@ -17,7 +17,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -51,20 +50,20 @@ import org.bukkit.util.Vector;
 public class BookShelf extends JavaPlugin
 {
     
-    /* SETUP */
-    static FileConfiguration config;
     public static BookShelf instance;
-    public final Logger logger = Logger.getLogger("Minecraft");
+    private final Logger logger = Logger.getLogger("Minecraft");
     public static ArrayList<Player> editingPlayers = new ArrayList<Player>();
+    private CommandHandler commandHandler;
+    private ExternalPluginManager externalPluginManager;
     
-    public static ArrayList<String> records = new ArrayList<String>(
+    public final static ArrayList<String> records = new ArrayList<String>(
             Arrays.asList(Material.RECORD_3.name(), Material.RECORD_4.name(),
                     Material.RECORD_5.name(), Material.RECORD_6.name(),
                     Material.RECORD_7.name(), Material.RECORD_8.name(),
                     Material.RECORD_9.name(), Material.RECORD_10.name(),
                     Material.RECORD_11.name(), Material.RECORD_12.name(),
                     Material.GOLD_RECORD.name(), Material.GREEN_RECORD.name()));
-    public static ArrayList<String> allowedItems = new ArrayList<String>(
+    public final static ArrayList<String> allowedItems = new ArrayList<String>(
             Arrays.asList(Material.BOOK.name(), Material.BOOK_AND_QUILL.name(),
                     Material.WRITTEN_BOOK.name(),
                     Material.ENCHANTED_BOOK.name(), Material.PAPER.name(),
@@ -78,11 +77,9 @@ public class BookShelf extends JavaPlugin
     HashMap<Location, Integer> autoToggleMap1 = new HashMap<Location, Integer>();
     HashMap<Location, List<Player>> autoToggleMap2 = new HashMap<Location, List<Player>>();
     List<?> autoToggleNameList = null;
-    private CommandHandler commandHandler;
-    private SQLManager sqlManager;
-    private ExternalPluginManager externalPluginManager;
     
     /* DATABASE */
+    private SQLManager sqlManager;
     static ResultSet r;
     
     @Override
@@ -90,18 +87,18 @@ public class BookShelf extends JavaPlugin
     {
         instance = this;
         allowedItems.addAll(records);
-        config = getConfig();
         saveDefaultConfig();
         
         this.sqlManager = new SQLManager(this, logger);
-
+        
         setupAutoToggle();
-
+        
         this.externalPluginManager = new ExternalPluginManager(this, logger);
         
-        getServer().getPluginManager().registerEvents(new BookListener(this), this);
+        getServer().getPluginManager().registerEvents(new BookListener(this),
+                this);
         PluginDescriptionFile pdfFile = this.getDescription();
-
+        
         this.commandHandler = new CommandHandler();
         
         this.logger.info("[" + pdfFile.getName() + "] Enabled BookShelf V"
@@ -123,13 +120,10 @@ public class BookShelf extends JavaPlugin
         }
         
         sqlManager.shutDown();
-        
-            TownyHandler.saveConfig();
-        
     }
     
-    public boolean onCommand(CommandSender sender, Command command, String label,
-            String[] args)
+    public boolean onCommand(CommandSender sender, Command command,
+            String label, String[] args)
     {
         commandHandler.onCommand(sender, command, label, args);
         return true;
@@ -152,31 +146,32 @@ public class BookShelf extends JavaPlugin
     
     private void setupAutoToggle()
     {
-        if(config.get("auto_toggle.enabled") != null)
+        if(getConfig().get("auto_toggle.enabled") != null)
         {
-            this.autoToggle = config.getBoolean("auto_toggle.enabled");
+            this.autoToggle = getConfig().getBoolean("auto_toggle.enabled");
         }
         
-        if(config.get("auto_toggle.frequency") != null)
+        if(getConfig().get("auto_toggle.frequency") != null)
         {
-            this.autoToggleFreq = config.getInt("auto_toggle.frequency");
+            this.autoToggleFreq = getConfig().getInt("auto_toggle.frequency");
         }
         
-        if(config.get("auto_toggle.server_wide") != null)
+        if(getConfig().get("auto_toggle.server_wide") != null)
         {
-            this.autoToggleServerWide = config
-                    .getBoolean("auto_toggle.server_wide");
+            this.autoToggleServerWide = getConfig().getBoolean(
+                    "auto_toggle.server_wide");
         }
         
-        if(config.get("auto_toggle.different_players") != null)
+        if(getConfig().get("auto_toggle.different_players") != null)
         {
-            this.autoToggleDiffPlayers = config
-                    .getBoolean("auto_toggle.different_players");
+            this.autoToggleDiffPlayers = getConfig().getBoolean(
+                    "auto_toggle.different_players");
         }
         
-        if(config.get("auto_toggle.name_list") != null)
+        if(getConfig().get("auto_toggle.name_list") != null)
         {
-            this.autoToggleNameList = config.getList("auto_toggle.name_list");
+            this.autoToggleNameList = getConfig().getList(
+                    "auto_toggle.name_list");
         }
     }
     
@@ -200,7 +195,6 @@ public class BookShelf extends JavaPlugin
     public void reloadBookShelfConfig()
     {
         instance.reloadConfig();
-        config = instance.getConfig();
         instance.saveDefaultConfig();
         instance.setupAutoToggle();
         
@@ -218,13 +212,12 @@ public class BookShelf extends JavaPlugin
     {
         if(p.isOp())
             return true;
-        if(!config.getBoolean("use_built_in_ownership"))
+        if(!getConfig().getBoolean("use_built_in_ownership"))
             return true;
         try
         {
-            r = runQuery(
-                    "SELECT * FROM owners WHERE x=" + x + " AND y=" + y
-                            + " AND z=" + z + ";");
+            r = runQuery("SELECT * FROM owners WHERE x=" + x + " AND y=" + y
+                    + " AND z=" + z + ";");
             if(!r.next())
             {
                 close(r);
@@ -267,24 +260,21 @@ public class BookShelf extends JavaPlugin
         
         try
         {
-            r = runQuery(
-                    "SELECT * FROM owners WHERE x=" + x + " AND y=" + y
-                            + " AND z=" + z + ";");
+            r = runQuery("SELECT * FROM owners WHERE x=" + x + " AND y=" + y
+                    + " AND z=" + z + ";");
             if(!r.next())
             {
                 close(r);
-                runQuery(
-                        "INSERT INTO owners (x, y, z, ownerString) VALUES ("
-                                + x + ", +" + y + ", " + z + ", '"
-                                + ownerString + "');");
+                runQuery("INSERT INTO owners (x, y, z, ownerString) VALUES ("
+                        + x + ", +" + y + ", " + z + ", '" + ownerString
+                        + "');");
             }
             else
             {
                 close(r);
-                runQuery(
-                        "UPDATE owners SET ownerString='" + ownerString
-                                + "' WHERE x=" + x + " AND y=" + y + " AND z="
-                                + z + ";");
+                runQuery("UPDATE owners SET ownerString='" + ownerString
+                        + "' WHERE x=" + x + " AND y=" + y + " AND z=" + z
+                        + ";");
             }
         }
         catch(SQLException e)
@@ -302,9 +292,8 @@ public class BookShelf extends JavaPlugin
     {
         try
         {
-            r = runQuery(
-                    "SELECT * FROM owners WHERE x=" + x + " AND y=" + y
-                            + " AND z=" + z + ";");
+            r = runQuery("SELECT * FROM owners WHERE x=" + x + " AND y=" + y
+                    + " AND z=" + z + ";");
             if(!r.next())
             {
                 close(r);
@@ -318,10 +307,9 @@ public class BookShelf extends JavaPlugin
                 ownerString = ownerString
                         .substring(0, ownerString.length() - 1);
                 
-                runQuery(
-                        "INSERT INTO owners (x, y, z, ownerString) VALUES ("
-                                + x + ", +" + y + ", " + z + ", '"
-                                + ownerString + "');");
+                runQuery("INSERT INTO owners (x, y, z, ownerString) VALUES ("
+                        + x + ", +" + y + ", " + z + ", '" + ownerString
+                        + "');");
             }
             else
             {
@@ -348,10 +336,9 @@ public class BookShelf extends JavaPlugin
                     newOwnerString = newOwnerString.substring(0,
                             newOwnerString.length() - 1);
                 
-                runQuery(
-                        "UPDATE owners SET ownerString='" + newOwnerString
-                                + "' WHERE x=" + x + " AND y=" + y + " AND z="
-                                + z + ";");
+                runQuery("UPDATE owners SET ownerString='" + newOwnerString
+                        + "' WHERE x=" + x + " AND y=" + y + " AND z=" + z
+                        + ";");
             }
         }
         catch(SQLException e)
@@ -373,9 +360,8 @@ public class BookShelf extends JavaPlugin
         }
         try
         {
-            r = runQuery(
-                    "SELECT * FROM owners WHERE x=" + x + " AND y=" + y
-                            + " AND z=" + z + ";");
+            r = runQuery("SELECT * FROM owners WHERE x=" + x + " AND y=" + y
+                    + " AND z=" + z + ";");
             if(!r.next())
             {
                 close(r);
@@ -400,10 +386,9 @@ public class BookShelf extends JavaPlugin
                     newOwnerString = newOwnerString.substring(0,
                             newOwnerString.length() - 1);
                 
-                runQuery(
-                        "UPDATE owners SET ownerString='" + newOwnerString
-                                + "' WHERE x=" + x + " AND y=" + y + " AND z="
-                                + z + ";");
+                runQuery("UPDATE owners SET ownerString='" + newOwnerString
+                        + "' WHERE x=" + x + " AND y=" + y + " AND z=" + z
+                        + ";");
             }
         }
         catch(SQLException e)
@@ -421,9 +406,8 @@ public class BookShelf extends JavaPlugin
     {
         try
         {
-            r = runQuery(
-                    "SELECT * FROM owners WHERE x=" + x + " AND y=" + y
-                            + " AND z=" + z + ";");
+            r = runQuery("SELECT * FROM owners WHERE x=" + x + " AND y=" + y
+                    + " AND z=" + z + ";");
             if(!r.next())
             {
                 close(r);
@@ -449,15 +433,13 @@ public class BookShelf extends JavaPlugin
     {
         try
         {
-            r = runQuery(
-                    "SELECT * FROM copy WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
+            r = runQuery("SELECT * FROM copy WHERE x=" + loc.getX() + " AND y="
+                    + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
             {
                 close(r);
-                runQuery(
-                        "INSERT INTO copy (x,y,z,bool) VALUES (" + loc.getX()
-                                + "," + loc.getY() + "," + loc.getZ() + ",0);");
+                runQuery("INSERT INTO copy (x,y,z,bool) VALUES (" + loc.getX()
+                        + "," + loc.getY() + "," + loc.getZ() + ",0);");
                 return false;
             }
             else
@@ -479,15 +461,14 @@ public class BookShelf extends JavaPlugin
     {
         try
         {
-            r = runQuery(
-                    "SELECT * FROM donate WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
+            r = runQuery("SELECT * FROM donate WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
             {
                 close(r);
-                runQuery(
-                        "INSERT INTO donate (x,y,z,bool) VALUES (" + loc.getX()
-                                + "," + loc.getY() + "," + loc.getZ() + ",0);");
+                runQuery("INSERT INTO donate (x,y,z,bool) VALUES ("
+                        + loc.getX() + "," + loc.getY() + "," + loc.getZ()
+                        + ",0);");
                 return false;
             }
             else
@@ -509,16 +490,14 @@ public class BookShelf extends JavaPlugin
     {
         try
         {
-            r = runQuery(
-                    "SELECT * FROM shop WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
+            r = runQuery("SELECT * FROM shop WHERE x=" + loc.getX() + " AND y="
+                    + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
             {
                 close(r);
-                runQuery(
-                        "INSERT INTO shop (x,y,z,bool,price) VALUES ("
-                                + loc.getX() + "," + loc.getY() + ","
-                                + loc.getZ() + ",0,10);");
+                runQuery("INSERT INTO shop (x,y,z,bool,price) VALUES ("
+                        + loc.getX() + "," + loc.getY() + "," + loc.getZ()
+                        + ",0,10);");
                 return false;
             }
             else
@@ -540,16 +519,14 @@ public class BookShelf extends JavaPlugin
     {
         try
         {
-            r = runQuery(
-                    "SELECT * FROM shop WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
+            r = runQuery("SELECT * FROM shop WHERE x=" + loc.getX() + " AND y="
+                    + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
             {
                 close(r);
-                runQuery(
-                        "INSERT INTO shop (x,y,z,bool,price) VALUES ("
-                                + loc.getX() + "," + loc.getY() + ","
-                                + loc.getZ() + ",0,10);");
+                runQuery("INSERT INTO shop (x,y,z,bool,price) VALUES ("
+                        + loc.getX() + "," + loc.getY() + "," + loc.getZ()
+                        + ",0,10);");
                 return 10;
             }
             else
@@ -571,9 +548,8 @@ public class BookShelf extends JavaPlugin
     {
         try
         {
-            r = runQuery(
-                    "SELECT * FROM enable WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
+            r = runQuery("SELECT * FROM enable WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
             {
                 int def = 1;
@@ -586,10 +562,9 @@ public class BookShelf extends JavaPlugin
                 {
                     def = 0;
                 }
-                runQuery(
-                        "INSERT INTO enable (x,y,z,bool) VALUES (" + loc.getX()
-                                + "," + loc.getY() + "," + loc.getZ() + ", "
-                                + def + ");");
+                runQuery("INSERT INTO enable (x,y,z,bool) VALUES ("
+                        + loc.getX() + "," + loc.getY() + "," + loc.getZ()
+                        + ", " + def + ");");
                 return(def != 0);
             }
             else
@@ -611,13 +586,12 @@ public class BookShelf extends JavaPlugin
     {
         try
         {
-            r = runQuery(
-                    "SELECT * FROM enable WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
+            r = runQuery("SELECT * FROM enable WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
             {
                 int def = 1;
-                if(config.getBoolean("default_openable"))
+                if(getConfig().getBoolean("default_openable"))
                 {
                     def = 1;
                 }
@@ -626,35 +600,31 @@ public class BookShelf extends JavaPlugin
                     def = 0;
                 }
                 close(r);
-                runQuery(
-                        "INSERT INTO enable (x,y,z,bool) VALUES (" + loc.getX()
-                                + "," + loc.getY() + "," + loc.getZ() + ", "
-                                + def + ");");
+                runQuery("INSERT INTO enable (x,y,z,bool) VALUES ("
+                        + loc.getX() + "," + loc.getY() + "," + loc.getZ()
+                        + ", " + def + ");");
             }
             else
             {
                 close(r);
             }
-            r = runQuery(
-                    "SELECT * FROM enable WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
+            r = runQuery("SELECT * FROM enable WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(r.next())
                 if(r.getInt("bool") == 1)
                 {
                     close(r);
-                    runQuery(
-                            "UPDATE enable SET bool=0 WHERE x=" + loc.getX()
-                                    + " AND y=" + loc.getY() + " AND z="
-                                    + loc.getZ() + ";");
+                    runQuery("UPDATE enable SET bool=0 WHERE x=" + loc.getX()
+                            + " AND y=" + loc.getY() + " AND z=" + loc.getZ()
+                            + ";");
                     return 0;
                 }
                 else
                 {
                     close(r);
-                    runQuery(
-                            "UPDATE enable SET bool=1 WHERE x=" + loc.getX()
-                                    + " AND y=" + loc.getY() + " AND z="
-                                    + loc.getZ() + ";");
+                    runQuery("UPDATE enable SET bool=1 WHERE x=" + loc.getX()
+                            + " AND y=" + loc.getY() + " AND z=" + loc.getZ()
+                            + ";");
                     return 1;
                 }
             return -1;
@@ -671,12 +641,12 @@ public class BookShelf extends JavaPlugin
         
         if(!name.endsWith(" "))
         {
-            if(!name.equals(config.getString("default_shelf_name")))
+            if(!name.equals(getConfig().getString("default_shelf_name")))
                 name += " ";
         }
         else
         {
-            if(name.equals(config.getString("default_shelf_name") + " "))
+            if(name.equals(getConfig().getString("default_shelf_name") + " "))
                 name = name.substring(0, name.length() - 1);
         }
         
@@ -695,10 +665,8 @@ public class BookShelf extends JavaPlugin
             close(r);
             for(Vector loc : vecs)
             {
-                r = runQuery(
-                        "SELECT * FROM enable WHERE x=" + loc.getX()
-                                + " AND y=" + loc.getY() + " AND z="
-                                + loc.getZ() + ";");
+                r = runQuery("SELECT * FROM enable WHERE x=" + loc.getX()
+                        + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
                 if(r.next())
                 {
                     selmap.put(loc, r.getInt("bool") == 1 ? true : false);
@@ -710,10 +678,9 @@ public class BookShelf extends JavaPlugin
             {
                 boolean bool = selmap.get(vec);
                 int bool2 = bool == true ? 0 : 1;
-                runQuery(
-                        "UPDATE enable SET bool=" + bool2 + " WHERE x="
-                                + vec.getX() + " AND y=" + vec.getY()
-                                + " AND z=" + vec.getZ() + ";");
+                runQuery("UPDATE enable SET bool=" + bool2 + " WHERE x="
+                        + vec.getX() + " AND y=" + vec.getY() + " AND z="
+                        + vec.getZ() + ";");
             }
             instance.sqlManager.commit();
             instance.sqlManager.setAutoCommit(true);
@@ -724,11 +691,10 @@ public class BookShelf extends JavaPlugin
             e.printStackTrace();
         }
     }
-
+    
     public static SQLManager getSQLManager()
     {
         return instance.sqlManager;
     }
-    
     
 }

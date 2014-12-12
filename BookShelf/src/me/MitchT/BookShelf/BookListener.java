@@ -788,7 +788,7 @@ public class BookListener implements Listener
             return;
         if(j.getBlock().getType() == Material.BOOKSHELF)
         {
-            if(!BookShelf.config.getBoolean("shelves_can_burn"))
+            if(!plugin.getConfig().getBoolean("shelves_can_burn"))
             {
                 j.setCancelled(true);
                 return;
@@ -950,7 +950,7 @@ public class BookListener implements Listener
             {
                 String prefix = "shelf_only_items.";
                 Player p = (Player) j.getWhoClicked();
-                if(BookShelf.config.getBoolean(prefix + "book"))
+                if(plugin.getConfig().getBoolean(prefix + "book"))
                 {
                     if(j.getCurrentItem().getType() == Material.BOOK
                             || j.getCursor().getType() == Material.BOOK)
@@ -960,7 +960,7 @@ public class BookListener implements Listener
                         return;
                     }
                 }
-                if(BookShelf.config.getBoolean(prefix + "book_and_quill"))
+                if(plugin.getConfig().getBoolean(prefix + "book_and_quill"))
                 {
                     if(j.getCurrentItem().getType() == Material.BOOK_AND_QUILL
                             || j.getCursor().getType() == Material.BOOK_AND_QUILL)
@@ -970,7 +970,7 @@ public class BookListener implements Listener
                         return;
                     }
                 }
-                if(BookShelf.config.getBoolean(prefix + "signed"))
+                if(plugin.getConfig().getBoolean(prefix + "signed"))
                 {
                     if(j.getCurrentItem().getType() == Material.WRITTEN_BOOK
                             || j.getCursor().getType() == Material.WRITTEN_BOOK)
@@ -980,7 +980,7 @@ public class BookListener implements Listener
                         return;
                     }
                 }
-                if(BookShelf.config.getBoolean(prefix + "maps"))
+                if(plugin.getConfig().getBoolean(prefix + "maps"))
                 {
                     if(j.getCurrentItem().getType() == Material.MAP
                             || j.getCursor().getType() == Material.MAP
@@ -992,7 +992,7 @@ public class BookListener implements Listener
                         return;
                     }
                 }
-                if(BookShelf.config.getBoolean(prefix + "enchanted_book"))
+                if(plugin.getConfig().getBoolean(prefix + "enchanted_book"))
                 {
                     if(j.getCurrentItem().getType() == Material.ENCHANTED_BOOK
                             || j.getCursor().getType() == Material.ENCHANTED_BOOK)
@@ -1002,7 +1002,7 @@ public class BookListener implements Listener
                         return;
                     }
                 }
-                if(BookShelf.config.getBoolean(prefix + "records"))
+                if(plugin.getConfig().getBoolean(prefix + "records"))
                 {
                     if(BookShelf.records.contains(j.getCurrentItem().getType())
                             || BookShelf.records.contains(j.getCursor()
@@ -1013,7 +1013,7 @@ public class BookListener implements Listener
                         return;
                     }
                 }
-                if(BookShelf.config.getBoolean(prefix + "paper"))
+                if(plugin.getConfig().getBoolean(prefix + "paper"))
                 {
                     if(j.getCurrentItem().getType() == Material.PAPER
                             || j.getCursor().getType() == Material.PAPER)

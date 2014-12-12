@@ -12,22 +12,18 @@ import java.util.logging.Logger;
 import me.MitchT.BookShelf.Commands.CommandHandler;
 import me.MitchT.BookShelf.DBUpdates.DBUpdate;
 import me.MitchT.BookShelf.LWC.LWCPluginHandler;
-import me.MitchT.BookShelf.Towny.TownyCommands;
 import me.MitchT.BookShelf.Towny.TownyHandler;
 import me.MitchT.BookShelf.WorldEdit.WorldEdit_EditSessionFactoryHandler;
-import me.MitchT.BookShelf.BookListener;
 import me.MitchT.SimpleSQL.Database;
 import me.MitchT.SimpleSQL.MySQL;
 import me.MitchT.SimpleSQL.SQLite;
 import net.milkbowl.vault.economy.Economy;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -39,7 +35,6 @@ import org.bukkit.util.Vector;
 
 import com.griefcraft.lwc.LWCPlugin;
 import com.palmergames.bukkit.towny.Towny;
-import com.palmergames.bukkit.towny.object.Resident;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
@@ -151,6 +146,7 @@ public class BookShelf extends JavaPlugin
     @Override
     public void onEnable()
     {
+        instance = this;
         allowedItems.addAll(records);
         config = getConfig();
         saveDefaultConfig();
@@ -633,6 +629,8 @@ public class BookShelf extends JavaPlugin
         for(int i = 0; i <= range; i++)
         {
             b = loc.add(dir).getBlock();
+            if(b.getType() != Material.AIR)
+                break;
         }
         
         return b;
@@ -684,7 +682,7 @@ public class BookShelf extends JavaPlugin
             String[] args)
     {
         commandHandler.onCommand(sender, command, label, args);
-        return false;
+        return true;
     }
     
     public static boolean isOwner(Location loc, Player p)

@@ -58,7 +58,7 @@ public class TownyCommands
     static ArrayList<String> level3 = new ArrayList<String>(Arrays.asList("on",
             "off"));
     
-    public static boolean onCommand(CommandSender sender, String label,
+    public static boolean onCommand(Player sender,
             String[] args, BookShelf bs)
     {
         if(args.length == 0)
@@ -75,7 +75,7 @@ public class TownyCommands
         {
             if(level0.contains(args[0]))
             {
-                Resident res = TownyHandler.convertToResident((Player) sender);
+                Resident res = TownyHandler.convertToResident(sender);
                 if(res.hasTown())
                 {
                     try

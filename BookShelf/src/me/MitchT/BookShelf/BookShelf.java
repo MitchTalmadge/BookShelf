@@ -9,11 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
+import me.MitchT.BookShelf.Commands.CommandHandler;
 import me.MitchT.BookShelf.DBUpdates.DBUpdate;
 import me.MitchT.BookShelf.LWC.LWCPluginHandler;
 import me.MitchT.BookShelf.Towny.TownyCommands;
 import me.MitchT.BookShelf.Towny.TownyHandler;
 import me.MitchT.BookShelf.WorldEdit.WorldEdit_EditSessionFactoryHandler;
+import me.MitchT.BookShelf.BookListener;
 import me.MitchT.SimpleSQL.Database;
 import me.MitchT.SimpleSQL.MySQL;
 import me.MitchT.SimpleSQL.SQLite;
@@ -22,6 +24,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -72,7 +75,6 @@ public class BookShelf extends JavaPlugin
     static FileConfiguration config;
     public static BookShelf instance;
     public final Logger logger = Logger.getLogger("Minecraft");
-    public static BookListener BookListener;
     public static final int currentDatabaseVersion = 3;
     public static ArrayList<Player> editingPlayers = new ArrayList<Player>();
     
@@ -90,7 +92,7 @@ public class BookShelf extends JavaPlugin
                     Material.MAP.name(), Material.EMPTY_MAP.name()));
     
     /* ECONOMY */
-    static Economy economy;
+    public static Economy economy;
     
     /* LWC */
     static LWCPlugin LWC;
@@ -105,11 +107,12 @@ public class BookShelf extends JavaPlugin
     HashMap<Location, Integer> autoToggleMap1 = new HashMap<Location, Integer>();
     HashMap<Location, List<Player>> autoToggleMap2 = new HashMap<Location, List<Player>>();
     List<?> autoToggleNameList = null;
+    private CommandHandler commandHandler;
     
     /* TOWNY */
     static Towny towny;
-    public boolean useTowny = false;
-    public boolean useWorldGuard = false;
+    public static boolean useTowny = false;
+    public static boolean useWorldGuard = false;
     public static File townyConfigPath;
     public static FileConfiguration townyConfig;
     
@@ -130,8 +133,6 @@ public class BookShelf extends JavaPlugin
         
         try
         {
-            if(me.MitchT.BookShelf.BookListener.r != null)
-                close(me.MitchT.BookShelf.BookListener.r);
             if(r != null)
                 close(r);
         }
@@ -142,7 +143,7 @@ public class BookShelf extends JavaPlugin
         
         getdb().close();
         
-        if(this.useTowny)
+        if(BookShelf.useTowny)
             TownyHandler.saveConfig();
         
     }
@@ -151,7 +152,6 @@ public class BookShelf extends JavaPlugin
     public void onEnable()
     {
         allowedItems.addAll(records);
-        BookListener = new BookListener(this);
         config = getConfig();
         saveDefaultConfig();
         sqlConnection();
@@ -200,11 +200,27 @@ public class BookShelf extends JavaPlugin
                     new WorldEdit_EditSessionFactoryHandler());
         }
         
-        getServer().getPluginManager().registerEvents(BookListener, this);
+        getServer().getPluginManager().registerEvents(new BookListener(this), this);
         PluginDescriptionFile pdfFile = this.getDescription();
+
+        this.commandHandler = new CommandHandler();
+        
         this.logger.info("[" + pdfFile.getName() + "] Enabled BookShelf V"
                 + pdfFile.getVersion());
         
+    }
+    
+    public static ResultSet runQuery(String query)
+    {
+        try
+        {
+            return getdb().query(query);
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
     }
     
     public static void close(ResultSet r) throws SQLException
@@ -300,7 +316,7 @@ public class BookShelf extends JavaPlugin
     
     public boolean isUsingTowny()
     {
-        return this.useTowny;
+        return BookShelf.useTowny;
     }
     
     public static boolean usingMySQL()
@@ -463,7 +479,6 @@ public class BookShelf extends JavaPlugin
         }
         catch(SQLException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -608,874 +623,67 @@ public class BookShelf extends JavaPlugin
         }
     }
     
-    public boolean isConsole(CommandSender sender)
+    public static Block getTargetBlock(Player player, int range)
     {
-        return sender instanceof ConsoleCommandSender;
-    }
-    
-    public boolean isCommandBlock(CommandSender sender)
-    {
-        return sender.getClass().getSimpleName()
-                .equals("CraftBlockCommandSender");
-    }
-    
-    public boolean isPlayer(CommandSender sender)
-    {
-        return sender instanceof Player;
-    }
-    
-    public boolean onCommand(CommandSender sender, Command cmd, String label,
-            String[] args)
-    {
-        if(cmd.getName().equalsIgnoreCase("bsunlimited")
-                || cmd.getName().equalsIgnoreCase("bsu"))
+        Location loc = player.getEyeLocation();
+        Vector dir = loc.getDirection().normalize();
+        
+        Block b = null;
+        
+        for(int i = 0; i <= range; i++)
         {
-            if(!this.isPlayer(sender))
-            {
-                sender.sendMessage("This command may only be used by players.");
-                return true;
-            }
-            Player p = (Player) sender;
-            Location loc = p.getTargetBlock(null, 10).getLocation();
-            if(p.hasPermission("bookshelf.unlimited")
-                    && BookShelf.isOwner(loc, p))
-            {
-                if(loc.getBlock().getType() == Material.BOOKSHELF)
-                {
-                    if(useTowny)
-                    {
-                        Resident res = TownyHandler.convertToResident(p);
-                        if(!TownyHandler.checkCanDoAction(loc.getBlock(), res,
-                                TownyHandler.UNLIMITED))
-                        {
-                            sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
-                            return true;
-                        }
-                    }
-                    try
-                    {
-                        if(BookShelf.isShelfUnlimited(loc))
-                        {
-                            p.sendMessage("The bookshelf you are looking at is now §6limited.");
-                            getdb().query(
-                                    "UPDATE copy SET bool=0 WHERE x="
-                                            + loc.getX() + " AND y="
-                                            + loc.getY() + " AND z="
-                                            + loc.getZ() + ";");
-                        }
-                        else
-                        {
-                            p.sendMessage("The bookshelf you are looking at is now §6unlimited.");
-                            getdb().query(
-                                    "UPDATE copy SET bool=1 WHERE x="
-                                            + loc.getX() + " AND y="
-                                            + loc.getY() + " AND z="
-                                            + loc.getZ() + ";");
-                        }
-                    }
-                    catch(SQLException e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-                else
-                {
-                    p.sendMessage("§cPlease look at a bookshelf when using this command");
-                }
-            }
-            else
-            {
-                p.sendMessage("§cYou don't have permission to use this command here!");
-            }
-            return true;
-        }
-        else if(cmd.getName().equalsIgnoreCase("bstoggle")
-                || cmd.getName().equalsIgnoreCase("bst"))
-        {
-            if(this.isConsole(sender) || this.isCommandBlock(sender))
-            {
-                if(!(args.length >= 1))
-                {
-                    sender.sendMessage("§cMust include a shelf name!");
-                    return false;
-                }
-                else
-                {
-                    String name = "";
-                    for(int i = 0; i < args.length; i++)
-                    {
-                        name += args[i] + " ";
-                    }
-                    
-                    toggleBookShelvesByName(name);
-                    sender.sendMessage("All bookshelves with the name §6"
-                            + name + "§fhave been toggled.");
-                }
-            }
-            else
-            {
-                Player p = (Player) sender;
-                if(!(args.length >= 1))
-                {
-                    Location loc = p.getTargetBlock(null, 10).getLocation();
-                    if(p.hasPermission("bookshelf.toggle")
-                            && BookShelf.isOwner(loc, p))
-                    {
-                        if(loc.getBlock().getType() == Material.BOOKSHELF)
-                        {
-                            if(useTowny)
-                            {
-                                Resident res = TownyHandler
-                                        .convertToResident(p);
-                                if(!TownyHandler.checkCanDoAction(
-                                        loc.getBlock(), res,
-                                        TownyHandler.TOGGLE))
-                                {
-                                    sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
-                                    return true;
-                                }
-                            }
-                            int result = toggleBookShelf(loc);
-                            if(result == -1)
-                                p.sendMessage("§cAn error occured while processing this command. Check server logs.");
-                            if(result == 0)
-                                p.sendMessage("The bookshelf you are looking at is now §cdisabled.");
-                            else
-                                p.sendMessage("The bookshelf you are looking at is now §aenabled.");
-                        }
-                        else
-                        {
-                            p.sendMessage("§cPlease look at a bookshelf when using this command.");
-                        }
-                    }
-                    else
-                    {
-                        p.sendMessage("§cYou don't have permission to use this command here!");
-                    }
-                }
-                else
-                {
-                    if(!p.isOp())
-                    {
-                        p.sendMessage("§cYou must be an op to toggle shelves by name.");
-                        return true;
-                    }
-                    String name = "";
-                    for(int i = 0; i < args.length; i++)
-                    {
-                        name += args[i] + " ";
-                    }
-                    
-                    toggleBookShelvesByName(name);
-                    sender.sendMessage("All bookshelves with the name §6"
-                            + name + "§fhave been toggled.");
-                }
-            }
-            return true;
-        }
-        else if(cmd.getName().equalsIgnoreCase("bsreload")
-                || cmd.getName().equalsIgnoreCase("bsr"))
-        {
-            CommandSender p = sender;
-            if(p.hasPermission("bookshelf.reload"))
-            {
-                this.reloadConfig();
-                config = getConfig();
-                saveDefaultConfig();
-                this.loadTownyConfig();
-                this.setupAutoToggle();
-                
-                if(config.getBoolean("lwc_support.enabled"))
-                {
-                    if(LWCPluginHandler == null)
-                    {
-                        LWCEnabled = true;
-                        LWCPluginHandler = new LWCPluginHandler(LWC);
-                    }
-                    else if(LWCEnabled == false)
-                        LWCEnabled = true;
-                }
-                else if(LWCPluginHandler != null)
-                    LWCEnabled = false;
-                
-                if(config.getBoolean("worldguard_support.enabled"))
-                {
-                    if(worldGuard != null)
-                        useWorldGuard = true;
-                    else
-                        useWorldGuard = false;
-                }
-                else
-                    useWorldGuard = false;
-                
-                if(config.getBoolean("towny_support.enabled"))
-                {
-                    if(towny != null)
-                        useTowny = true;
-                    else
-                        useTowny = false;
-                }
-                else
-                    useTowny = false;
-                
-                p.sendMessage("§aBookShelf config successfully reloaded.");
-            }
-            else
-            {
-                p.sendMessage("§cYou don't have permission to use this command here!");
-            }
-            return true;
-        }
-        else if(cmd.getName().equalsIgnoreCase("bsshop")
-                || cmd.getName().equalsIgnoreCase("bss"))
-        {
-            if(!this.isPlayer(sender))
-            {
-                sender.sendMessage("This command may only be used by players.");
-                return true;
-            }
-            Player p = (Player) sender;
-            Location loc = p.getTargetBlock(null, 10).getLocation();
-            if(p.hasPermission("bookshelf.shop") && BookShelf.isOwner(loc, p))
-            {
-                if(loc.getBlock().getType() == Material.BOOKSHELF)
-                {
-                    Integer price;
-                    if(!(args.length >= 1))
-                    {
-                        price = config.getInt("economy.default_price");
-                    }
-                    else
-                    {
-                        if(args[0].length() > 9)
-                            price = config.getInt("economy.default_price");
-                        else
-                            price = Integer.parseInt(args[0]);
-                    }
-                    if(economy == null)
-                    {
-                        p.sendMessage("§cVault is not installed! Aborting...");
-                        return true;
-                    }
-                    if(useTowny)
-                    {
-                        Resident res = TownyHandler.convertToResident(p);
-                        if(!TownyHandler.checkCanDoAction(loc.getBlock(), res,
-                                TownyHandler.SHOP))
-                        {
-                            sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
-                            return true;
-                        }
-                    }
-                    try
-                    {
-                        if(BookShelf.isShelfShop(loc) & !(args.length >= 1))
-                        {
-                            r = getdb().query(
-                                    "SELECT * FROM names WHERE x=" + loc.getX()
-                                            + " AND y=" + loc.getY()
-                                            + " AND z=" + loc.getZ() + ";");
-                            if(!r.next())
-                            {
-                                close(r);
-                                getdb().query(
-                                        "INSERT INTO names (x,y,z,name) VALUES ("
-                                                + loc.getX()
-                                                + ","
-                                                + loc.getY()
-                                                + ","
-                                                + loc.getZ()
-                                                + ", '"
-                                                + config.getString("default_shelf_name")
-                                                + "');");
-                            }
-                            else
-                            {
-                                close(r);
-                                getdb().query(
-                                        "UPDATE names SET name='"
-                                                + config.getString("default_shelf_name")
-                                                + "' WHERE x=" + loc.getX()
-                                                + " AND y=" + loc.getY()
-                                                + " AND z=" + loc.getZ() + ";");
-                            }
-                            p.sendMessage("The bookshelf you are looking at is no longer a shop.");
-                            getdb().query(
-                                    "UPDATE shop SET bool=0, price=" + price
-                                            + " WHERE x=" + loc.getX()
-                                            + " AND y=" + loc.getY()
-                                            + " AND z=" + loc.getZ() + ";");
-                        }
-                        else
-                        {
-                            r = getdb().query(
-                                    "SELECT * FROM names WHERE x=" + loc.getX()
-                                            + " AND y=" + loc.getY()
-                                            + " AND z=" + loc.getZ() + ";");
-                            if(!r.next())
-                            {
-                                close(r);
-                                getdb().query(
-                                        "INSERT INTO names (x,y,z,name) VALUES ("
-                                                + loc.getX()
-                                                + ","
-                                                + loc.getY()
-                                                + ","
-                                                + loc.getZ()
-                                                + ", '"
-                                                + config.getString(
-                                                        "default_shop_name")
-                                                        .replace(
-                                                                "%$",
-                                                                price
-                                                                        + " "
-                                                                        + BookShelf.economy
-                                                                                .currencyNamePlural())
-                                                + "');");
-                            }
-                            else
-                            {
-                                close(r);
-                                getdb().query(
-                                        "UPDATE names SET name='"
-                                                + config.getString(
-                                                        "default_shop_name")
-                                                        .replace(
-                                                                "%$",
-                                                                price
-                                                                        + " "
-                                                                        + BookShelf.economy
-                                                                                .currencyNamePlural())
-                                                + "' WHERE x=" + loc.getX()
-                                                + " AND y=" + loc.getY()
-                                                + " AND z=" + loc.getZ() + ";");
-                            }
-                            p.sendMessage("The bookshelf you are looking at is now a shop selling at §6"
-                                    + price
-                                    + " "
-                                    + economy.currencyNamePlural() + " §feach.");
-                            getdb().query(
-                                    "UPDATE shop SET bool=1, price=" + price
-                                            + " WHERE x=" + loc.getX()
-                                            + " AND y=" + loc.getY()
-                                            + " AND z=" + loc.getZ() + ";");
-                        }
-                    }
-                    catch(SQLException e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-                else
-                {
-                    p.sendMessage("§cPlease look at a bookshelf when using this command");
-                }
-            }
-            else
-            {
-                p.sendMessage("§cYou don't have permission to use this command here!");
-            }
-            return true;
-        }
-        else if(cmd.getName().equalsIgnoreCase("bsname")
-                || cmd.getName().equalsIgnoreCase("bsn"))
-        {
-            if(!this.isPlayer(sender))
-            {
-                sender.sendMessage("This command may only be used by players.");
-                return true;
-            }
-            Player p = (Player) sender;
-            Location loc = p.getTargetBlock(null, 10).getLocation();
-            if(p.hasPermission("bookshelf.name") && BookShelf.isOwner(loc, p))
-            {
-                if(loc.getBlock().getType() == Material.BOOKSHELF)
-                {
-                    String name;
-                    String queryName;
-                    if(!(args.length >= 1))
-                    {
-                        name = config.getString("default_shelf_name");
-                        queryName = name.replaceAll("'", "''");
-                    }
-                    else
-                    {
-                        int price = 0;
-                        try
-                        {
-                            r = getdb().query(
-                                    "SELECT * FROM shop WHERE x=" + loc.getX()
-                                            + " AND y=" + loc.getY()
-                                            + " AND z=" + loc.getZ() + ";");
-                            if(r.next())
-                                price = r.getInt("price");
-                            close(r);
-                        }
-                        catch(SQLException e)
-                        {
-                            e.printStackTrace();
-                        }
-                        String name1 = "";
-                        if(economy != null)
-                        {
-                            for(int i = 0; i < args.length; i++)
-                            {
-                                name1 += args[i].replace(
-                                        "%$",
-                                        price
-                                                + " "
-                                                + BookShelf.economy
-                                                        .currencyNamePlural())
-                                        + " ";
-                            }
-                        }
-                        else
-                        {
-                            for(int i = 0; i < args.length; i++)
-                            {
-                                name1 += args[i] + " ";
-                            }
-                        }
-                        name1.trim();
-                        if(name1.length() > 32)
-                        {
-                            name = name1.substring(0, 31);
-                        }
-                        else
-                        {
-                            name = name1;
-                        }
-                        name = ChatColor
-                                .translateAlternateColorCodes('&', name);
-                        queryName = name.replaceAll("'", "''");
-                    }
-                    if(useTowny)
-                    {
-                        Resident res = TownyHandler.convertToResident(p);
-                        if(!TownyHandler.checkCanDoAction(loc.getBlock(), res,
-                                TownyHandler.NAME))
-                        {
-                            sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
-                            return true;
-                        }
-                    }
-                    try
-                    {
-                        r = getdb().query(
-                                "SELECT * FROM names WHERE x=" + loc.getX()
-                                        + " AND y=" + loc.getY() + " AND z="
-                                        + loc.getZ() + ";");
-                        if(!r.next())
-                        {
-                            close(r);
-                            getdb().query(
-                                    "INSERT INTO names (x,y,z,name) VALUES ("
-                                            + loc.getX() + "," + loc.getY()
-                                            + "," + loc.getZ() + ", '"
-                                            + queryName + "');");
-                            p.sendMessage("The name of the bookshelf you are looking at has been changed to §6"
-                                    + name);
-                        }
-                        else
-                        {
-                            close(r);
-                            getdb().query(
-                                    "UPDATE names SET name='" + queryName
-                                            + "' WHERE x=" + loc.getX()
-                                            + " AND y=" + loc.getY()
-                                            + " AND z=" + loc.getZ() + ";");
-                            p.sendMessage("The name of the bookshelf you are looking at has been changed to §6"
-                                    + name);
-                        }
-                    }
-                    catch(SQLException e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-                else
-                {
-                    p.sendMessage("§cPlease look at a bookshelf when using this command");
-                }
-            }
-            else
-            {
-                p.sendMessage("§cYou don't have permission to use this command here!");
-            }
-            return true;
-        }
-        else if(cmd.getName().equalsIgnoreCase("bstowny"))
-        {
-            if(!this.isPlayer(sender))
-            {
-                sender.sendMessage("This command may only be used by players.");
-                return true;
-            }
-            if(useTowny)
-                if(((Player) sender).hasPermission("bookshelf.towny"))
-                    return TownyCommands.onCommand(sender, label, args, this);
-                else
-                {
-                    sender.sendMessage("§cYou don't have permission to use this command here!");
-                    return true;
-                }
-            
-            sender.sendMessage("§cTowny Support is not enabled on this server.");
-            return true;
-        }
-        else if(cmd.getName().equalsIgnoreCase("bsdonate")
-                || cmd.getName().equalsIgnoreCase("bsd"))
-        {
-            if(!this.isPlayer(sender))
-            {
-                sender.sendMessage("This command may only be used by players.");
-                return true;
-            }
-            Player p = (Player) sender;
-            Location loc = p.getTargetBlock(null, 10).getLocation();
-            if(p.hasPermission("bookshelf.donate") && BookShelf.isOwner(loc, p))
-            {
-                if(loc.getBlock().getType() == Material.BOOKSHELF)
-                {
-                    if(useTowny)
-                    {
-                        Resident res = TownyHandler.convertToResident(p);
-                        if(!TownyHandler.checkCanDoAction(loc.getBlock(), res,
-                                TownyHandler.DONATE))
-                        {
-                            sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
-                            return true;
-                        }
-                    }
-                    try
-                    {
-                        if(BookShelf.isShelfDonate(loc))
-                        {
-                            r = getdb().query(
-                                    "SELECT * FROM names WHERE x=" + loc.getX()
-                                            + " AND y=" + loc.getY()
-                                            + " AND z=" + loc.getZ() + ";");
-                            if(!r.next())
-                            {
-                                close(r);
-                                getdb().query(
-                                        "INSERT INTO names (x,y,z,name) VALUES ("
-                                                + loc.getX()
-                                                + ","
-                                                + loc.getY()
-                                                + ","
-                                                + loc.getZ()
-                                                + ", '"
-                                                + config.getString("default_shelf_name")
-                                                + "');");
-                            }
-                            else
-                            {
-                                close(r);
-                                getdb().query(
-                                        "UPDATE names SET name='"
-                                                + config.getString("default_shelf_name")
-                                                + "' WHERE x=" + loc.getX()
-                                                + " AND y=" + loc.getY()
-                                                + " AND z=" + loc.getZ() + ";");
-                            }
-                            p.sendMessage("The bookshelf you are looking at is no longer set up for donations.");
-                            getdb().query(
-                                    "UPDATE donate SET bool=0 WHERE x="
-                                            + loc.getX() + " AND y="
-                                            + loc.getY() + " AND z="
-                                            + loc.getZ() + ";");
-                        }
-                        else
-                        {
-                            r = getdb().query(
-                                    "SELECT * FROM names WHERE x=" + loc.getX()
-                                            + " AND y=" + loc.getY()
-                                            + " AND z=" + loc.getZ() + ";");
-                            if(!r.next())
-                            {
-                                close(r);
-                                getdb().query(
-                                        "INSERT INTO names (x,y,z,name) VALUES ("
-                                                + loc.getX()
-                                                + ","
-                                                + loc.getY()
-                                                + ","
-                                                + loc.getZ()
-                                                + ", 'Donation "
-                                                + config.getString("default_shelf_name")
-                                                + "');");
-                            }
-                            else
-                            {
-                                close(r);
-                                getdb().query(
-                                        "UPDATE names SET name='Donation "
-                                                + config.getString("default_shelf_name")
-                                                + "' WHERE x=" + loc.getX()
-                                                + " AND y=" + loc.getY()
-                                                + " AND z=" + loc.getZ() + ";");
-                            }
-                            p.sendMessage("The bookshelf you are looking at is now set up for donations.");
-                            getdb().query(
-                                    "UPDATE donate SET bool=1 WHERE x="
-                                            + loc.getX() + " AND y="
-                                            + loc.getY() + " AND z="
-                                            + loc.getZ() + ";");
-                        }
-                    }
-                    catch(SQLException e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-                else
-                {
-                    p.sendMessage("§cPlease look at a bookshelf when using this command.");
-                }
-            }
-            else
-            {
-                p.sendMessage("§cYou don't have permission to use this command here!");
-            }
-            return true;
-        }
-        else if(cmd.getName().equalsIgnoreCase("bsedit")
-                || cmd.getName().equalsIgnoreCase("bse"))
-        {
-            if(!this.isPlayer(sender))
-            {
-                sender.sendMessage("This command may only be used by players.");
-                return true;
-            }
-            Player p = (Player) sender;
-            if(editingPlayers.contains(p))
-            {
-                editingPlayers.remove(p);
-                p.sendMessage("You are no longer in shelf editing mode!");
-            }
-            else
-            {
-                editingPlayers.add(p);
-                p.sendMessage("You are now in shelf editing mode!");
-            }
-            return true;
-        }
-        else if(cmd.getName().equalsIgnoreCase("bssetowners"))
-        {
-            if(!this.isPlayer(sender))
-            {
-                sender.sendMessage("This command may only be used by players.");
-                return true;
-            }
-            Player p = (Player) sender;
-            Location loc = p.getTargetBlock(null, 10).getLocation();
-            if(p.hasPermission("bookshelf.setowners")
-                    && BookShelf.isOwner(loc, p))
-            {
-                if(!config.getBoolean("use_built_in_ownership"))
-                    return true;
-                if(loc.getBlock().getType() == Material.BOOKSHELF)
-                {
-                    if(args.length >= 1)
-                    {
-                        BookShelf.setOwners(loc, args);
-                        String ownerString = "";
-                        for(String name : BookShelf.getOwners(loc))
-                        {
-                            ownerString += name + ", ";
-                        }
-                        ownerString = ownerString.substring(0,
-                                ownerString.length() - 2);
-                        p.sendMessage("Current Shelf Owners: §6" + ownerString);
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    p.sendMessage("§cPlease look at a bookshelf when using this command.");
-                }
-            }
-            else
-            {
-                p.sendMessage("§cYou don't have permission to use this command here!");
-            }
-            return true;
-        }
-        else if(cmd.getName().equalsIgnoreCase("bsaddowners"))
-        {
-            if(!this.isPlayer(sender))
-            {
-                sender.sendMessage("This command may only be used by players.");
-                return true;
-            }
-            Player p = (Player) sender;
-            Location loc = p.getTargetBlock(null, 10).getLocation();
-            if(p.hasPermission("bookshelf.addowners")
-                    && BookShelf.isOwner(loc, p))
-            {
-                if(!config.getBoolean("use_built_in_ownership"))
-                    return true;
-                if(loc.getBlock().getType() == Material.BOOKSHELF)
-                {
-                    if(args.length >= 1)
-                    {
-                        BookShelf.addOwners(loc, args);
-                        String ownerString = "";
-                        for(String name : BookShelf.getOwners(loc))
-                        {
-                            ownerString += name + ", ";
-                        }
-                        ownerString = ownerString.substring(0,
-                                ownerString.length() - 2);
-                        p.sendMessage("Current Shelf Owners: §6" + ownerString);
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    p.sendMessage("§cPlease look at a bookshelf when using this command.");
-                }
-            }
-            else
-            {
-                p.sendMessage("§cYou don't have permission to use this command here!");
-            }
-            return true;
-        }
-        else if(cmd.getName().equalsIgnoreCase("bsremoveowners"))
-        {
-            if(!this.isPlayer(sender))
-            {
-                sender.sendMessage("This command may only be used by players.");
-                return true;
-            }
-            Player p = (Player) sender;
-            Location loc = p.getTargetBlock(null, 10).getLocation();
-            if(p.hasPermission("bookshelf.removeowners")
-                    && BookShelf.isOwner(loc, p))
-            {
-                if(!config.getBoolean("use_built_in_ownership"))
-                    return true;
-                if(loc.getBlock().getType() == Material.BOOKSHELF)
-                {
-                    if(args.length >= 1)
-                    {
-                        BookShelf.removeOwners(loc, args);
-                        String ownerString = "";
-                        for(String name : BookShelf.getOwners(loc))
-                        {
-                            ownerString += name + ", ";
-                        }
-                        ownerString = ownerString.substring(0,
-                                ownerString.length() - 2);
-                        p.sendMessage("Current Shelf Owners: §6" + ownerString);
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    p.sendMessage("§cPlease look at a bookshelf when using this command.");
-                }
-            }
-            else
-            {
-                p.sendMessage("§cYou don't have permission to use this command here!");
-            }
-            return true;
-        }
-        else if(cmd.getName().equalsIgnoreCase("bsgetowners"))
-        {
-            if(!this.isPlayer(sender))
-            {
-                sender.sendMessage("This command may only be used by players.");
-                return true;
-            }
-            Player p = (Player) sender;
-            Location loc = p.getTargetBlock(null, 10).getLocation();
-            if(p.hasPermission("bookshelf.getowners")
-                    && BookShelf.isOwner(loc, p))
-            {
-                if(!config.getBoolean("use_built_in_ownership"))
-                    return true;
-                if(loc.getBlock().getType() == Material.BOOKSHELF)
-                {
-                    String ownerString = "";
-                    for(String name : BookShelf.getOwners(loc))
-                    {
-                        ownerString += name + ", ";
-                    }
-                    ownerString = ownerString.substring(0,
-                            ownerString.length() - 2);
-                    p.sendMessage("Current Shelf Owners: §6" + ownerString);
-                }
-                else
-                {
-                    p.sendMessage("§cPlease look at a bookshelf when using this command.");
-                }
-            }
-            else
-            {
-                p.sendMessage("§cYou don't have permission to use this command here!");
-            }
-            return true;
+            b = loc.add(dir).getBlock();
         }
         
-        /*		else if(cmd.getName().equalsIgnoreCase("bsdisplay") || cmd.getName().equalsIgnoreCase("bsd"))
+        return b;
+    }
+    
+    public static void reloadBookShelfConfig()
+    {
+        instance.reloadConfig();
+        config = instance.getConfig();
+        instance.saveDefaultConfig();
+        instance.loadTownyConfig();
+        instance.setupAutoToggle();
+        
+        if(config.getBoolean("lwc_support.enabled"))
         {
-        	Player p = Bukkit.getPlayer(sender.getName());
-        	if(p.hasPermission("bookshelf.display"))
-        	{
-        		Location loc = p.getTargetBlock(null, 10).getLocation();
-        		if(loc.getBlock().getType() == Material.BOOKSHELF)
-        		{
-        			try {
-        				r = getdb().query("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-        				if(!r.next())
-        				{
-        					getdb().query("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 1);");
-        					p.sendMessage("The name of the bookshelf you are looking at has been changed.");
-        					close(r);
-        				}
-        				else
-        				{
-        					if(r.getInt("bool") == 1)
-        					{
-        						close(r);
-        						p.sendMessage("The bookshelf you are looking at is no longer a display.");
-        						getdb().query("UPDATE display SET bool=0 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-        					}
-        					else
-        					{
-        						close(r);
-        						p.sendMessage("The bookshelf you are looking at is now a display.");
-        						getdb().query("UPDATE display SET bool=1 WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-        					}
-        				}
-        			} catch (SQLException e) {
-        				e.printStackTrace();
-        			}
-        		}
-        		else
-        		{
-        			p.sendMessage("Please look at a bookshelf when using this command");
-        		}
-        	}
-        	else
-        	{
-        		p.sendMessage("§cYou don't have permission to use this command here!");
-        	}
-        	return true;
-        }*/
+            if(LWCPluginHandler == null)
+            {
+                LWCEnabled = true;
+                LWCPluginHandler = new LWCPluginHandler(LWC);
+            }
+            else if(LWCEnabled == false)
+                LWCEnabled = true;
+        }
+        else if(LWCPluginHandler != null)
+            LWCEnabled = false;
+        
+        if(config.getBoolean("worldguard_support.enabled"))
+        {
+            if(worldGuard != null)
+                useWorldGuard = true;
+            else
+                useWorldGuard = false;
+        }
+        else
+            useWorldGuard = false;
+        
+        if(config.getBoolean("towny_support.enabled"))
+        {
+            if(towny != null)
+                useTowny = true;
+            else
+                useTowny = false;
+        }
+        else
+            useTowny = false;
+    }
+    
+    public boolean onCommand(CommandSender sender, Command command, String label,
+            String[] args)
+    {
+        commandHandler.onCommand(sender, command, label, args);
         return false;
     }
     

@@ -6,6 +6,7 @@
 
 package me.MitchT.BookShelf.WorldEdit;
 
+import me.MitchT.BookShelf.BookListener;
 import me.MitchT.BookShelf.BookShelf;
 
 import org.bukkit.Location;
@@ -72,7 +73,7 @@ public class WorldEdit_EditSessionHandler extends EditSession
             {
                 if(currentB.getId() != Material.BOOKSHELF.getId())
                 {
-                    BookShelf.BookListener.breakShelf(new Location(null, pt
+                    BookListener.instance.breakShelf(new Location(null, pt
                             .toBlockVector().getBlockX(), pt.toBlockVector()
                             .getBlockY(), pt.toBlockVector().getBlockZ()),
                             false);

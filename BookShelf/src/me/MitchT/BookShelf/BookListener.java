@@ -75,10 +75,12 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 public class BookListener implements Listener
 {
     public static BookShelf plugin;
+    public static BookListener instance;
     
-    public BookListener(BookShelf instance)
+    public BookListener(BookShelf plugin)
     {
-        plugin = instance;
+        BookListener.plugin = plugin;
+        BookListener.instance = this;
     }
     
     private String author;

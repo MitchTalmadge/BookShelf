@@ -18,8 +18,9 @@ public enum BSCommandEnum
     private String commandName;
     private String permissionName;
     private Class<? extends BSCommand> commandClass;
-
-    BSCommandEnum(String commandName, String permissionName, Class<? extends BSCommand> commandClass)
+    
+    BSCommandEnum(String commandName, String permissionName,
+            Class<? extends BSCommand> commandClass)
     {
         this.commandName = commandName;
         this.permissionName = permissionName;
@@ -37,20 +38,20 @@ public enum BSCommandEnum
         }
         return null;
     }
-
+    
     public String getCommandName()
     {
         return commandName;
     }
-
+    
     public String getPermissionName()
     {
         return permissionName;
     }
-
+    
     public Class<? extends BSCommand> getCommandClass()
     {
         return commandClass;
     }
-
+    
 }

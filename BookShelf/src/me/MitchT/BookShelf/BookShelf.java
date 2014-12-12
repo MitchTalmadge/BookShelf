@@ -1,4 +1,4 @@
-package me.Pew446.BookShelf;
+package me.MitchT.BookShelf;
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -9,14 +9,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-import me.Pew446.BookShelf.DBUpdates.DBUpdate;
-import me.Pew446.BookShelf.LWC.LWCPluginHandler;
-import me.Pew446.BookShelf.Towny.TownyCommands;
-import me.Pew446.BookShelf.Towny.TownyHandler;
-import me.Pew446.BookShelf.WorldEdit.WorldEdit_EditSessionFactoryHandler;
-import me.Pew446.SimpleSQL.Database;
-import me.Pew446.SimpleSQL.MySQL;
-import me.Pew446.SimpleSQL.SQLite;
+import me.MitchT.BookShelf.DBUpdates.DBUpdate;
+import me.MitchT.BookShelf.LWC.LWCPluginHandler;
+import me.MitchT.BookShelf.Towny.TownyCommands;
+import me.MitchT.BookShelf.Towny.TownyHandler;
+import me.MitchT.BookShelf.WorldEdit.WorldEdit_EditSessionFactoryHandler;
+import me.MitchT.SimpleSQL.Database;
+import me.MitchT.SimpleSQL.MySQL;
+import me.MitchT.SimpleSQL.SQLite;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.ChatColor;
@@ -40,6 +40,31 @@ import com.palmergames.bukkit.towny.object.Resident;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
+/**
+ * BookShelf - A Bukkit & Spigot mod allowing the placement of items
+ * into BookShelves. <br>
+ * Copyright (C) 2012-2014 Mitch Talmadge (mitcht@aptitekk.com)<br>
+ * <br>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.<br>
+ * <br>
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.<br>
+ * <br>
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ * 
+ * @author Mitch Talmadge (mitcht@aptitekk.com)
+ */
 public class BookShelf extends JavaPlugin
 {
     
@@ -105,8 +130,8 @@ public class BookShelf extends JavaPlugin
         
         try
         {
-            if(me.Pew446.BookShelf.BookListener.r != null)
-                close(me.Pew446.BookShelf.BookListener.r);
+            if(me.MitchT.BookShelf.BookListener.r != null)
+                close(me.MitchT.BookShelf.BookListener.r);
             if(r != null)
                 close(r);
         }
@@ -787,12 +812,12 @@ public class BookShelf extends JavaPlugin
                 {
                     if(towny != null)
                         useTowny = true;
-                    else 
+                    else
                         useTowny = false;
                 }
-                else 
+                else
                     useTowny = false;
-
+                
                 p.sendMessage("§aBookShelf config successfully reloaded.");
             }
             else

@@ -70,7 +70,7 @@ public class BookShelf extends JavaPlugin
     
     /* SETUP */
     static FileConfiguration config;
-    public static BookShelf plugin;
+    public static BookShelf instance;
     public final Logger logger = Logger.getLogger("Minecraft");
     public static BookListener BookListener;
     public static final int currentDatabaseVersion = 3;
@@ -1850,7 +1850,7 @@ public class BookShelf extends JavaPlugin
             {
                 int def = 1;
                 close(r);
-                if(plugin.getConfig().getBoolean("default_openable"))
+                if(instance.getConfig().getBoolean("default_openable"))
                 {
                     def = 1;
                 }

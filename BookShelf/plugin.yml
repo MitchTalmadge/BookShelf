@@ -74,6 +74,7 @@ permissions:
             bookshelf.name: true
             bookshelf.towny: true
             bookshelf.donate: true
+            bookshelf.edit: true
             bookshelf.setowners: true
             bookshelf.addowners: true
             bookshelf.removeowners: true
@@ -107,6 +108,9 @@ permissions:
         default: true
     bookshelf.donate:
         description: Allows player to turn bookshelves into a donation shelf.
+        default: true
+    bookshelf.edit:
+        description: Allows player to use the /bsedit command.
         default: true
     bookshelf.setowners:
         description: Allows player to set the owners of any shelf.

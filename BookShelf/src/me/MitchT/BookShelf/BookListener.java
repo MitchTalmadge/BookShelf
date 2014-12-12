@@ -12,7 +12,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
-import me.MitchT.BookShelf.Towny.TownyHandler;
+import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -145,9 +145,9 @@ public class BookListener implements Listener
                         try
                         {
                             if(plugin.isShelfShop(loc)
-                                    && BookShelf.economy != null)
-                            { //Is a shop and economy is enabled
-                                if(BookShelf.useTowny)
+                                    && BookShelf.getExternalPluginManager().usingVaultEconomy())
+                            {
+                                if(BookShelf.getExternalPluginManager().usingTowny())
                                 {
                                     if(!TownyHandler.checkCanDoAction(j
                                             .getClickedBlock(), TownyHandler
@@ -161,9 +161,9 @@ public class BookListener implements Listener
                                         return;
                                     }
                                 }
-                                if(BookShelf.worldGuard != null)
+                                if(BookShelf.getExternalPluginManager().usingWorldGuard())
                                 {
-                                    RegionManager regionManager = BookShelf.worldGuard
+                                    RegionManager regionManager = BookShelf.getExternalPluginManager().getWorldGuardPlugin()
                                             .getRegionManager(j.getPlayer()
                                                     .getWorld());
                                     if(regionManager != null)
@@ -175,9 +175,9 @@ public class BookListener implements Listener
                                         if(set.size() > 0)
                                             if(!set.allows(
                                                     DefaultFlag.ENABLE_SHOP,
-                                                    BookShelf.worldGuard.wrapPlayer(j
+                                                    BookShelf.getExternalPluginManager().getWorldGuardPlugin().wrapPlayer(j
                                                             .getPlayer()))
-                                                    && !set.isOwnerOfAll(BookShelf.worldGuard.wrapPlayer(j
+                                                    && !set.isOwnerOfAll(BookShelf.getExternalPluginManager().getWorldGuardPlugin().wrapPlayer(j
                                                             .getPlayer()))
                                                     && !j.getPlayer().isOp())
                                             {
@@ -192,7 +192,7 @@ public class BookListener implements Listener
                             }
                             else
                             { //Not a shop or economy is disabled
-                                if(BookShelf.useTowny)
+                                if(BookShelf.getExternalPluginManager().usingTowny())
                                 {
                                     if(!TownyHandler.checkCanDoAction(j
                                             .getClickedBlock(), TownyHandler
@@ -206,9 +206,9 @@ public class BookListener implements Listener
                                         return;
                                     }
                                 }
-                                if(BookShelf.useWorldGuard)
+                                if(BookShelf.getExternalPluginManager().usingWorldGuard())
                                 {
-                                    RegionManager regionManager = BookShelf.worldGuard
+                                    RegionManager regionManager = BookShelf.getExternalPluginManager().getWorldGuardPlugin()
                                             .getRegionManager(j.getPlayer()
                                                     .getWorld());
                                     if(regionManager != null)
@@ -220,9 +220,9 @@ public class BookListener implements Listener
                                         if(set.size() > 0)
                                             if(!set.allows(
                                                     DefaultFlag.CHEST_ACCESS,
-                                                    BookShelf.worldGuard.wrapPlayer(j
+                                                    BookShelf.getExternalPluginManager().getWorldGuardPlugin().wrapPlayer(j
                                                             .getPlayer()))
-                                                    && !set.isOwnerOfAll(BookShelf.worldGuard.wrapPlayer(j
+                                                    && !set.isOwnerOfAll(BookShelf.getExternalPluginManager().getWorldGuardPlugin().wrapPlayer(j
                                                             .getPlayer()))
                                                     && !j.getPlayer().isOp())
                                             {
@@ -1115,7 +1115,7 @@ public class BookListener implements Listener
                 this.checkAllowed(j);
                 return;
             }
-            if(!plugin.isShelfShop(loc) || BookShelf.economy == null)
+            if(!plugin.isShelfShop(loc) || !BookShelf.getExternalPluginManager().usingVaultEconomy())
             {
                 if(!plugin.isShelfUnlimited(loc))
                 {
@@ -1163,18 +1163,18 @@ public class BookListener implements Listener
                     }
                     Player p = (Player) j.getWhoClicked();
                     
-                    double money = BookShelf.economy.getBalance(p);
+                    double money = BookShelf.getExternalPluginManager().getVaultEconomy().getBalance(p);
                     if(money >= price)
                     {
-                        BookShelf.economy.withdrawPlayer(p, price);
+                        BookShelf.getExternalPluginManager().getVaultEconomy().withdrawPlayer(p, price);
                         p.sendMessage("New balance: §6"
-                                + BookShelf.economy.getBalance(p) + " "
-                                + BookShelf.economy.currencyNamePlural());
+                                + BookShelf.getExternalPluginManager().getVaultEconomy().getBalance(p) + " "
+                                + BookShelf.getExternalPluginManager().getVaultEconomy().currencyNamePlural());
                         return;
                     }
                     p.sendMessage("§cInsufficient funds! Current balance: §6"
-                            + BookShelf.economy.getBalance(p) + " "
-                            + BookShelf.economy.currencyNamePlural());
+                            + BookShelf.getExternalPluginManager().getVaultEconomy().getBalance(p) + " "
+                            + BookShelf.getExternalPluginManager().getVaultEconomy().currencyNamePlural());
                     j.setCancelled(true);
                 }
                 else

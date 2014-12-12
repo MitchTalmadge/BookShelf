@@ -3,7 +3,7 @@ package me.MitchT.BookShelf.Commands;
 import java.sql.SQLException;
 
 import me.MitchT.BookShelf.BookShelf;
-import me.MitchT.BookShelf.Towny.TownyHandler;
+import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -37,11 +37,11 @@ public class BSC_Shop extends BSCommand
                     else
                         price = Integer.parseInt(args[0]);
                 }
-                if(BookShelf.economy == null)
+                if(!BookShelf.getExternalPluginManager().usingVaultEconomy())
                 {
                     sender.sendMessage("§cVault is not installed! Aborting...");
                 }
-                if(BookShelf.useTowny)
+                if(BookShelf.getExternalPluginManager().usingTowny())
                 {
                     Resident res = TownyHandler.convertToResident(sender);
                     if(!TownyHandler.checkCanDoAction(loc.getBlock(), res,
@@ -109,7 +109,7 @@ public class BSC_Shop extends BSCommand
                                                             "%$",
                                                             price
                                                                     + " "
-                                                                    + BookShelf.economy
+                                                                    + BookShelf.getExternalPluginManager().getVaultEconomy()
                                                                             .currencyNamePlural())
                                             + "');");
                         }
@@ -124,7 +124,7 @@ public class BSC_Shop extends BSCommand
                                                             "%$",
                                                             price
                                                                     + " "
-                                                                    + BookShelf.economy
+                                                                    + BookShelf.getExternalPluginManager().getVaultEconomy()
                                                                             .currencyNamePlural())
                                             + "' WHERE x=" + loc.getX()
                                             + " AND y=" + loc.getY()
@@ -133,7 +133,7 @@ public class BSC_Shop extends BSCommand
                         sender.sendMessage("The bookshelf you are looking at is now a shop selling at §6"
                                 + price
                                 + " "
-                                + BookShelf.economy.currencyNamePlural()
+                                + BookShelf.getExternalPluginManager().getVaultEconomy().currencyNamePlural()
                                 + " §feach.");
                         plugin.runQuery("UPDATE shop SET bool=1, price="
                                 + price + " WHERE x=" + loc.getX() + " AND y="

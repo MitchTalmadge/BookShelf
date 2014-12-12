@@ -4,7 +4,7 @@
  *         Jul 24, 2013
  */
 
-package me.MitchT.BookShelf.Towny;
+package me.MitchT.BookShelf.ExternalPlugins;
 
 import java.util.ArrayList;
 import java.util.Arrays;

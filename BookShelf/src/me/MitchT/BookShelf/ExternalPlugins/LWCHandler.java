@@ -4,10 +4,14 @@
  *         Jul 25, 2013
  */
 
-package me.MitchT.BookShelf.LWC;
+package me.MitchT.BookShelf.ExternalPlugins;
 
-import java.lang.reflect.Field;
+import me.MitchT.BookShelf.BookShelf;
 
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+
+import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
 
 /**
@@ -36,34 +40,21 @@ import com.griefcraft.lwc.LWCPlugin;
  * 
  * @author Mitch Talmadge (mitcht@aptitekk.com)
  */
-public class LWCPluginHandler
+public class LWCHandler extends LWC
 {
-    public LWCPluginHandler(LWCPlugin plugin)
+    
+    public LWCHandler(LWCPlugin plugin)
     {
-        try
-        {
-            Field lwc = plugin.getClass().getDeclaredField("lwc");
-            LWCHandler LWCHandler = new LWCHandler(plugin);
-            lwc.setAccessible(true);
-            lwc.set(plugin, LWCHandler);
-            LWCHandler.load();
-        }
-        catch(SecurityException e)
-        {
-            e.printStackTrace();
-        }
-        catch(NoSuchFieldException e)
-        {
-            e.printStackTrace();
-        }
-        catch(IllegalArgumentException e)
-        {
-            e.printStackTrace();
-        }
-        catch(IllegalAccessException e)
-        {
-            e.printStackTrace();
-        }
+        super(plugin);
+    }
+    
+    @Override
+    public boolean isProtectable(Block block)
+    {
+        if(block.getType() == Material.BOOKSHELF && BookShelf.getExternalPluginManager().usingLWC())
+            return true;
+        else
+            return super.isProtectable(block);
     }
     
 }

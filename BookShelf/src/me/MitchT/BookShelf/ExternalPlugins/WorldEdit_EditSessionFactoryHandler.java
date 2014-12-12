@@ -4,7 +4,7 @@
  *         Jul 26, 2013
  */
 
-package me.MitchT.BookShelf.WorldEdit;
+package me.MitchT.BookShelf.ExternalPlugins;
 
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.EditSessionFactory;

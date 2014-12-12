@@ -1,6 +1,5 @@
 package me.MitchT.BookShelf;
 
-import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -10,10 +9,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import me.MitchT.BookShelf.Commands.CommandHandler;
-import me.MitchT.BookShelf.LWC.LWCPluginHandler;
-import me.MitchT.BookShelf.Towny.TownyHandler;
-import me.MitchT.BookShelf.WorldEdit.WorldEdit_EditSessionFactoryHandler;
-import net.milkbowl.vault.economy.Economy;
+import me.MitchT.BookShelf.ExternalPlugins.ExternalPluginManager;
+import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,18 +18,10 @@ import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
-
-import com.griefcraft.lwc.LWCPlugin;
-import com.palmergames.bukkit.towny.Towny;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
 /**
  * BookShelf - A Bukkit & Spigot mod allowing the placement of items
@@ -81,14 +70,6 @@ public class BookShelf extends JavaPlugin
                     Material.ENCHANTED_BOOK.name(), Material.PAPER.name(),
                     Material.MAP.name(), Material.EMPTY_MAP.name()));
     
-    /* ECONOMY */
-    public static Economy economy;
-    
-    /* LWC */
-    static LWCPlugin LWC;
-    static LWCPluginHandler LWCPluginHandler;
-    public static boolean LWCEnabled;
-    
     /* AUTO TOGGLE (For shaythegoon) */
     boolean autoToggle = false;
     int autoToggleFreq = 10;
@@ -99,19 +80,7 @@ public class BookShelf extends JavaPlugin
     List<?> autoToggleNameList = null;
     private CommandHandler commandHandler;
     private SQLManager sqlManager;
-    
-    /* TOWNY */
-    static Towny towny;
-    public static boolean useTowny = false;
-    public static boolean useWorldGuard = false;
-    public static File townyConfigPath;
-    public static FileConfiguration townyConfig;
-    
-    /* WORLD EDIT */
-    static WorldEditPlugin worldEdit = null;
-    
-    /* WORLD GUARD */
-    static WorldGuardPlugin worldGuard;
+    private ExternalPluginManager externalPluginManager;
     
     /* DATABASE */
     static ResultSet r;
@@ -127,47 +96,8 @@ public class BookShelf extends JavaPlugin
         this.sqlManager = new SQLManager(this, logger);
 
         setupAutoToggle();
-        
-        if(setupEconomy())
-        {
-            this.logger.info("[BookShelf] Vault found and hooked.");
-        }
-        
-        if(setupLWC())
-        {
-            this.logger.info("[BookShelf] LWC found and hooked.");
-            if(config.getBoolean("lwc_support.enabled"))
-            {
-                LWCEnabled = true;
-                LWCPluginHandler = new LWCPluginHandler(LWC);
-            }
-        }
-        
-        townyConfigPath = new File(getDataFolder(), "towny.yml");
-        
-        if(setupTowny())
-        {
-            logger.info("[BookShelf] Towny found and hooked.");
-            useTowny = config.getBoolean("towny_support.enabled");
-            if(useTowny)
-            {
-                loadTownyConfig();
-            }
-        }
-        
-        if(setupWorldGuard())
-        {
-            logger.info("[BookShelf] WorldGuard found and hooked.");
-            useWorldGuard = BookShelf.worldGuard != null
-                    && config.getBoolean("worldguard_support.enabled");
-        }
-        
-        if(setupWorldEdit())
-        {
-            logger.info("[BookShelf] WorldEdit found and hooked.");
-            worldEdit.getWorldEdit().setEditSessionFactory(
-                    new WorldEdit_EditSessionFactoryHandler());
-        }
+
+        this.externalPluginManager = new ExternalPluginManager(this, logger);
         
         getServer().getPluginManager().registerEvents(new BookListener(this), this);
         PluginDescriptionFile pdfFile = this.getDescription();
@@ -182,7 +112,6 @@ public class BookShelf extends JavaPlugin
     @Override
     public void onDisable()
     {
-        
         try
         {
             if(r != null)
@@ -195,7 +124,6 @@ public class BookShelf extends JavaPlugin
         
         sqlManager.shutDown();
         
-        if(BookShelf.useTowny)
             TownyHandler.saveConfig();
         
     }
@@ -205,6 +133,11 @@ public class BookShelf extends JavaPlugin
     {
         commandHandler.onCommand(sender, command, label, args);
         return true;
+    }
+    
+    public static ExternalPluginManager getExternalPluginManager()
+    {
+        return instance.externalPluginManager;
     }
     
     public ResultSet runQuery(String query)
@@ -247,62 +180,6 @@ public class BookShelf extends JavaPlugin
         }
     }
     
-    private void loadTownyConfig()
-    {
-        if(!townyConfigPath.exists())
-            saveResource("towny.yml", false);
-        townyConfig = YamlConfiguration.loadConfiguration(new File(
-                getDataFolder(), "towny.yml"));
-    }
-    
-    private boolean setupEconomy()
-    {
-        Plugin plugin = getServer().getPluginManager().getPlugin("Vault");
-        
-        if(plugin != null)
-        {
-            @SuppressWarnings("rawtypes")
-            RegisteredServiceProvider economyProvider = getServer()
-                    .getServicesManager().getRegistration(Economy.class);
-            if(economyProvider != null)
-            {
-                economy = (Economy) economyProvider.getProvider();
-            }
-        }
-        return economy != null;
-    }
-    
-    private boolean setupLWC()
-    {
-        LWC = (LWCPlugin) getServer().getPluginManager().getPlugin("LWC");
-        return LWC != null;
-    }
-    
-    private boolean setupTowny()
-    {
-        towny = (Towny) getServer().getPluginManager().getPlugin("Towny");
-        return towny != null;
-    }
-    
-    private boolean setupWorldEdit()
-    {
-        worldEdit = (WorldEditPlugin) getServer().getPluginManager().getPlugin(
-                "WorldEdit");
-        return worldEdit != null;
-    }
-    
-    private boolean setupWorldGuard()
-    {
-        worldGuard = (WorldGuardPlugin) getServer().getPluginManager()
-                .getPlugin("WorldGuard");
-        return worldGuard != null;
-    }
-    
-    public boolean isUsingTowny()
-    {
-        return BookShelf.useTowny;
-    }
-    
     public Block getTargetBlock(Player player, int range)
     {
         Location loc = player.getEyeLocation();
@@ -325,41 +202,9 @@ public class BookShelf extends JavaPlugin
         instance.reloadConfig();
         config = instance.getConfig();
         instance.saveDefaultConfig();
-        instance.loadTownyConfig();
         instance.setupAutoToggle();
         
-        if(config.getBoolean("lwc_support.enabled"))
-        {
-            if(LWCPluginHandler == null)
-            {
-                LWCEnabled = true;
-                LWCPluginHandler = new LWCPluginHandler(LWC);
-            }
-            else if(LWCEnabled == false)
-                LWCEnabled = true;
-        }
-        else if(LWCPluginHandler != null)
-            LWCEnabled = false;
-        
-        if(config.getBoolean("worldguard_support.enabled"))
-        {
-            if(worldGuard != null)
-                useWorldGuard = true;
-            else
-                useWorldGuard = false;
-        }
-        else
-            useWorldGuard = false;
-        
-        if(config.getBoolean("towny_support.enabled"))
-        {
-            if(towny != null)
-                useTowny = true;
-            else
-                useTowny = false;
-        }
-        else
-            useTowny = false;
+        this.externalPluginManager.setupPlugins();
     }
     
     public boolean isOwner(Location loc, Player p)

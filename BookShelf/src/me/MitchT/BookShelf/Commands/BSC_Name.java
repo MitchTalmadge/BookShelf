@@ -3,7 +3,7 @@ package me.MitchT.BookShelf.Commands;
 import java.sql.SQLException;
 
 import me.MitchT.BookShelf.BookShelf;
-import me.MitchT.BookShelf.Towny.TownyHandler;
+import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -50,12 +50,12 @@ public class BSC_Name extends BSCommand
                         e.printStackTrace();
                     }
                     String name1 = "";
-                    if(BookShelf.economy != null)
+                    if(BookShelf.getExternalPluginManager().usingVaultEconomy())
                     {
                         for(int i = 0; i < args.length; i++)
                         {
                             name1 += args[i].replace("%$", price + " "
-                                    + BookShelf.economy.currencyNamePlural())
+                                    + BookShelf.getExternalPluginManager().getVaultEconomy().currencyNamePlural())
                                     + " ";
                         }
                     }
@@ -78,7 +78,7 @@ public class BSC_Name extends BSCommand
                     name = ChatColor.translateAlternateColorCodes('&', name);
                     queryName = name.replaceAll("'", "''");
                 }
-                if(BookShelf.useTowny)
+                if(BookShelf.getExternalPluginManager().usingTowny())
                 {
                     Resident res = TownyHandler.convertToResident(sender);
                     if(!TownyHandler.checkCanDoAction(loc.getBlock(), res,

@@ -4,7 +4,7 @@
  *         Jul 26, 2013
  */
 
-package me.MitchT.BookShelf.WorldEdit;
+package me.MitchT.BookShelf.ExternalPlugins;
 
 import me.MitchT.BookShelf.BookListener;
 import me.MitchT.BookShelf.BookShelf;

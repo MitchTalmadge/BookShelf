@@ -3,7 +3,7 @@ package me.MitchT.BookShelf.Commands;
 import java.sql.SQLException;
 
 import me.MitchT.BookShelf.BookShelf;
-import me.MitchT.BookShelf.Towny.TownyHandler;
+import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,7 +25,7 @@ public class BSC_Unlimited extends BSCommand
         {
             if(plugin.isOwner(loc, sender))
             {
-                if(BookShelf.useTowny)
+                if(BookShelf.getExternalPluginManager().usingTowny())
                 {
                     Resident res = TownyHandler.convertToResident(sender);
                     if(!TownyHandler.checkCanDoAction(loc.getBlock(), res,

@@ -1,4 +1,4 @@
-package me.MitchT.BookShelf.Towny;
+package me.MitchT.BookShelf.ExternalPlugins;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -350,12 +350,12 @@ public class TownyHandler
     public static void setTownPermission(Town t, String permission, Object value)
     {
         String townName = t.getName();
-        if(!BookShelf.townyConfig.contains("towns." + townName))
+        if(!BookShelf.getExternalPluginManager().getTownyConfig().contains("towns." + townName))
         {
             saveDefaultConfig(t);
         }
         
-        BookShelf.townyConfig
+        BookShelf.getExternalPluginManager().getTownyConfig()
                 .set("towns." + townName + "." + permission, value);
         saveConfig();
     }
@@ -363,19 +363,19 @@ public class TownyHandler
     public static Object getTownPermission(Town t, String permission)
     {
         String townName = t.getName();
-        if(!BookShelf.townyConfig.contains("towns." + townName))
+        if(!BookShelf.getExternalPluginManager().getTownyConfig().contains("towns." + townName))
         {
             saveDefaultConfig(t);
         }
         
-        Object result = BookShelf.townyConfig.get("towns." + townName + "."
+        Object result = BookShelf.getExternalPluginManager().getTownyConfig().get("towns." + townName + "."
                 + permission);
         if(result == null)
         {
             return getDefaultConfigValue(t, permission);
         }
         
-        return BookShelf.townyConfig
+        return BookShelf.getExternalPluginManager().getTownyConfig()
                 .get("towns." + townName + "." + permission);
     }
     
@@ -386,7 +386,7 @@ public class TownyHandler
             setTownPermission(
                     t,
                     location,
-                    BookShelf.townyConfig.get("defaults."
+                    BookShelf.getExternalPluginManager().getTownyConfig().get("defaults."
                             + "resident"
                             + location.substring(location.split("_")[1]
                                     .indexOf(".")
@@ -395,7 +395,7 @@ public class TownyHandler
         else
         {
             setTownPermission(t, location,
-                    BookShelf.townyConfig.get("defaults." + location));
+                    BookShelf.getExternalPluginManager().getTownyConfig().get("defaults." + location));
         }
     }
     
@@ -412,7 +412,7 @@ public class TownyHandler
         }
         else
         {
-            return BookShelf.townyConfig.get("defaults." + location);
+            return BookShelf.getExternalPluginManager().getTownyConfig().get("defaults." + location);
         }
     }
     
@@ -442,9 +442,9 @@ public class TownyHandler
                 {
                     for(String k : level3a)
                     {
-                        BookShelf.townyConfig.set(
+                        BookShelf.getExternalPluginManager().getTownyConfig().set(
                                 prefix + level1.get(i) + j + k,
-                                BookShelf.townyConfig.get(prefixDef
+                                BookShelf.getExternalPluginManager().getTownyConfig().get(prefixDef
                                         + level1.get(i) + j + k));
                     }
                 }
@@ -452,9 +452,9 @@ public class TownyHandler
                 {
                     for(String k : level3b)
                     {
-                        BookShelf.townyConfig.set(
+                        BookShelf.getExternalPluginManager().getTownyConfig().set(
                                 prefix + level1.get(i) + j + k,
-                                BookShelf.townyConfig.get(prefixDef
+                                BookShelf.getExternalPluginManager().getTownyConfig().get(prefixDef
                                         + level1.get(i) + j + k));
                     }
                 }
@@ -465,14 +465,7 @@ public class TownyHandler
     
     public static void saveConfig()
     {
-        try
-        {
-            BookShelf.townyConfig.save(BookShelf.townyConfigPath);
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
+        BookShelf.getExternalPluginManager().saveTownyConfig();
     }
     
     public static boolean checkPlotInAnyTown(TownBlock plot)

@@ -3,7 +3,7 @@ package me.MitchT.BookShelf.Commands;
 import java.sql.SQLException;
 
 import me.MitchT.BookShelf.BookShelf;
-import me.MitchT.BookShelf.Towny.TownyHandler;
+import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

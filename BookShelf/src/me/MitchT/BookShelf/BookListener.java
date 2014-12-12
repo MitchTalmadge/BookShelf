@@ -35,7 +35,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -131,11 +130,11 @@ public class BookListener implements Listener
                             }
                         }
                         
-                        if(!BookShelf.isShelfShop(loc)
-                                && !BookShelf.isShelfUnlimited(loc)
-                                && !BookShelf.isShelfDonate(loc))
+                        if(!plugin.isShelfShop(loc)
+                                && !plugin.isShelfUnlimited(loc)
+                                && !plugin.isShelfDonate(loc))
                         {
-                            if(!BookShelf.isOwner(loc, p)
+                            if(!plugin.isOwner(loc, p)
                                     && !p.hasPermission("bookshelf.openshelf"))
                             {
                                 p.sendMessage("§cYou are not allowed to open this shelf!");
@@ -145,10 +144,10 @@ public class BookListener implements Listener
                         
                         try
                         {
-                            if(BookShelf.isShelfShop(loc)
+                            if(plugin.isShelfShop(loc)
                                     && BookShelf.economy != null)
                             { //Is a shop and economy is enabled
-                                if(plugin.useTowny)
+                                if(BookShelf.useTowny)
                                 {
                                     if(!TownyHandler.checkCanDoAction(j
                                             .getClickedBlock(), TownyHandler
@@ -193,7 +192,7 @@ public class BookListener implements Listener
                             }
                             else
                             { //Not a shop or economy is disabled
-                                if(plugin.useTowny)
+                                if(BookShelf.useTowny)
                                 {
                                     if(!TownyHandler.checkCanDoAction(j
                                             .getClickedBlock(), TownyHandler
@@ -207,7 +206,7 @@ public class BookListener implements Listener
                                         return;
                                     }
                                 }
-                                if(plugin.useWorldGuard)
+                                if(BookShelf.useWorldGuard)
                                 {
                                     RegionManager regionManager = BookShelf.worldGuard
                                             .getRegionManager(j.getPlayer()
@@ -236,11 +235,11 @@ public class BookListener implements Listener
                                     }
                                 }
                             }
-                            //							r = BookShelf.getdb().query("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+                            //							r = BookShelf.runQuery("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
                             //							if(!r.next())
                             //							{
                             //								close(r);
-                            //								BookShelf.getdb().query("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0);");
+                            //								BookShelf.runQuery("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0);");
                             //							}
                             //							else
                             //							{
@@ -254,11 +253,9 @@ public class BookListener implements Listener
                             //								else
                             //									close(r);
                             //							}
-                            r = BookShelf.getdb().query(
-                                    "SELECT * FROM enable WHERE x="
-                                            + loc.getX() + " AND y="
-                                            + loc.getY() + " AND z="
-                                            + loc.getZ() + ";");
+                            r = plugin.runQuery("SELECT * FROM enable WHERE x="
+                                    + loc.getX() + " AND y=" + loc.getY()
+                                    + " AND z=" + loc.getZ() + ";");
                             if(!r.next())
                             {
                                 int def = 1;
@@ -272,11 +269,12 @@ public class BookListener implements Listener
                                 {
                                     def = 0;
                                 }
-                                BookShelf.getdb().query(
-                                        "INSERT INTO enable (x,y,z,bool) VALUES ("
-                                                + loc.getX() + "," + loc.getY()
-                                                + "," + loc.getZ() + ", " + def
-                                                + ");");
+                                plugin.runQuery("INSERT INTO enable (x,y,z,bool) VALUES ("
+                                        + loc.getX()
+                                        + ","
+                                        + loc.getY()
+                                        + ","
+                                        + loc.getZ() + ", " + def + ");");
                                 if(def == 0)
                                     return;
                             }
@@ -300,10 +298,12 @@ public class BookListener implements Listener
                                     "default_shelf_name");
                             try
                             {
-                                r = BookShelf.getdb().query(
-                                        "SELECT * FROM names WHERE x="
-                                                + loc.getX() + " AND y="
-                                                + loc.getY() + " AND z="
+                                r = plugin
+                                        .runQuery("SELECT * FROM names WHERE x="
+                                                + loc.getX()
+                                                + " AND y="
+                                                + loc.getY()
+                                                + " AND z="
                                                 + loc.getZ() + ";");
                                 if(r.next())
                                     name = r.getString("name");
@@ -323,19 +323,22 @@ public class BookListener implements Listener
                             
                             try
                             {
-                                boolean isOwner = BookShelf.isOwner(loc,
-                                        (Player) j.getPlayer());
+                                boolean isOwner = plugin.isOwner(loc,
+                                        j.getPlayer());
                                 boolean isOwnerEditing = (isOwner && BookShelf.editingPlayers
                                         .contains(j.getPlayer()));
-                                if(!BookShelf.isShelfUnlimited(loc)
+                                if(!plugin.isShelfUnlimited(loc)
                                         || isOwnerEditing)
                                 {
                                     map.put(cl.getLocation(), inv);
                                     map2.put(cl.getLocation(), inv.getHolder());
                                 }
-                                r = BookShelf.getdb().query(
-                                        "SELECT COUNT(*) FROM items WHERE x="
-                                                + x + " AND y=" + y + " AND z="
+                                r = plugin
+                                        .runQuery("SELECT COUNT(*) FROM items WHERE x="
+                                                + x
+                                                + " AND y="
+                                                + y
+                                                + " AND z="
                                                 + z + ";");
                                 if(!r.next())
                                 {
@@ -346,10 +349,12 @@ public class BookListener implements Listener
                                 else
                                 {
                                     close(r);
-                                    r = BookShelf.getdb().query(
-                                            "SELECT * FROM items WHERE x=" + x
-                                                    + " AND y=" + y + " AND z="
-                                                    + z + ";");
+                                    r = plugin
+                                            .runQuery("SELECT * FROM items WHERE x="
+                                                    + x
+                                                    + " AND y="
+                                                    + y
+                                                    + " AND z=" + z + ";");
                                     ArrayList<String> auth = new ArrayList<String>();
                                     ArrayList<String> titl = new ArrayList<String>();
                                     ArrayList<String> type = new ArrayList<String>();
@@ -378,9 +383,8 @@ public class BookListener implements Listener
                                         if(type.get(i).equals(
                                                 Material.MAP.name()))
                                         {
-                                            r = BookShelf
-                                                    .getdb()
-                                                    .query("SELECT * FROM maps WHERE x="
+                                            r = plugin
+                                                    .runQuery("SELECT * FROM maps WHERE x="
                                                             + x
                                                             + " AND y="
                                                             + y
@@ -400,9 +404,8 @@ public class BookListener implements Listener
                                         else if(type.get(i).equals(
                                                 Material.ENCHANTED_BOOK.name()))
                                         {
-                                            r = BookShelf
-                                                    .getdb()
-                                                    .query("SELECT * FROM enchant WHERE x="
+                                            r = plugin
+                                                    .runQuery("SELECT * FROM enchant WHERE x="
                                                             + x
                                                             + " AND y="
                                                             + y
@@ -522,7 +525,7 @@ public class BookListener implements Listener
                                                         .remove(loc);
                                                 if(plugin.autoToggleServerWide)
                                                 {
-                                                    BookShelf
+                                                    plugin
                                                             .toggleBookShelvesByName(name);
                                                     if(!name.endsWith(" "))
                                                         name += " ";
@@ -533,7 +536,7 @@ public class BookListener implements Listener
                                                 }
                                                 else
                                                 {
-                                                    BookShelf
+                                                    plugin
                                                             .toggleBookShelf(loc);
                                                     System.out
                                                             .println("(Auto Toggle) The bookshelf at ("
@@ -618,132 +621,154 @@ public class BookListener implements Listener
         int x = loc.getBlockX();
         int y = loc.getBlockY();
         int z = loc.getBlockZ();
-        try
+        boolean isOwner = plugin.isOwner(loc, (Player) j.getPlayer());
+        boolean isOwnerEditing = (isOwner && BookShelf.editingPlayers
+                .contains(j.getPlayer()));
+        if(!plugin.isShelfUnlimited(loc) || isOwnerEditing)
         {
-            boolean isOwner = BookShelf.isOwner(loc, (Player) j.getPlayer());
-            boolean isOwnerEditing = (isOwner && BookShelf.editingPlayers
-                    .contains(j.getPlayer()));
-            if(!BookShelf.isShelfUnlimited(loc) || isOwnerEditing)
+            BookShelf.getSQLManager().setAutoCommit(false);
+            plugin.runQuery("DELETE FROM items WHERE x=" + x + " AND y=" + y
+                    + " AND z=" + z + ";");
+            plugin.runQuery("DELETE FROM enchant WHERE x=" + x + " AND y=" + y
+                    + " AND z=" + z + ";");
+            plugin.runQuery("DELETE FROM maps WHERE x=" + x + " AND y=" + y
+                    + " AND z=" + z + ";");
+            for(int i = 0; i < cont.length; i++)
             {
-                BookShelf.getdb().getConnection().setAutoCommit(false);
-                BookShelf.getdb().query(
-                        "DELETE FROM items WHERE x=" + x + " AND y=" + y
-                                + " AND z=" + z + ";");
-                BookShelf.getdb().query(
-                        "DELETE FROM enchant WHERE x=" + x + " AND y=" + y
-                                + " AND z=" + z + ";");
-                BookShelf.getdb().query(
-                        "DELETE FROM maps WHERE x=" + x + " AND y=" + y
-                                + " AND z=" + z + ";");
-                for(int i = 0; i < cont.length; i++)
+                if(cont[i] != null)
                 {
-                    if(cont[i] != null)
+                    String type = cont[i].getType().name();
+                    if(cont[i].getType() == Material.BOOK_AND_QUILL
+                            || cont[i].getType() == Material.WRITTEN_BOOK)
                     {
-                        String type = cont[i].getType().name();
-                        if(cont[i].getType() == Material.BOOK_AND_QUILL
-                                || cont[i].getType() == Material.WRITTEN_BOOK)
+                        Book(cont[i]);
+                        String title = getTitle().replaceAll("'", "''");
+                        String author = getAuthor().replaceAll("'", "''");
+                        String lore = "";
+                        if(getLore() != null)
+                            lore = getLore().replaceAll("'", "''");
+                        int damage = getDamage();
+                        String pageString = "";
+                        if(getPages() != null)
                         {
-                            Book(cont[i]);
-                            String title = getTitle().replaceAll("'", "''");
-                            String author = getAuthor().replaceAll("'", "''");
-                            String lore = "";
-                            if(getLore() != null)
-                                lore = getLore().replaceAll("'", "''");
-                            int damage = getDamage();
-                            String pageString = "";
-                            if(getPages() != null)
+                            for(int k = 0; k < getPages().length; k++)
                             {
-                                for(int k = 0; k < getPages().length; k++)
-                                {
-                                    pageString += getPages()[k].replaceAll("'",
-                                            "''") + "¬";
-                                }
-                                if(pageString.endsWith("¬"))
-                                    pageString = pageString.substring(0,
-                                            pageString.length() - 1);
+                                pageString += getPages()[k].replaceAll("'",
+                                        "''") + "¬";
                             }
-                            BookShelf
-                                    .getdb()
-                                    .query("INSERT INTO items (x,y,z,author,title,enumType,loc,amt,lore,damage,pages) VALUES ("
-                                            + x
-                                            + ","
-                                            + y
-                                            + ","
-                                            + z
-                                            + ",'"
-                                            + author
-                                            + "','"
-                                            + title
-                                            + "','"
-                                            + type
-                                            + "',"
-                                            + i
-                                            + ",1,'"
-                                            + lore
-                                            + "', "
-                                            + damage
-                                            + ", '"
-                                            + pageString + "');");
+                            if(pageString.endsWith("¬"))
+                                pageString = pageString.substring(0,
+                                        pageString.length() - 1);
                         }
-                        else if(cont[i].getType() == Material.ENCHANTED_BOOK)
+                        plugin.runQuery("INSERT INTO items (x,y,z,author,title,enumType,loc,amt,lore,damage,pages) VALUES ("
+                                + x
+                                + ","
+                                + y
+                                + ","
+                                + z
+                                + ",'"
+                                + author
+                                + "','"
+                                + title
+                                + "','"
+                                + type
+                                + "',"
+                                + i
+                                + ",1,'"
+                                + lore
+                                + "', "
+                                + damage
+                                + ", '"
+                                + pageString
+                                + "');");
+                    }
+                    else if(cont[i].getType() == Material.ENCHANTED_BOOK)
+                    {
+                        plugin.runQuery("INSERT INTO items (x,y,z,author,title,enumType,loc,amt) VALUES ("
+                                + x
+                                + ","
+                                + y
+                                + ","
+                                + z
+                                + ", 'null', 'null','"
+                                + type
+                                + "',"
+                                + i
+                                + ","
+                                + cont[i].getAmount()
+                                + ");");
+                        EnchantmentStorageMeta book = (EnchantmentStorageMeta) cont[i]
+                                .getItemMeta();
+                        Map<Enchantment, Integer> enchants = book
+                                .getStoredEnchants();
+                        Enchantment enchant = null;
+                        for(Enchantment key : enchants.keySet())
                         {
-                            BookShelf.getdb().query(
-                                    "INSERT INTO items (x,y,z,author,title,enumType,loc,amt) VALUES ("
-                                            + x + "," + y + "," + z
-                                            + ", 'null', 'null','" + type
-                                            + "'," + i + ","
-                                            + cont[i].getAmount() + ");");
-                            EnchantmentStorageMeta book = (EnchantmentStorageMeta) cont[i]
-                                    .getItemMeta();
-                            Map<Enchantment, Integer> enchants = book
-                                    .getStoredEnchants();
-                            Enchantment enchant = null;
-                            for(Enchantment key : enchants.keySet())
-                            {
-                                enchant = key;
-                            }
-                            Integer lvl = book.getStoredEnchantLevel(enchant);
-                            String type2 = enchant.getName();
-                            BookShelf.getdb().query(
-                                    "INSERT INTO enchant (x,y,z,loc,type,level) VALUES ("
-                                            + x + "," + y + "," + z + "," + i
-                                            + ",'" + type2 + "','" + lvl
-                                            + "');");
+                            enchant = key;
                         }
-                        else if(cont[i].getType() == Material.MAP)
-                        {
-                            ItemStack mapp = cont[i];
-                            int dur = mapp.getDurability();
-                            BookShelf.getdb().query(
-                                    "INSERT INTO items (x,y,z,author,title,enumType,loc,amt) VALUES ("
-                                            + x + "," + y + "," + z
-                                            + ", 'null', 'null','" + type
-                                            + "'," + i + ","
-                                            + cont[i].getAmount() + ");");
-                            BookShelf.getdb().query(
-                                    "INSERT INTO maps (x,y,z,loc,durability) VALUES ("
-                                            + x + "," + y + "," + z + "," + i
-                                            + ",'" + dur + "');");
-                        }
-                        else if(BookShelf.allowedItems.contains(cont[i]
-                                .getType().name()))
-                        {
-                            BookShelf.getdb().query(
-                                    "INSERT INTO items (x,y,z,author,title,enumType,loc,amt) VALUES ("
-                                            + x + "," + y + "," + z
-                                            + ", 'null', 'null','" + type
-                                            + "'," + i + ","
-                                            + cont[i].getAmount() + ");");
-                        }
+                        Integer lvl = book.getStoredEnchantLevel(enchant);
+                        String type2 = enchant.getName();
+                        plugin.runQuery("INSERT INTO enchant (x,y,z,loc,type,level) VALUES ("
+                                + x
+                                + ","
+                                + y
+                                + ","
+                                + z
+                                + ","
+                                + i
+                                + ",'"
+                                + type2 + "','" + lvl + "');");
+                    }
+                    else if(cont[i].getType() == Material.MAP)
+                    {
+                        ItemStack mapp = cont[i];
+                        int dur = mapp.getDurability();
+                        plugin.runQuery("INSERT INTO items (x,y,z,author,title,enumType,loc,amt) VALUES ("
+                                + x
+                                + ","
+                                + y
+                                + ","
+                                + z
+                                + ", 'null', 'null','"
+                                + type
+                                + "',"
+                                + i
+                                + ","
+                                + cont[i].getAmount()
+                                + ");");
+                        plugin.runQuery("INSERT INTO maps (x,y,z,loc,durability) VALUES ("
+                                + x
+                                + ","
+                                + y
+                                + ","
+                                + z
+                                + ","
+                                + i
+                                + ",'"
+                                + dur
+                                + "');");
+                    }
+                    else if(BookShelf.allowedItems.contains(cont[i].getType()
+                            .name()))
+                    {
+                        plugin.runQuery("INSERT INTO items (x,y,z,author,title,enumType,loc,amt) VALUES ("
+                                + x
+                                + ","
+                                + y
+                                + ","
+                                + z
+                                + ", 'null', 'null','"
+                                + type
+                                + "',"
+                                + i
+                                + ","
+                                + cont[i].getAmount()
+                                + ");");
                     }
                 }
-                BookShelf.getdb().getConnection().commit();
-                BookShelf.getdb().getConnection().setAutoCommit(true);
             }
-        }
-        catch(SQLException e)
-        {
-            e.printStackTrace();
+            BookShelf.getSQLManager().commit();
+            BookShelf.getSQLManager().setAutoCommit(true);
         }
     }
     
@@ -785,10 +810,9 @@ public class BookListener implements Listener
         }
         try
         {
-            r = BookShelf.getdb().query(
-                    "SELECT * FROM items WHERE x=" + loc.getBlockX()
-                            + " AND y=" + loc.getBlockY() + " AND z="
-                            + loc.getBlockZ() + ";");
+            r = plugin.runQuery("SELECT * FROM items WHERE x="
+                    + loc.getBlockX() + " AND y=" + loc.getBlockY() + " AND z="
+                    + loc.getBlockZ() + ";");
             ArrayList<String> auth = new ArrayList<String>();
             ArrayList<String> titl = new ArrayList<String>();
             ArrayList<String> type = new ArrayList<String>();
@@ -812,42 +836,40 @@ public class BookListener implements Listener
             }
             close(r);
             String enchant = "";
-            BookShelf.getdb().getConnection().setAutoCommit(false);
+            BookShelf.getSQLManager().setAutoCommit(false);
             for(int i = 0; i < id.size(); i++)
             {
                 if(type.get(i).equals(Material.ENCHANTED_BOOK.name()))
                 {
-                    r = BookShelf.getdb().query(
-                            "SELECT * FROM enchant WHERE x=" + loc.getBlockX()
-                                    + " AND y=" + loc.getBlockY() + " AND z="
-                                    + loc.getBlockZ() + " AND loc="
-                                    + loca.get(i) + ";");
+                    r = plugin.runQuery("SELECT * FROM enchant WHERE x="
+                            + loc.getBlockX() + " AND y=" + loc.getBlockY()
+                            + " AND z=" + loc.getBlockZ() + " AND loc="
+                            + loca.get(i) + ";");
                     while(r.next())
                     {
                         enchant = r.getString("type");
                         elvl = r.getInt("level");
                     }
                     close(r);
-                    BookShelf.getdb().query(
-                            "DELETE FROM items WHERE id=" + id.get(i) + ";");
+                    plugin.runQuery("DELETE FROM items WHERE id=" + id.get(i)
+                            + ";");
                     etype = Enchantment.getByName(enchant);
                     if(dropItems)
                         dropItem(generateItemStack(2).clone(), loc);
                 }
                 else if(type.get(i).equals(Material.MAP.name()))
                 {
-                    r = BookShelf.getdb().query(
-                            "SELECT * FROM maps WHERE x=" + loc.getBlockX()
-                                    + " AND y=" + loc.getBlockY() + " AND z="
-                                    + loc.getBlockZ() + " AND loc="
-                                    + loca.get(i) + ";");
+                    r = plugin.runQuery("SELECT * FROM maps WHERE x="
+                            + loc.getBlockX() + " AND y=" + loc.getBlockY()
+                            + " AND z=" + loc.getBlockZ() + " AND loc="
+                            + loca.get(i) + ";");
                     while(r.next())
                     {
                         mapdur = r.getShort("durability");
                     }
                     close(r);
-                    BookShelf.getdb().query(
-                            "DELETE FROM items WHERE id=" + id.get(i) + ";");
+                    plugin.runQuery("DELETE FROM items WHERE id=" + id.get(i)
+                            + ";");
                     if(dropItems)
                         dropItem(generateItemStack(3).clone(), loc);
                 }
@@ -869,13 +891,13 @@ public class BookListener implements Listener
                         if(dropItems)
                             dropItem(generateItemStack(1).clone(), loc);
                     }
-                    BookShelf.getdb().query(
-                            "DELETE FROM items WHERE id=" + id.get(i) + ";");
+                    plugin.runQuery("DELETE FROM items WHERE id=" + id.get(i)
+                            + ";");
                 }
                 else if(BookShelf.allowedItems.contains(type.get(i)))
                 {
-                    BookShelf.getdb().query(
-                            "DELETE FROM items WHERE id=" + id.get(i) + ";");
+                    plugin.runQuery("DELETE FROM items WHERE id=" + id.get(i)
+                            + ";");
                     ItemStack stack = new ItemStack(Material.getMaterial(type
                             .get(i)));
                     stack.setAmount(amt.get(i));
@@ -883,33 +905,25 @@ public class BookListener implements Listener
                         dropItem(stack, loc);
                 }
             }
-            BookShelf.getdb().query(
-                    "DELETE FROM copy WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
-            BookShelf.getdb().query(
-                    "DELETE FROM shop WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
-            BookShelf.getdb().query(
-                    "DELETE FROM donate WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
-            BookShelf.getdb().query(
-                    "DELETE FROM names WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
-            BookShelf.getdb().query(
-                    "DELETE FROM enable WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
-            BookShelf.getdb().query(
-                    "DELETE FROM enchant WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
-            BookShelf.getdb().query(
-                    "DELETE FROM maps WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
-            BookShelf.getdb().query(
-                    "DELETE FROM owners WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
-            //BookShelf.getdb().query("DELETE FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-            BookShelf.getdb().getConnection().commit();
-            BookShelf.getdb().getConnection().setAutoCommit(true);
+            plugin.runQuery("DELETE FROM copy WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
+            plugin.runQuery("DELETE FROM shop WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
+            plugin.runQuery("DELETE FROM donate WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
+            plugin.runQuery("DELETE FROM names WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
+            plugin.runQuery("DELETE FROM enable WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
+            plugin.runQuery("DELETE FROM enchant WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
+            plugin.runQuery("DELETE FROM maps WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
+            plugin.runQuery("DELETE FROM owners WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
+            //BookShelf.runQuery("DELETE FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
+            BookShelf.getSQLManager().commit();
+            BookShelf.getSQLManager().setAutoCommit(true);
         }
         catch(SQLException e)
         {
@@ -1078,9 +1092,8 @@ public class BookListener implements Listener
         Location loc = map3.get((Player) j.getWhoClicked());
         try
         {
-            r = BookShelf.getdb().query(
-                    "SELECT * FROM names WHERE x=" + loc.getX() + " AND y="
-                            + loc.getY() + " AND z=" + loc.getZ() + ";");
+            r = plugin.runQuery("SELECT * FROM names WHERE x=" + loc.getX()
+                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(r.next())
                 name = r.getString("name");
             close(r);
@@ -1091,22 +1104,22 @@ public class BookListener implements Listener
         }
         if(j.getInventory().getTitle().equals(name))
         {
-            boolean isOwner = BookShelf
+            boolean isOwner = plugin
                     .isOwner(loc, (Player) j.getWhoClicked());
-            boolean isOwnerEditing = (BookShelf.isOwner(loc,
+            boolean isOwnerEditing = (plugin.isOwner(loc,
                     (Player) j.getWhoClicked()) && BookShelf.editingPlayers
                     .contains((Player) j.getWhoClicked()));
-            if((isOwner && !BookShelf.isShelfShop(loc) && !BookShelf
+            if((isOwner && !plugin.isShelfShop(loc) && !plugin
                     .isShelfUnlimited(loc)) || isOwnerEditing)
             {
                 this.checkAllowed(j);
                 return;
             }
-            if(!BookShelf.isShelfShop(loc) || BookShelf.economy == null)
+            if(!plugin.isShelfShop(loc) || BookShelf.economy == null)
             {
-                if(!BookShelf.isShelfUnlimited(loc))
+                if(!plugin.isShelfUnlimited(loc))
                 {
-                    if(BookShelf.isShelfDonate(loc))
+                    if(plugin.isShelfDonate(loc))
                     {
                         int slotamt = (plugin.getConfig().getInt("rows") * 9) - 1;
                         if(j.getRawSlot() > slotamt)
@@ -1139,7 +1152,7 @@ public class BookListener implements Listener
             }
             else
             {
-                int price = BookShelf.getShopPrice(loc);
+                int price = plugin.getShopPrice(loc);
                 int slotamt = (plugin.getConfig().getInt("rows") * 9) - 1;
                 if(j.getRawSlot() <= slotamt)
                 {
@@ -1282,68 +1295,39 @@ public class BookListener implements Listener
         if(j.getBlock().getType() == Material.BOOKSHELF)
         {
             Location loc = j.getBlock().getLocation();
-            try
+            BookShelf.getSQLManager().setAutoCommit(false);
+            plugin.runQuery("INSERT INTO copy (x,y,z,bool) VALUES ("
+                    + loc.getX() + "," + loc.getY() + "," + loc.getZ()
+                    + ", 0);");
+            plugin.runQuery("INSERT INTO shop (x,y,z,bool,price) VALUES ("
+                    + loc.getX() + "," + loc.getY() + "," + loc.getZ()
+                    + ", 0, "
+                    + plugin.getConfig().getInt("economy.default_price") + ");");
+            plugin.runQuery("INSERT INTO donate (x,y,z,bool) VALUES ("
+                    + loc.getX() + "," + loc.getY() + "," + loc.getZ()
+                    + ", 0);");
+            plugin.runQuery("INSERT INTO names (x,y,z,name) VALUES ("
+                    + loc.getX() + "," + loc.getY() + "," + loc.getZ() + ", '"
+                    + plugin.getConfig().getString("default_shelf_name")
+                    + "');");
+            plugin.runQuery("INSERT INTO owners (x,y,z,ownerString) VALUES ("
+                    + loc.getX() + "," + loc.getY() + "," + loc.getZ() + ", '"
+                    + j.getPlayer().getName().toLowerCase() + "');");
+            //BookShelf.runQuery("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
+            int def = 1;
+            if(plugin.getConfig().getBoolean("default_openable"))
             {
-                BookShelf.getdb().getConnection().setAutoCommit(false);
-                BookShelf.getdb()
-                        .query("INSERT INTO copy (x,y,z,bool) VALUES ("
-                                + loc.getX() + "," + loc.getY() + ","
-                                + loc.getZ() + ", 0);");
-                BookShelf.getdb().query(
-                        "INSERT INTO shop (x,y,z,bool,price) VALUES ("
-                                + loc.getX()
-                                + ","
-                                + loc.getY()
-                                + ","
-                                + loc.getZ()
-                                + ", 0, "
-                                + plugin.getConfig().getInt(
-                                        "economy.default_price") + ");");
-                BookShelf.getdb()
-                        .query("INSERT INTO donate (x,y,z,bool) VALUES ("
-                                + loc.getX() + "," + loc.getY() + ","
-                                + loc.getZ() + ", 0);");
-                BookShelf.getdb().query(
-                        "INSERT INTO names (x,y,z,name) VALUES ("
-                                + loc.getX()
-                                + ","
-                                + loc.getY()
-                                + ","
-                                + loc.getZ()
-                                + ", '"
-                                + plugin.getConfig().getString(
-                                        "default_shelf_name") + "');");
-                BookShelf
-                        .getdb()
-                        .query("INSERT INTO owners (x,y,z,ownerString) VALUES ("
-                                + loc.getX()
-                                + ","
-                                + loc.getY()
-                                + ","
-                                + loc.getZ()
-                                + ", '"
-                                + j.getPlayer().getName().toLowerCase() + "');");
-                //BookShelf.getdb().query("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
-                int def = 1;
-                if(plugin.getConfig().getBoolean("default_openable"))
-                {
-                    def = 1;
-                }
-                else
-                {
-                    def = 0;
-                }
-                BookShelf.getdb().query(
-                        "INSERT INTO enable (x,y,z,bool) VALUES (" + loc.getX()
-                                + "," + loc.getY() + "," + loc.getZ() + ", "
-                                + def + ");");
-                BookShelf.getdb().getConnection().commit();
-                BookShelf.getdb().getConnection().setAutoCommit(true);
+                def = 1;
             }
-            catch(SQLException e)
+            else
             {
-                e.printStackTrace();
+                def = 0;
             }
+            plugin.runQuery("INSERT INTO enable (x,y,z,bool) VALUES ("
+                    + loc.getX() + "," + loc.getY() + "," + loc.getZ() + ", "
+                    + def + ");");
+            BookShelf.getSQLManager().commit();
+            BookShelf.getSQLManager().setAutoCommit(true);
             return;
         }
         if(j.getBlockAgainst().getType() == Material.BOOKSHELF)
@@ -1429,21 +1413,20 @@ public class BookListener implements Listener
     public void onDrop(PlayerDropItemEvent j)
     {
         Player p = j.getPlayer();
-        if(p.getTargetBlock(null, 10).getType() == Material.BOOKSHELF)
+        if(plugin.getTargetBlock(p, 10).getType() == Material.BOOKSHELF)
         {
             if(j.isCancelled())
                 return;
             if(BookShelf.allowedItems.contains(j.getItemDrop().getItemStack()
                     .getType().name()))
             {
-                Location loc = p.getTargetBlock(null, 10).getLocation();
+                Location loc = plugin.getTargetBlock(p, 10).getLocation();
                 
                 try
                 {
-                    r = BookShelf.getdb().query(
-                            "SELECT * FROM copy WHERE x=" + loc.getX()
-                                    + " AND y=" + loc.getY() + " AND z="
-                                    + loc.getZ() + ";");
+                    r = plugin.runQuery("SELECT * FROM copy WHERE x="
+                            + loc.getX() + " AND y=" + loc.getY() + " AND z="
+                            + loc.getZ() + ";");
                     if(r.next())
                         if(r.getInt("bool") == 1)
                         {

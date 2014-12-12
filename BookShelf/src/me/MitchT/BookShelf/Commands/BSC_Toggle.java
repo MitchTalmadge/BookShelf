@@ -20,10 +20,10 @@ public class BSC_Toggle extends BSCommand
     {
         if(args.length == 0)
         {
-            Location loc = BookShelf.getTargetBlock(sender, 10).getLocation();
+            Location loc = plugin.getTargetBlock(sender, 10).getLocation();
             if(loc.getBlock().getType() == Material.BOOKSHELF)
             {
-                if(BookShelf.isOwner(loc, sender))
+                if(plugin.isOwner(loc, sender))
                 {
                     if(BookShelf.useTowny)
                     {
@@ -35,7 +35,7 @@ public class BSC_Toggle extends BSCommand
                             return;
                         }
                     }
-                    int result = BookShelf.toggleBookShelf(loc);
+                    int result = plugin.toggleBookShelf(loc);
                     if(result == -1)
                         sender.sendMessage("§cAn error occured while processing this command. Check server logs.");
                     if(result == 0)
@@ -66,7 +66,7 @@ public class BSC_Toggle extends BSCommand
                 name += args[i] + " ";
             }
             
-            BookShelf.toggleBookShelvesByName(name);
+            plugin.toggleBookShelvesByName(name);
             sender.sendMessage("All bookshelves with the name §6" + name
                     + "§fhave been toggled.");
         }
@@ -88,7 +88,7 @@ public class BSC_Toggle extends BSCommand
                 name += args[i] + " ";
             }
             
-            BookShelf.toggleBookShelvesByName(name);
+            plugin.toggleBookShelvesByName(name);
             sender.sendMessage("All bookshelves with the name §6" + name
                     + "§fhave been toggled.");
         }
@@ -110,7 +110,7 @@ public class BSC_Toggle extends BSCommand
                 name += args[i] + " ";
             }
             
-            BookShelf.toggleBookShelvesByName(name);
+            plugin.toggleBookShelvesByName(name);
             sender.sendMessage("All bookshelves with the name §6" + name
                     + "§fhave been toggled.");
         }

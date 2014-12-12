@@ -48,16 +48,9 @@ public class Version1To2 extends Version
     @Override
     public void doUpdate()
     {
-        try
-        {
-            logger.info("[BookShelf] Updating Database to Version 2.");
-            BookShelf.getdb().query("UPDATE version SET version=2");
-            logger.info("[BookShelf] Update to Version 2 Complete.");
-        }
-        catch(SQLException e)
-        {
-            e.printStackTrace();
-        }
+        logger.info("[BookShelf] Updating Database to Version 2.");
+        plugin.runQuery("UPDATE version SET version=2");
+        logger.info("[BookShelf] Update to Version 2 Complete.");
     }
     
 }

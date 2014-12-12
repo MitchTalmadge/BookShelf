@@ -20,10 +20,10 @@ public class BSC_Shop extends BSCommand
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
-        Location loc = BookShelf.getTargetBlock(sender, 10).getLocation();
+        Location loc = plugin.getTargetBlock(sender, 10).getLocation();
         if(loc.getBlock().getType() == Material.BOOKSHELF)
         {
-            if(BookShelf.isOwner(loc, sender))
+            if(plugin.isOwner(loc, sender))
             {
                 Integer price;
                 if(!(args.length >= 1))
@@ -52,15 +52,15 @@ public class BSC_Shop extends BSCommand
                 }
                 try
                 {
-                    if(BookShelf.isShelfShop(loc) & !(args.length >= 1))
+                    if(plugin.isShelfShop(loc) & !(args.length >= 1))
                     {
-                        r = BookShelf.runQuery("SELECT * FROM names WHERE x="
+                        r = plugin.runQuery("SELECT * FROM names WHERE x="
                                 + loc.getX() + " AND y=" + loc.getY()
                                 + " AND z=" + loc.getZ() + ";");
                         if(!r.next())
                         {
                             close(r);
-                            BookShelf
+                            plugin
                                     .runQuery("INSERT INTO names (x,y,z,name) VALUES ("
                                             + loc.getX()
                                             + ","
@@ -74,7 +74,7 @@ public class BSC_Shop extends BSCommand
                         else
                         {
                             close(r);
-                            BookShelf
+                            plugin
                                     .runQuery("UPDATE names SET name='"
                                             + plugin.getConfig().getString(
                                                     "default_shelf_name")
@@ -83,19 +83,19 @@ public class BSC_Shop extends BSCommand
                                             + " AND z=" + loc.getZ() + ";");
                         }
                         sender.sendMessage("The bookshelf you are looking at is no longer a shop.");
-                        BookShelf.runQuery("UPDATE shop SET bool=0, price="
+                        plugin.runQuery("UPDATE shop SET bool=0, price="
                                 + price + " WHERE x=" + loc.getX() + " AND y="
                                 + loc.getY() + " AND z=" + loc.getZ() + ";");
                     }
                     else
                     {
-                        r = BookShelf.runQuery("SELECT * FROM names WHERE x="
+                        r = plugin.runQuery("SELECT * FROM names WHERE x="
                                 + loc.getX() + " AND y=" + loc.getY()
                                 + " AND z=" + loc.getZ() + ";");
                         if(!r.next())
                         {
                             close(r);
-                            BookShelf
+                            plugin
                                     .runQuery("INSERT INTO names (x,y,z,name) VALUES ("
                                             + loc.getX()
                                             + ","
@@ -116,7 +116,7 @@ public class BSC_Shop extends BSCommand
                         else
                         {
                             close(r);
-                            BookShelf
+                            plugin
                                     .runQuery("UPDATE names SET name='"
                                             + config.getString(
                                                     "default_shop_name")
@@ -135,7 +135,7 @@ public class BSC_Shop extends BSCommand
                                 + " "
                                 + BookShelf.economy.currencyNamePlural()
                                 + " §feach.");
-                        BookShelf.runQuery("UPDATE shop SET bool=1, price="
+                        plugin.runQuery("UPDATE shop SET bool=1, price="
                                 + price + " WHERE x=" + loc.getX() + " AND y="
                                 + loc.getY() + " AND z=" + loc.getZ() + ";");
                     }

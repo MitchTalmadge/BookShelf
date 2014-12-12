@@ -36,6 +36,7 @@ public abstract class Version
 {
     protected ResultSet r;
     protected Logger logger;
+    protected BookShelf plugin = BookShelf.instance;
     
     public Version(Logger logger, ResultSet r)
     {

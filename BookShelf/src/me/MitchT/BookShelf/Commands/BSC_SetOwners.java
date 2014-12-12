@@ -15,18 +15,18 @@ public class BSC_SetOwners extends BSCommand
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
-        Location loc = BookShelf.getTargetBlock(sender, 10).getLocation();
+        Location loc = plugin.getTargetBlock(sender, 10).getLocation();
         if(loc.getBlock().getType() == Material.BOOKSHELF)
         {
-            if(BookShelf.isOwner(loc, sender))
+            if(plugin.isOwner(loc, sender))
             {
                 if(!config.getBoolean("use_built_in_ownership"))
                     return;
                 if(args.length >= 1)
                 {
-                    BookShelf.setOwners(loc, args);
+                    plugin.setOwners(loc, args);
                     String ownerString = "";
-                    for(String name : BookShelf.getOwners(loc))
+                    for(String name : plugin.getOwners(loc))
                     {
                         ownerString += name + ", ";
                     }

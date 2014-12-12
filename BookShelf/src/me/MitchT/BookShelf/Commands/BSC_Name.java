@@ -21,10 +21,10 @@ public class BSC_Name extends BSCommand
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
-        Location loc = BookShelf.getTargetBlock(sender, 10).getLocation();
+        Location loc = plugin.getTargetBlock(sender, 10).getLocation();
         if(loc.getBlock().getType() == Material.BOOKSHELF)
         {
-            if(BookShelf.isOwner(loc, sender))
+            if(plugin.isOwner(loc, sender))
             {
                 String name;
                 String queryName;
@@ -38,7 +38,7 @@ public class BSC_Name extends BSCommand
                     int price = 0;
                     try
                     {
-                        r = BookShelf.runQuery("SELECT * FROM shop WHERE x="
+                        r = plugin.runQuery("SELECT * FROM shop WHERE x="
                                 + loc.getX() + " AND y=" + loc.getY()
                                 + " AND z=" + loc.getZ() + ";");
                         if(r.next())
@@ -89,13 +89,13 @@ public class BSC_Name extends BSCommand
                 }
                 try
                 {
-                    r = BookShelf.runQuery("SELECT * FROM names WHERE x="
+                    r = plugin.runQuery("SELECT * FROM names WHERE x="
                             + loc.getX() + " AND y=" + loc.getY() + " AND z="
                             + loc.getZ() + ";");
                     if(!r.next())
                     {
                         close(r);
-                        BookShelf
+                        plugin
                                 .runQuery("INSERT INTO names (x,y,z,name) VALUES ("
                                         + loc.getX()
                                         + ","
@@ -111,7 +111,7 @@ public class BSC_Name extends BSCommand
                     else
                     {
                         close(r);
-                        BookShelf.runQuery("UPDATE names SET name='"
+                        plugin.runQuery("UPDATE names SET name='"
                                 + queryName + "' WHERE x=" + loc.getX()
                                 + " AND y=" + loc.getY() + " AND z="
                                 + loc.getZ() + ";");

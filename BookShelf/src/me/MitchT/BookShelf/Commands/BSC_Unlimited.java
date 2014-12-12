@@ -20,10 +20,10 @@ public class BSC_Unlimited extends BSCommand
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
-        Location loc = BookShelf.getTargetBlock(sender, 10).getLocation();
+        Location loc = plugin.getTargetBlock(sender, 10).getLocation();
         if(loc.getBlock().getType() == Material.BOOKSHELF)
         {
-            if(BookShelf.isOwner(loc, sender))
+            if(plugin.isOwner(loc, sender))
             {
                 if(BookShelf.useTowny)
                 {
@@ -35,28 +35,19 @@ public class BSC_Unlimited extends BSCommand
                         return;
                     }
                 }
-                try
+                if(plugin.isShelfUnlimited(loc))
                 {
-                    if(BookShelf.isShelfUnlimited(loc))
-                    {
-                        sender.sendMessage("The bookshelf you are looking at is now §6limited.");
-                        BookShelf.getdb().query(
-                                "UPDATE copy SET bool=0 WHERE x=" + loc.getX()
-                                        + " AND y=" + loc.getY() + " AND z="
-                                        + loc.getZ() + ";");
-                    }
-                    else
-                    {
-                        sender.sendMessage("The bookshelf you are looking at is now §6unlimited.");
-                        BookShelf.getdb().query(
-                                "UPDATE copy SET bool=1 WHERE x=" + loc.getX()
-                                        + " AND y=" + loc.getY() + " AND z="
-                                        + loc.getZ() + ";");
-                    }
+                    sender.sendMessage("The bookshelf you are looking at is now §6limited.");
+                    plugin.runQuery("UPDATE copy SET bool=0 WHERE x="
+                            + loc.getX() + " AND y=" + loc.getY() + " AND z="
+                            + loc.getZ() + ";");
                 }
-                catch(SQLException e)
+                else
                 {
-                    e.printStackTrace();
+                    sender.sendMessage("The bookshelf you are looking at is now §6unlimited.");
+                    plugin.runQuery("UPDATE copy SET bool=1 WHERE x="
+                            + loc.getX() + " AND y=" + loc.getY() + " AND z="
+                            + loc.getZ() + ";");
                 }
             }
             else

@@ -20,10 +20,10 @@ public class BSC_Donate extends BSCommand
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
-        Location loc = BookShelf.getTargetBlock(sender, 10).getLocation();
+        Location loc = plugin.getTargetBlock(sender, 10).getLocation();
         if(loc.getBlock().getType() == Material.BOOKSHELF)
         {
-            if(BookShelf.isOwner(loc, sender))
+            if(plugin.isOwner(loc, sender))
             {
                 if(BookShelf.useTowny)
                 {
@@ -36,15 +36,15 @@ public class BSC_Donate extends BSCommand
                 }
                 try
                 {
-                    if(BookShelf.isShelfDonate(loc))
+                    if(plugin.isShelfDonate(loc))
                     {
-                        r = BookShelf.runQuery("SELECT * FROM names WHERE x="
+                        r = plugin.runQuery("SELECT * FROM names WHERE x="
                                 + loc.getX() + " AND y=" + loc.getY()
                                 + " AND z=" + loc.getZ() + ";");
                         if(!r.next())
                         {
                             close(r);
-                            BookShelf
+                            plugin
                                     .runQuery("INSERT INTO names (x,y,z,name) VALUES ("
                                             + loc.getX()
                                             + ","
@@ -58,7 +58,7 @@ public class BSC_Donate extends BSCommand
                         else
                         {
                             close(r);
-                            BookShelf
+                            plugin
                                     .runQuery("UPDATE names SET name='"
                                             + config.getString("default_shelf_name")
                                             + "' WHERE x=" + loc.getX()
@@ -66,19 +66,19 @@ public class BSC_Donate extends BSCommand
                                             + " AND z=" + loc.getZ() + ";");
                         }
                         sender.sendMessage("The bookshelf you are looking at is no longer set up for donations.");
-                        BookShelf.runQuery("UPDATE donate SET bool=0 WHERE x="
+                        plugin.runQuery("UPDATE donate SET bool=0 WHERE x="
                                 + loc.getX() + " AND y=" + loc.getY()
                                 + " AND z=" + loc.getZ() + ";");
                     }
                     else
                     {
-                        r = BookShelf.runQuery("SELECT * FROM names WHERE x="
+                        r = plugin.runQuery("SELECT * FROM names WHERE x="
                                 + loc.getX() + " AND y=" + loc.getY()
                                 + " AND z=" + loc.getZ() + ";");
                         if(!r.next())
                         {
                             close(r);
-                            BookShelf
+                            plugin
                                     .runQuery("INSERT INTO names (x,y,z,name) VALUES ("
                                             + loc.getX()
                                             + ","
@@ -92,7 +92,7 @@ public class BSC_Donate extends BSCommand
                         else
                         {
                             close(r);
-                            BookShelf
+                            plugin
                                     .runQuery("UPDATE names SET name='Donation "
                                             + config.getString("default_shelf_name")
                                             + "' WHERE x="
@@ -102,7 +102,7 @@ public class BSC_Donate extends BSCommand
                                             + " AND z=" + loc.getZ() + ";");
                         }
                         sender.sendMessage("The bookshelf you are looking at is now set up for donations.");
-                        BookShelf.runQuery("UPDATE donate SET bool=1 WHERE x="
+                        plugin.runQuery("UPDATE donate SET bool=1 WHERE x="
                                 + loc.getX() + " AND y=" + loc.getY()
                                 + " AND z=" + loc.getZ() + ";");
                     }

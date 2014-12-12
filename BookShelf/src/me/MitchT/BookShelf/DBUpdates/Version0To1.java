@@ -54,24 +54,24 @@ public class Version0To1 extends Version
         try
         {
             logger.info("[BookShelf] Updating Database to Version 1.");
-            BookShelf.getdb().query("ALTER TABLE items ADD lore TEXT;");
-            BookShelf.getdb().query("ALTER TABLE items ADD damage INT;");
-            BookShelf.getdb().query("ALTER TABLE items ADD pages TEXT;");
+            plugin.runQuery("ALTER TABLE items ADD lore TEXT;");
+            plugin.runQuery("ALTER TABLE items ADD damage INT;");
+            plugin.runQuery("ALTER TABLE items ADD pages TEXT;");
             
-            if(BookShelf.usingMySQL())
+            if(BookShelf.getSQLManager().isUsingMySQL())
             {
-                BookShelf.getdb().query(
+                plugin.runQuery(
                         "ALTER TABLE items MODIFY title VARCHAR(128);");
-                BookShelf.getdb().query(
+                plugin.runQuery(
                         "ALTER TABLE items MODIFY author VARCHAR(128);");
             }
             
-            BookShelf.getdb().query("UPDATE version SET version=1");
+            plugin.runQuery("UPDATE version SET version=1");
             
             /* CONVERT PAGES SYSTEM */
             logger.info("[BookShelf] Converting pages.");
             ArrayList<Integer> idlist = new ArrayList<Integer>();
-            r = BookShelf.getdb().query(
+            r = plugin.runQuery(
                     "SELECT * FROM items WHERE type=386 OR type=387;");
             while(r.next())
             {
@@ -83,7 +83,7 @@ public class Version0To1 extends Version
                 for(int id : idlist)
                 {
                     ArrayList<String> pagelist = new ArrayList<String>();
-                    r = BookShelf.getdb().query(
+                    r = plugin.runQuery(
                             "SELECT * FROM pages WHERE id=" + id + ";");
                     while(r.next())
                     {
@@ -99,7 +99,7 @@ public class Version0To1 extends Version
                         pageString = pageString.substring(0,
                                 pageString.length() - 1);
                     pageString = pageString.replaceAll("'", "''");
-                    BookShelf.getdb().query(
+                    plugin.runQuery(
                             "UPDATE items SET pages='" + pageString
                                     + "' WHERE id=" + id + ";");
                 }
@@ -107,16 +107,16 @@ public class Version0To1 extends Version
             
             /* CONVERT ENCHANTMENT SYSTEM */
             logger.info("[BookShelf] Converting enchanted books.");
-            BookShelf.getdb().query("ALTER TABLE enchant ADD x INT;");
-            BookShelf.getdb().query("ALTER TABLE enchant ADD y INT;");
-            BookShelf.getdb().query("ALTER TABLE enchant ADD z INT;");
-            BookShelf.getdb().query("ALTER TABLE enchant ADD loc INT;");
+            plugin.runQuery("ALTER TABLE enchant ADD x INT;");
+            plugin.runQuery("ALTER TABLE enchant ADD y INT;");
+            plugin.runQuery("ALTER TABLE enchant ADD z INT;");
+            plugin.runQuery("ALTER TABLE enchant ADD loc INT;");
             
             idlist = new ArrayList<Integer>();
             ArrayList<Integer> loclist = new ArrayList<Integer>();
             ArrayList<Vector> locationlist = new ArrayList<Vector>();
             
-            r = BookShelf.getdb().query("SELECT * FROM items WHERE type=403;");
+            r = plugin.runQuery("SELECT * FROM items WHERE type=403;");
             while(r.next())
             {
                 idlist.add(r.getInt("id"));
@@ -133,14 +133,14 @@ public class Version0To1 extends Version
             {
                 for(int i = 0; i < idlist.size(); i++)
                 {
-                    BookShelf.getdb().query(
+                    plugin.runQuery(
                             "UPDATE enchant SET x="
                                     + locationlist.get(i).getBlockX() + ", y="
                                     + locationlist.get(i).getBlockY() + ", z="
                                     + locationlist.get(i).getBlockZ()
                                     + ", loc=" + loclist.get(i) + " WHERE id="
                                     + idlist.get(i) + ";");
-                    r = BookShelf.getdb().query(
+                    r = plugin.runQuery(
                             "SELECT * FROM enchant WHERE x="
                                     + locationlist.get(i).getBlockX()
                                     + " AND y="
@@ -172,13 +172,13 @@ public class Version0To1 extends Version
                 }
             }
             
-            BookShelf.getdb().query("DELETE FROM enchant;");
+            plugin.runQuery("DELETE FROM enchant;");
             
             if(idlist.size() > 0)
             {
                 for(int i = 0; i < loctokeep.size(); i++)
                 {
-                    BookShelf.getdb().query(
+                    plugin.runQuery(
                             "INSERT INTO enchant (x,y,z,loc,type,level) VALUES("
                                     + locationtokeep.get(i).getBlockX() + ","
                                     + locationtokeep.get(i).getBlockY() + ","
@@ -191,16 +191,16 @@ public class Version0To1 extends Version
             
             /* CONVERT MAPS SYSTEM */
             logger.info("[BookShelf] Converting maps.");
-            BookShelf.getdb().query("ALTER TABLE maps ADD x INT;");
-            BookShelf.getdb().query("ALTER TABLE maps ADD y INT;");
-            BookShelf.getdb().query("ALTER TABLE maps ADD z INT;");
-            BookShelf.getdb().query("ALTER TABLE maps ADD loc INT;");
+            plugin.runQuery("ALTER TABLE maps ADD x INT;");
+            plugin.runQuery("ALTER TABLE maps ADD y INT;");
+            plugin.runQuery("ALTER TABLE maps ADD z INT;");
+            plugin.runQuery("ALTER TABLE maps ADD loc INT;");
             
             idlist = new ArrayList<Integer>();
             loclist = new ArrayList<Integer>();
             locationlist = new ArrayList<Vector>();
             
-            r = BookShelf.getdb().query("SELECT * FROM items WHERE type=358;");
+            r = plugin.runQuery("SELECT * FROM items WHERE type=358;");
             while(r.next())
             {
                 idlist.add(r.getInt("id"));
@@ -216,14 +216,14 @@ public class Version0To1 extends Version
             {
                 for(int i = 0; i < idlist.size(); i++)
                 {
-                    BookShelf.getdb().query(
+                    plugin.runQuery(
                             "UPDATE maps SET x="
                                     + locationlist.get(i).getBlockX() + ", y="
                                     + locationlist.get(i).getBlockY() + ", z="
                                     + locationlist.get(i).getBlockZ()
                                     + ", loc=" + loclist.get(i) + " WHERE id="
                                     + idlist.get(i) + ";");
-                    r = BookShelf.getdb().query(
+                    r = plugin.runQuery(
                             "SELECT * FROM maps WHERE x="
                                     + locationlist.get(i).getBlockX()
                                     + " AND y="
@@ -250,13 +250,13 @@ public class Version0To1 extends Version
                     }
                 }
             }
-            BookShelf.getdb().query("DELETE FROM maps;");
+            plugin.runQuery("DELETE FROM maps;");
             
             if(idlist.size() > 0)
             {
                 for(int i = 0; i < loctokeep.size(); i++)
                 {
-                    BookShelf.getdb().query(
+                    plugin.runQuery(
                             "INSERT INTO maps (x,y,z,loc,durability) VALUES("
                                     + locationtokeep.get(i).getBlockX() + ","
                                     + locationtokeep.get(i).getBlockY() + ","

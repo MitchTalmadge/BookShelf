@@ -14,7 +14,7 @@ public class BSC_Reload extends BSCommand
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
-        BookShelf.reloadBookShelfConfig();
+        plugin.reloadBookShelfConfig();
         sender.sendMessage("§aBookShelf config successfully reloaded.");
     }
     
@@ -22,7 +22,7 @@ public class BSC_Reload extends BSCommand
     public void onConsoleCommand(ConsoleCommandSender sender, Command command,
             String[] args)
     {
-        BookShelf.reloadBookShelfConfig();
+        plugin.reloadBookShelfConfig();
         sender.sendMessage("§aBookShelf config successfully reloaded.");
     }
     
@@ -30,7 +30,7 @@ public class BSC_Reload extends BSCommand
     public void onCommandBlockCommand(CommandSender sender, Command command,
             String[] args)
     {
-        BookShelf.reloadBookShelfConfig();
+        plugin.reloadBookShelfConfig();
         sender.sendMessage("§aBookShelf config successfully reloaded.");
     }
     

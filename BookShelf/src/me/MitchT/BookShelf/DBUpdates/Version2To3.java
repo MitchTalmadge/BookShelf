@@ -56,7 +56,7 @@ public class Version2To3 extends Version
             logger.info("[BookShelf] Updating Database to Version 3.");
             Map<Integer, Integer> typeID = new HashMap<Integer, Integer>();
             logger.info("[BookShelf] Copying item types...");
-            r = BookShelf.getdb().query("SELECT * FROM items");
+            r = plugin.runQuery("SELECT * FROM items");
             while(r.next())
             {
                 typeID.put(r.getInt("id"), r.getInt("type"));
@@ -65,25 +65,25 @@ public class Version2To3 extends Version
             
             logger.info("[BookShelf] Altering table 'items'...");
             
-            BookShelf.getdb().query("ALTER TABLE items ADD enumType TEXT;");
+            plugin.runQuery("ALTER TABLE items ADD enumType TEXT;");
             
             logger.info("[BookShelf] Updating table 'items'...");
-            BookShelf.getdb().getConnection().setAutoCommit(false);
+            BookShelf.getSQLManager().setAutoCommit(false);
             for(int i = 0; i < typeID.size(); i++)
             {
                 for(Map.Entry<Integer, Integer> entry : typeID.entrySet())
                 {
-                    BookShelf.getdb().query(
+                    plugin.runQuery(
                             "UPDATE items SET enumType='"
                                     + OldIDEnum.getMaterialById(
                                             entry.getValue()).name()
                                     + "' WHERE id=" + entry.getKey());
                 }
             }
-            BookShelf.getdb().getConnection().commit();
-            BookShelf.getdb().getConnection().setAutoCommit(true);
+            BookShelf.getSQLManager().commit();
+            BookShelf.getSQLManager().setAutoCommit(true);
             
-            BookShelf.getdb().query("UPDATE version SET version=3");
+            plugin.runQuery("UPDATE version SET version=3");
             logger.info("[BookShelf] Update to Version 3 Complete.");
         }
         catch(SQLException e)

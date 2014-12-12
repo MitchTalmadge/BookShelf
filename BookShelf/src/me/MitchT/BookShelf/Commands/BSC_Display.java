@@ -21,19 +21,19 @@ public class BSC_Display extends BSCommand
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
-        Location loc = BookShelf.getTargetBlock(sender, 10).getLocation();
+        Location loc = plugin.getTargetBlock(sender, 10).getLocation();
         if(loc.getBlock().getType() == Material.BOOKSHELF)
         {
-            if(BookShelf.isOwner(loc, sender))
+            if(plugin.isOwner(loc, sender))
             {
                 try
                 {
-                    r = BookShelf.runQuery("SELECT * FROM display WHERE x="
+                    r = plugin.runQuery("SELECT * FROM display WHERE x="
                             + loc.getX() + " AND y=" + loc.getY() + " AND z="
                             + loc.getZ() + ";");
                     if(!r.next())
                     {
-                        BookShelf
+                        plugin
                                 .runQuery("INSERT INTO display (x,y,z,bool) VALUES ("
                                         + loc.getX()
                                         + ","
@@ -49,7 +49,7 @@ public class BSC_Display extends BSCommand
                         {
                             close(r);
                             sender.sendMessage("The bookshelf you are looking at is no longer a display.");
-                            BookShelf
+                            plugin
                                     .runQuery("UPDATE display SET bool=0 WHERE x="
                                             + loc.getX()
                                             + " AND y="
@@ -61,7 +61,7 @@ public class BSC_Display extends BSCommand
                         {
                             close(r);
                             sender.sendMessage("The bookshelf you are looking at is now a display.");
-                            BookShelf
+                            plugin
                                     .runQuery("UPDATE display SET bool=1 WHERE x="
                                             + loc.getX()
                                             + " AND y="

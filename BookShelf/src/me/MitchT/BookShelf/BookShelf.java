@@ -10,13 +10,9 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import me.MitchT.BookShelf.Commands.CommandHandler;
-import me.MitchT.BookShelf.DBUpdates.DBUpdate;
 import me.MitchT.BookShelf.LWC.LWCPluginHandler;
 import me.MitchT.BookShelf.Towny.TownyHandler;
 import me.MitchT.BookShelf.WorldEdit.WorldEdit_EditSessionFactoryHandler;
-import me.MitchT.SimpleSQL.Database;
-import me.MitchT.SimpleSQL.MySQL;
-import me.MitchT.SimpleSQL.SQLite;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Location;
@@ -70,7 +66,6 @@ public class BookShelf extends JavaPlugin
     static FileConfiguration config;
     public static BookShelf instance;
     public final Logger logger = Logger.getLogger("Minecraft");
-    public static final int currentDatabaseVersion = 3;
     public static ArrayList<Player> editingPlayers = new ArrayList<Player>();
     
     public static ArrayList<String> records = new ArrayList<String>(
@@ -103,6 +98,7 @@ public class BookShelf extends JavaPlugin
     HashMap<Location, List<Player>> autoToggleMap2 = new HashMap<Location, List<Player>>();
     List<?> autoToggleNameList = null;
     private CommandHandler commandHandler;
+    private SQLManager sqlManager;
     
     /* TOWNY */
     static Towny towny;
@@ -118,30 +114,7 @@ public class BookShelf extends JavaPlugin
     static WorldGuardPlugin worldGuard;
     
     /* DATABASE */
-    static MySQL mysql;
-    static SQLite sqlite;
     static ResultSet r;
-    
-    @Override
-    public void onDisable()
-    {
-        
-        try
-        {
-            if(r != null)
-                close(r);
-        }
-        catch(SQLException e)
-        {
-            e.printStackTrace();
-        }
-        
-        getdb().close();
-        
-        if(BookShelf.useTowny)
-            TownyHandler.saveConfig();
-        
-    }
     
     @Override
     public void onEnable()
@@ -150,9 +123,9 @@ public class BookShelf extends JavaPlugin
         allowedItems.addAll(records);
         config = getConfig();
         saveDefaultConfig();
-        sqlConnection();
-        sqlDoesDatabaseExist();
         
+        this.sqlManager = new SQLManager(this, logger);
+
         setupAutoToggle();
         
         if(setupEconomy())
@@ -206,27 +179,42 @@ public class BookShelf extends JavaPlugin
         
     }
     
-    public static ResultSet runQuery(String query)
+    @Override
+    public void onDisable()
     {
+        
         try
         {
-            return getdb().query(query);
+            if(r != null)
+                close(r);
         }
         catch(SQLException e)
         {
             e.printStackTrace();
         }
-        return null;
+        
+        sqlManager.shutDown();
+        
+        if(BookShelf.useTowny)
+            TownyHandler.saveConfig();
+        
+    }
+    
+    public boolean onCommand(CommandSender sender, Command command, String label,
+            String[] args)
+    {
+        commandHandler.onCommand(sender, command, label, args);
+        return true;
+    }
+    
+    public ResultSet runQuery(String query)
+    {
+        return instance.sqlManager.runQuery(query);
     }
     
     public static void close(ResultSet r) throws SQLException
     {
-        r.close();
-        getdb().setShouldWait(false);
-        synchronized(getdb().getSynchronized())
-        {
-            getdb().getSynchronized().notify();
-        }
+        instance.sqlManager.close(r);
     }
     
     private void setupAutoToggle()
@@ -315,311 +303,7 @@ public class BookShelf extends JavaPlugin
         return BookShelf.useTowny;
     }
     
-    public static boolean usingMySQL()
-    {
-        return getdb() instanceof MySQL;
-    }
-    
-    public void sqlConnection()
-    {
-        boolean enable = config.getBoolean("database.mysql_enabled");
-        String host = config.getString("database.hostname");
-        int port = config.getInt("database.port");
-        String dbname = config.getString("database.database");
-        String user = config.getString("database.username");
-        String pass = config.getString("database.password");
-        String prefix = config.getString("database.prefix");
-        if(enable)
-        {
-            mysql = new MySQL(logger, prefix, host, port, dbname, user, pass);
-            try
-            {
-                mysql.open();
-            }
-            catch(Exception e)
-            {
-                logger.info(e.getMessage());
-                getPluginLoader().disablePlugin(this);
-            }
-        }
-        else
-        {
-            sqlite = new SQLite(logger, "BookShelf", getDataFolder()
-                    .getAbsolutePath(), "Shelves");
-            try
-            {
-                sqlite.open();
-            }
-            catch(Exception e)
-            {
-                logger.info(e.getMessage());
-                getPluginLoader().disablePlugin(this);
-            }
-        }
-    }
-    
-    private int getDbVersion()
-    {
-        int version = -1;
-        try
-        {
-            sqlDoesVersionExist();
-            r = getdb().query("SELECT * FROM version");
-            if(r.next())
-                version = r.getInt("version");
-            close(r);
-            return version;
-        }
-        catch(SQLException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return -1;
-    }
-    
-    public void sqlDoesDatabaseExist()
-    {
-        try
-        {
-            sqlDoesVersionExist();
-            if(getDbVersion() == 1)
-                doDelimiterFix();
-            updateDb();
-            logger.info("[BookShelf] Current Database Version: "
-                    + getDbVersion());
-            boolean enable = config.getBoolean("database.mysql_enabled");
-            if(enable) //MYSQL
-            {
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(128), author VARCHAR(128), lore TEXT, damage INT, enumType TEXT, loc INT, amt INT, pages TEXT, PRIMARY KEY (id));");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS enchant (x INT, y INT, z INT, loc INT, type VARCHAR(64), level INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS maps (x INT, y INT, z INT, loc INT, durability SMALLINT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name VARCHAR(64));");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS donate (x INT, y INT, z INT, bool INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS owners (x INT, y INT, z INT, ownerString TEXT);");
-            }
-            else
-            //SQLITE
-            {
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title TEXT, author TEXT, lore TEXT, damage INT, enumType TEXT, loc INT, amt INT, pages TEXT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS enchant (x INT, y INT, z INT, loc INT, type STRING, level INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS maps (x INT, y INT, z INT, loc INT, durability SMALLINT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name TEXT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS donate (x INT, y INT, z INT, bool INT);");
-                getdb().query(
-                        "CREATE TABLE IF NOT EXISTS owners (x INT, y INT, z INT, ownerString TEXT);");
-            }
-            logger.info("[BookShelf] Database Loaded.");
-        }
-        catch(SQLException e)
-        {
-            System.out
-                    .println("[BookShelf] Database could not load! Check server log.");
-            e.printStackTrace();
-        }
-        
-    }
-    
-    private void doDelimiterFix()
-    {
-        try
-        {
-            ArrayList<Integer> ids = new ArrayList<Integer>();
-            ArrayList<String> pageStrings = new ArrayList<String>();
-            r = BookShelf.getdb().query("SELECT * FROM items;");
-            while(r.next())
-            {
-                ids.add(r.getInt("id"));
-                pageStrings.add(r.getString("pages"));
-            }
-            close(r);
-            for(int i = 0; i < ids.size(); i++)
-            {
-                if(pageStrings.get(i) != null)
-                {
-                    String pages = pageStrings.get(i).replaceAll(":", "¬");
-                    pages = pages.replaceAll("'", "''");
-                    BookShelf.getdb().query(
-                            "UPDATE items SET pages='" + pages + "' WHERE id="
-                                    + ids.get(i) + ";");
-                }
-            }
-            
-        }
-        catch(SQLException e)
-        {
-            e.printStackTrace();
-        }
-    }
-    
-    private void updateDb()
-    {
-        
-        //Note to self: Update currentDatabaseVersion!! :)
-        int version = -1;
-        try
-        {
-            r = getdb().query("SELECT * FROM version");
-            if(r.next())
-                version = r.getInt("version");
-            close(r);
-            DBUpdate updater = new DBUpdate(logger, r);
-            switch(version)
-            {
-                case 0:
-                    updater.doUpdate(version);
-                    updateDb();
-                    break;
-                case 1:
-                    updater.doUpdate(version);
-                    updateDb();
-                    break;
-                case 2:
-                    updater.doUpdate(version);
-                    updateDb();
-                    break;
-                default:
-                    break;
-            }
-        }
-        catch(SQLException e)
-        {
-            e.printStackTrace();
-        }
-    }
-    
-    private void sqlDoesVersionExist()
-    {
-        if(usingMySQL())
-        {
-            try
-            {
-                r = getdb().query("SHOW TABLES LIKE 'version';");
-                if(r.next())
-                {
-                    close(r);
-                    return;
-                }
-                else
-                    close(r);
-                
-                r = getdb().query("SHOW TABLES LIKE 'items';");
-                if(!r.next())
-                {
-                    close(r); //Looks like we are making a new database.
-                    logger.info("[BookShelf] Creating Database...");
-                    getdb().query(
-                            "CREATE TABLE IF NOT EXISTS version (version INT);");
-                    getdb().query(
-                            "INSERT INTO version (version) VALUES("
-                                    + currentDatabaseVersion + ");");
-                }
-                else
-                { //We aren't making a new database, but version doesn't exist.... Let's add it.
-                    close(r);
-                    logger.info("[BookShelf] Adding version to Database...");
-                    r = getdb().query("SHOW TABLES LIKE 'version';");
-                    if(!r.next())
-                    {
-                        close(r);
-                        getdb().query(
-                                "CREATE TABLE IF NOT EXISTS version (version INT);");
-                        getdb().query(
-                                "INSERT INTO version (version) VALUES(0);");
-                    }
-                    else
-                    {
-                        close(r);
-                    }
-                }
-            }
-            catch(SQLException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        else
-        {
-            try
-            {
-                
-                r = getdb()
-                        .query("SELECT name FROM sqlite_master WHERE type='table' AND name='version';");
-                if(r.next())
-                {
-                    close(r);
-                    return;
-                }
-                else
-                    close(r);
-                
-                r = getdb()
-                        .query("SELECT name FROM sqlite_master WHERE type='table' AND name='items';");
-                if(!r.next())
-                {
-                    close(r); //Looks like we are making a new database.
-                    logger.info("[BookShelf] Creating Database...");
-                    getdb().query(
-                            "CREATE TABLE IF NOT EXISTS version (version INT);");
-                    getdb().query(
-                            "INSERT INTO version (version) VALUES("
-                                    + currentDatabaseVersion + ");");
-                }
-                else
-                { //We aren't making a new database, but version doesn't exist.... Let's add it.
-                    close(r);
-                    r = getdb()
-                            .query("SELECT name FROM sqlite_master WHERE type='table' AND name='version';");
-                    if(!r.next())
-                    {
-                        close(r);
-                        logger.info("[BookShelf] Adding version to Database...");
-                        getdb().query(
-                                "CREATE TABLE IF NOT EXISTS version (version INT);");
-                        getdb().query(
-                                "INSERT INTO version (version) VALUES(0);");
-                    }
-                    else
-                    {
-                        close(r);
-                    }
-                }
-            }
-            catch(SQLException e)
-            {
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    public static Block getTargetBlock(Player player, int range)
+    public Block getTargetBlock(Player player, int range)
     {
         Location loc = player.getEyeLocation();
         Vector dir = loc.getDirection().normalize();
@@ -636,7 +320,7 @@ public class BookShelf extends JavaPlugin
         return b;
     }
     
-    public static void reloadBookShelfConfig()
+    public void reloadBookShelfConfig()
     {
         instance.reloadConfig();
         config = instance.getConfig();
@@ -678,21 +362,14 @@ public class BookShelf extends JavaPlugin
             useTowny = false;
     }
     
-    public boolean onCommand(CommandSender sender, Command command, String label,
-            String[] args)
-    {
-        commandHandler.onCommand(sender, command, label, args);
-        return true;
-    }
-    
-    public static boolean isOwner(Location loc, Player p)
+    public boolean isOwner(Location loc, Player p)
     {
         if(loc.getBlock().getType() != Material.BOOKSHELF)
             return false;
         return isOwner(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), p);
     }
     
-    public static boolean isOwner(int x, int y, int z, Player p)
+    public boolean isOwner(int x, int y, int z, Player p)
     {
         if(p.isOp())
             return true;
@@ -700,7 +377,7 @@ public class BookShelf extends JavaPlugin
             return true;
         try
         {
-            r = getdb().query(
+            r = runQuery(
                     "SELECT * FROM owners WHERE x=" + x + " AND y=" + y
                             + " AND z=" + z + ";");
             if(!r.next())
@@ -727,12 +404,12 @@ public class BookShelf extends JavaPlugin
         return false;
     }
     
-    public static void setOwners(Location loc, String[] pList)
+    public void setOwners(Location loc, String[] pList)
     {
         setOwners(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), pList);
     }
     
-    public static void setOwners(int x, int y, int z, String[] pList)
+    public void setOwners(int x, int y, int z, String[] pList)
     {
         String ownerString = "";
         for(String p : pList)
@@ -745,13 +422,13 @@ public class BookShelf extends JavaPlugin
         
         try
         {
-            r = getdb().query(
+            r = runQuery(
                     "SELECT * FROM owners WHERE x=" + x + " AND y=" + y
                             + " AND z=" + z + ";");
             if(!r.next())
             {
                 close(r);
-                getdb().query(
+                runQuery(
                         "INSERT INTO owners (x, y, z, ownerString) VALUES ("
                                 + x + ", +" + y + ", " + z + ", '"
                                 + ownerString + "');");
@@ -759,7 +436,7 @@ public class BookShelf extends JavaPlugin
             else
             {
                 close(r);
-                getdb().query(
+                runQuery(
                         "UPDATE owners SET ownerString='" + ownerString
                                 + "' WHERE x=" + x + " AND y=" + y + " AND z="
                                 + z + ";");
@@ -771,16 +448,16 @@ public class BookShelf extends JavaPlugin
         }
     }
     
-    public static void addOwners(Location loc, String[] pList)
+    public void addOwners(Location loc, String[] pList)
     {
         addOwners(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), pList);
     }
     
-    public static void addOwners(int x, int y, int z, String[] pList)
+    public void addOwners(int x, int y, int z, String[] pList)
     {
         try
         {
-            r = getdb().query(
+            r = runQuery(
                     "SELECT * FROM owners WHERE x=" + x + " AND y=" + y
                             + " AND z=" + z + ";");
             if(!r.next())
@@ -796,7 +473,7 @@ public class BookShelf extends JavaPlugin
                 ownerString = ownerString
                         .substring(0, ownerString.length() - 1);
                 
-                getdb().query(
+                runQuery(
                         "INSERT INTO owners (x, y, z, ownerString) VALUES ("
                                 + x + ", +" + y + ", " + z + ", '"
                                 + ownerString + "');");
@@ -826,7 +503,7 @@ public class BookShelf extends JavaPlugin
                     newOwnerString = newOwnerString.substring(0,
                             newOwnerString.length() - 1);
                 
-                getdb().query(
+                runQuery(
                         "UPDATE owners SET ownerString='" + newOwnerString
                                 + "' WHERE x=" + x + " AND y=" + y + " AND z="
                                 + z + ";");
@@ -838,12 +515,12 @@ public class BookShelf extends JavaPlugin
         }
     }
     
-    public static void removeOwners(Location loc, String[] pList)
+    public void removeOwners(Location loc, String[] pList)
     {
         removeOwners(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), pList);
     }
     
-    public static void removeOwners(int x, int y, int z, String[] pList)
+    public void removeOwners(int x, int y, int z, String[] pList)
     {
         for(int i = 0; i < pList.length; i++)
         {
@@ -851,7 +528,7 @@ public class BookShelf extends JavaPlugin
         }
         try
         {
-            r = getdb().query(
+            r = runQuery(
                     "SELECT * FROM owners WHERE x=" + x + " AND y=" + y
                             + " AND z=" + z + ";");
             if(!r.next())
@@ -878,7 +555,7 @@ public class BookShelf extends JavaPlugin
                     newOwnerString = newOwnerString.substring(0,
                             newOwnerString.length() - 1);
                 
-                getdb().query(
+                runQuery(
                         "UPDATE owners SET ownerString='" + newOwnerString
                                 + "' WHERE x=" + x + " AND y=" + y + " AND z="
                                 + z + ";");
@@ -890,16 +567,16 @@ public class BookShelf extends JavaPlugin
         }
     }
     
-    public static String[] getOwners(Location loc)
+    public String[] getOwners(Location loc)
     {
         return getOwners(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
     }
     
-    public static String[] getOwners(int x, int y, int z)
+    public String[] getOwners(int x, int y, int z)
     {
         try
         {
-            r = getdb().query(
+            r = runQuery(
                     "SELECT * FROM owners WHERE x=" + x + " AND y=" + y
                             + " AND z=" + z + ";");
             if(!r.next())
@@ -923,17 +600,17 @@ public class BookShelf extends JavaPlugin
         return new String[] { "Unknown Owners!" };
     }
     
-    public static boolean isShelfUnlimited(Location loc)
+    public boolean isShelfUnlimited(Location loc)
     {
         try
         {
-            r = getdb().query(
+            r = runQuery(
                     "SELECT * FROM copy WHERE x=" + loc.getX() + " AND y="
                             + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
             {
                 close(r);
-                getdb().query(
+                runQuery(
                         "INSERT INTO copy (x,y,z,bool) VALUES (" + loc.getX()
                                 + "," + loc.getY() + "," + loc.getZ() + ",0);");
                 return false;
@@ -953,17 +630,17 @@ public class BookShelf extends JavaPlugin
         return false;
     }
     
-    public static boolean isShelfDonate(Location loc)
+    public boolean isShelfDonate(Location loc)
     {
         try
         {
-            r = getdb().query(
+            r = runQuery(
                     "SELECT * FROM donate WHERE x=" + loc.getX() + " AND y="
                             + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
             {
                 close(r);
-                getdb().query(
+                runQuery(
                         "INSERT INTO donate (x,y,z,bool) VALUES (" + loc.getX()
                                 + "," + loc.getY() + "," + loc.getZ() + ",0);");
                 return false;
@@ -983,17 +660,17 @@ public class BookShelf extends JavaPlugin
         return false;
     }
     
-    public static boolean isShelfShop(Location loc)
+    public boolean isShelfShop(Location loc)
     {
         try
         {
-            r = BookShelf.getdb().query(
+            r = runQuery(
                     "SELECT * FROM shop WHERE x=" + loc.getX() + " AND y="
                             + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
             {
                 close(r);
-                BookShelf.getdb().query(
+                runQuery(
                         "INSERT INTO shop (x,y,z,bool,price) VALUES ("
                                 + loc.getX() + "," + loc.getY() + ","
                                 + loc.getZ() + ",0,10);");
@@ -1014,17 +691,17 @@ public class BookShelf extends JavaPlugin
         return false;
     }
     
-    public static int getShopPrice(Location loc)
+    public int getShopPrice(Location loc)
     {
         try
         {
-            r = BookShelf.getdb().query(
+            r = runQuery(
                     "SELECT * FROM shop WHERE x=" + loc.getX() + " AND y="
                             + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
             {
                 close(r);
-                BookShelf.getdb().query(
+                runQuery(
                         "INSERT INTO shop (x,y,z,bool,price) VALUES ("
                                 + loc.getX() + "," + loc.getY() + ","
                                 + loc.getZ() + ",0,10);");
@@ -1045,11 +722,11 @@ public class BookShelf extends JavaPlugin
         return 10;
     }
     
-    public static boolean isShelfEnabled(Location loc)
+    public boolean isShelfEnabled(Location loc)
     {
         try
         {
-            r = BookShelf.getdb().query(
+            r = runQuery(
                     "SELECT * FROM enable WHERE x=" + loc.getX() + " AND y="
                             + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
@@ -1064,7 +741,7 @@ public class BookShelf extends JavaPlugin
                 {
                     def = 0;
                 }
-                BookShelf.getdb().query(
+                runQuery(
                         "INSERT INTO enable (x,y,z,bool) VALUES (" + loc.getX()
                                 + "," + loc.getY() + "," + loc.getZ() + ", "
                                 + def + ");");
@@ -1085,11 +762,11 @@ public class BookShelf extends JavaPlugin
         return false;
     }
     
-    public static int toggleBookShelf(Location loc)
+    public int toggleBookShelf(Location loc)
     {
         try
         {
-            r = getdb().query(
+            r = runQuery(
                     "SELECT * FROM enable WHERE x=" + loc.getX() + " AND y="
                             + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(!r.next())
@@ -1104,7 +781,7 @@ public class BookShelf extends JavaPlugin
                     def = 0;
                 }
                 close(r);
-                getdb().query(
+                runQuery(
                         "INSERT INTO enable (x,y,z,bool) VALUES (" + loc.getX()
                                 + "," + loc.getY() + "," + loc.getZ() + ", "
                                 + def + ");");
@@ -1113,14 +790,14 @@ public class BookShelf extends JavaPlugin
             {
                 close(r);
             }
-            r = getdb().query(
+            r = runQuery(
                     "SELECT * FROM enable WHERE x=" + loc.getX() + " AND y="
                             + loc.getY() + " AND z=" + loc.getZ() + ";");
             if(r.next())
                 if(r.getInt("bool") == 1)
                 {
                     close(r);
-                    getdb().query(
+                    runQuery(
                             "UPDATE enable SET bool=0 WHERE x=" + loc.getX()
                                     + " AND y=" + loc.getY() + " AND z="
                                     + loc.getZ() + ";");
@@ -1129,7 +806,7 @@ public class BookShelf extends JavaPlugin
                 else
                 {
                     close(r);
-                    getdb().query(
+                    runQuery(
                             "UPDATE enable SET bool=1 WHERE x=" + loc.getX()
                                     + " AND y=" + loc.getY() + " AND z="
                                     + loc.getZ() + ";");
@@ -1144,7 +821,7 @@ public class BookShelf extends JavaPlugin
         }
     }
     
-    public static void toggleBookShelvesByName(String name)
+    public void toggleBookShelvesByName(String name)
     {
         
         if(!name.endsWith(" "))
@@ -1160,7 +837,7 @@ public class BookShelf extends JavaPlugin
         
         try
         {
-            r = getdb().query("SELECT * FROM names WHERE name='" + name + "';");
+            r = runQuery("SELECT * FROM names WHERE name='" + name + "';");
             List<Vector> vecs = new ArrayList<Vector>();
             HashMap<Vector, Boolean> selmap = new HashMap<Vector, Boolean>();
             
@@ -1173,7 +850,7 @@ public class BookShelf extends JavaPlugin
             close(r);
             for(Vector loc : vecs)
             {
-                r = getdb().query(
+                r = runQuery(
                         "SELECT * FROM enable WHERE x=" + loc.getX()
                                 + " AND y=" + loc.getY() + " AND z="
                                 + loc.getZ() + ";");
@@ -1183,18 +860,18 @@ public class BookShelf extends JavaPlugin
                 }
                 close(r);
             }
-            getdb().getConnection().setAutoCommit(false);
+            instance.sqlManager.setAutoCommit(false);
             for(Vector vec : selmap.keySet())
             {
                 boolean bool = selmap.get(vec);
                 int bool2 = bool == true ? 0 : 1;
-                getdb().query(
+                runQuery(
                         "UPDATE enable SET bool=" + bool2 + " WHERE x="
                                 + vec.getX() + " AND y=" + vec.getY()
                                 + " AND z=" + vec.getZ() + ";");
             }
-            getdb().getConnection().commit();
-            getdb().getConnection().setAutoCommit(true);
+            instance.sqlManager.commit();
+            instance.sqlManager.setAutoCommit(true);
             
         }
         catch(SQLException e)
@@ -1202,23 +879,11 @@ public class BookShelf extends JavaPlugin
             e.printStackTrace();
         }
     }
-    
-    public static Database getdb()
+
+    public static SQLManager getSQLManager()
     {
-        boolean enable = config.getBoolean("database.mysql_enabled");
-        if(enable)
-        {
-            if(mysql.isOpen())
-                return mysql;
-            else
-            {
-                mysql.open();
-                return mysql;
-            }
-        }
-        else
-        {
-            return sqlite;
-        }
+        return instance.sqlManager;
     }
+    
+    
 }

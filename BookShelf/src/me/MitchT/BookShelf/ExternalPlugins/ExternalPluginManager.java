@@ -191,6 +191,7 @@ public class ExternalPluginManager
             else
             {
                 logger.info("[BookShelf] WorldGuard is outdated! You must use WorldGuard version 6.0 or later for BookShelf support.");
+                usingWorldGuard = false;
             }
         }
         return worldGuardPlugin != null;
@@ -212,6 +213,7 @@ public class ExternalPluginManager
             else
             {
                 logger.info("[BookShelf] WorldEdit is outdated! You must use WorldEdit version 6.0 or later for BookShelf support.");
+                usingWorldEdit = false;
             }
         }
         else

@@ -41,6 +41,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 
+import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
@@ -145,9 +146,11 @@ public class BookListener implements Listener
                         try
                         {
                             if(plugin.isShelfShop(loc)
-                                    && BookShelf.getExternalPluginManager().usingVaultEconomy())
+                                    && BookShelf.getExternalPluginManager()
+                                            .usingVaultEconomy())
                             {
-                                if(BookShelf.getExternalPluginManager().usingTowny())
+                                if(BookShelf.getExternalPluginManager()
+                                        .usingTowny())
                                 {
                                     if(!TownyHandler.checkCanDoAction(j
                                             .getClickedBlock(), TownyHandler
@@ -161,11 +164,14 @@ public class BookListener implements Listener
                                         return;
                                     }
                                 }
-                                if(BookShelf.getExternalPluginManager().usingWorldGuard())
+                                if(BookShelf.getExternalPluginManager()
+                                        .usingWorldGuard())
                                 {
-                                    RegionManager regionManager = BookShelf.getExternalPluginManager().getWorldGuardPlugin()
-                                            .getRegionManager(j.getPlayer()
-                                                    .getWorld());
+                                    RegionManager regionManager = BookShelf
+                                            .getExternalPluginManager()
+                                            .getWorldGuardPlugin()
+                                            .getRegionManager(
+                                                    j.getPlayer().getWorld());
                                     if(regionManager != null)
                                     {
                                         ApplicableRegionSet set = regionManager
@@ -173,12 +179,15 @@ public class BookListener implements Listener
                                                         .getClickedBlock()
                                                         .getLocation());
                                         if(set.size() > 0)
-                                            if(!set.allows(
-                                                    DefaultFlag.ENABLE_SHOP,
-                                                    BookShelf.getExternalPluginManager().getWorldGuardPlugin().wrapPlayer(j
-                                                            .getPlayer()))
-                                                    && !set.isOwnerOfAll(BookShelf.getExternalPluginManager().getWorldGuardPlugin().wrapPlayer(j
-                                                            .getPlayer()))
+                                            if(!set.allows(DefaultFlag.ENABLE_SHOP, BookShelf
+                                                    .getExternalPluginManager()
+                                                    .getWorldGuardPlugin()
+                                                    .wrapPlayer(j.getPlayer()))
+                                                    && !set.isOwnerOfAll(BookShelf
+                                                            .getExternalPluginManager()
+                                                            .getWorldGuardPlugin()
+                                                            .wrapPlayer(
+                                                                    j.getPlayer()))
                                                     && !j.getPlayer().isOp())
                                             {
                                                 j.getPlayer()
@@ -192,7 +201,8 @@ public class BookListener implements Listener
                             }
                             else
                             { //Not a shop or economy is disabled
-                                if(BookShelf.getExternalPluginManager().usingTowny())
+                                if(BookShelf.getExternalPluginManager()
+                                        .usingTowny())
                                 {
                                     if(!TownyHandler.checkCanDoAction(j
                                             .getClickedBlock(), TownyHandler
@@ -206,11 +216,14 @@ public class BookListener implements Listener
                                         return;
                                     }
                                 }
-                                if(BookShelf.getExternalPluginManager().usingWorldGuard())
+                                if(BookShelf.getExternalPluginManager()
+                                        .usingWorldGuard())
                                 {
-                                    RegionManager regionManager = BookShelf.getExternalPluginManager().getWorldGuardPlugin()
-                                            .getRegionManager(j.getPlayer()
-                                                    .getWorld());
+                                    RegionManager regionManager = BookShelf
+                                            .getExternalPluginManager()
+                                            .getWorldGuardPlugin()
+                                            .getRegionManager(
+                                                    j.getPlayer().getWorld());
                                     if(regionManager != null)
                                     {
                                         ApplicableRegionSet set = regionManager
@@ -218,12 +231,15 @@ public class BookListener implements Listener
                                                         .getClickedBlock()
                                                         .getLocation());
                                         if(set.size() > 0)
-                                            if(!set.allows(
-                                                    DefaultFlag.CHEST_ACCESS,
-                                                    BookShelf.getExternalPluginManager().getWorldGuardPlugin().wrapPlayer(j
-                                                            .getPlayer()))
-                                                    && !set.isOwnerOfAll(BookShelf.getExternalPluginManager().getWorldGuardPlugin().wrapPlayer(j
-                                                            .getPlayer()))
+                                            if(!set.allows(DefaultFlag.CHEST_ACCESS, BookShelf
+                                                    .getExternalPluginManager()
+                                                    .getWorldGuardPlugin()
+                                                    .wrapPlayer(j.getPlayer()))
+                                                    && !set.isOwnerOfAll(BookShelf
+                                                            .getExternalPluginManager()
+                                                            .getWorldGuardPlugin()
+                                                            .wrapPlayer(
+                                                                    j.getPlayer()))
                                                     && !j.getPlayer().isOp())
                                             {
                                                 j.getPlayer()
@@ -525,8 +541,7 @@ public class BookListener implements Listener
                                                         .remove(loc);
                                                 if(plugin.autoToggleServerWide)
                                                 {
-                                                    plugin
-                                                            .toggleBookShelvesByName(name);
+                                                    plugin.toggleBookShelvesByName(name);
                                                     if(!name.endsWith(" "))
                                                         name += " ";
                                                     System.out
@@ -536,8 +551,7 @@ public class BookListener implements Listener
                                                 }
                                                 else
                                                 {
-                                                    plugin
-                                                            .toggleBookShelf(loc);
+                                                    plugin.toggleBookShelf(loc);
                                                     System.out
                                                             .println("(Auto Toggle) The bookshelf at ("
                                                                     + loc.getBlockX()
@@ -1104,8 +1118,7 @@ public class BookListener implements Listener
         }
         if(j.getInventory().getTitle().equals(name))
         {
-            boolean isOwner = plugin
-                    .isOwner(loc, (Player) j.getWhoClicked());
+            boolean isOwner = plugin.isOwner(loc, (Player) j.getWhoClicked());
             boolean isOwnerEditing = (plugin.isOwner(loc,
                     (Player) j.getWhoClicked()) && BookShelf.editingPlayers
                     .contains((Player) j.getWhoClicked()));
@@ -1115,7 +1128,9 @@ public class BookListener implements Listener
                 this.checkAllowed(j);
                 return;
             }
-            if(!plugin.isShelfShop(loc) || !BookShelf.getExternalPluginManager().usingVaultEconomy())
+            if(!plugin.isShelfShop(loc)
+                    || !BookShelf.getExternalPluginManager()
+                            .usingVaultEconomy())
             {
                 if(!plugin.isShelfUnlimited(loc))
                 {
@@ -1156,25 +1171,33 @@ public class BookListener implements Listener
                 int slotamt = (plugin.getConfig().getInt("rows") * 9) - 1;
                 if(j.getRawSlot() <= slotamt)
                 {
-                    if(j.getCurrentItem().getType() == Material.AIR)
+                    if(j.getCurrentItem() == null || j.getCurrentItem().getType() == null || j.getCurrentItem().getType() == Material.AIR)
                     {
                         j.setCancelled(true);
                         return;
                     }
                     Player p = (Player) j.getWhoClicked();
                     
-                    double money = BookShelf.getExternalPluginManager().getVaultEconomy().getBalance(p);
+                    double money = BookShelf.getExternalPluginManager()
+                            .getVaultEconomy().getBalance(p);
                     if(money >= price)
                     {
-                        BookShelf.getExternalPluginManager().getVaultEconomy().withdrawPlayer(p, price);
+                        BookShelf.getExternalPluginManager().getVaultEconomy()
+                                .withdrawPlayer(p, price);
                         p.sendMessage("New balance: §6"
-                                + BookShelf.getExternalPluginManager().getVaultEconomy().getBalance(p) + " "
-                                + BookShelf.getExternalPluginManager().getVaultEconomy().currencyNamePlural());
+                                + BookShelf.getExternalPluginManager()
+                                        .getVaultEconomy().getBalance(p)
+                                + " "
+                                + BookShelf.getExternalPluginManager()
+                                        .getVaultEconomy().currencyNamePlural());
                         return;
                     }
                     p.sendMessage("§cInsufficient funds! Current balance: §6"
-                            + BookShelf.getExternalPluginManager().getVaultEconomy().getBalance(p) + " "
-                            + BookShelf.getExternalPluginManager().getVaultEconomy().currencyNamePlural());
+                            + BookShelf.getExternalPluginManager()
+                                    .getVaultEconomy().getBalance(p)
+                            + " "
+                            + BookShelf.getExternalPluginManager()
+                                    .getVaultEconomy().currencyNamePlural());
                     j.setCancelled(true);
                 }
                 else

@@ -15,6 +15,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
 import com.palmergames.bukkit.towny.Towny;
+import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
@@ -196,8 +197,7 @@ public class ExternalPluginManager
         {
             logger.info("[BookShelf] WorldEdit found and hooked.");
             this.usingWorldEdit = true;
-            worldEditPlugin.getWorldEdit().setEditSessionFactory(
-                    new WorldEdit_EditSessionFactoryHandler());
+            WorldEdit.getInstance().getEventBus().register(new WorldEditHandler());
         }
         else
             this.usingWorldEdit = false;

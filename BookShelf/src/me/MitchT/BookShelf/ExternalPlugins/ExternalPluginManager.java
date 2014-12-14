@@ -182,9 +182,16 @@ public class ExternalPluginManager
                 .getPluginManager().getPlugin("WorldGuard");
         if(worldGuardPlugin != null)
         {
-            logger.info("[BookShelf] WorldGuard found and hooked.");
-            this.usingWorldGuard = plugin.getConfig().getBoolean(
-                    "worldguard_support.enabled");
+            if(worldGuardPlugin.getDescription().getVersion().startsWith("6."))
+            {
+                logger.info("[BookShelf] WorldGuard found and hooked.");
+                this.usingWorldGuard = plugin.getConfig().getBoolean(
+                        "worldguard_support.enabled");
+            }
+            else
+            {
+                logger.info("[BookShelf] WorldGuard is outdated! You must use WorldGuard version 6.0 or later for BookShelf support.");
+            }
         }
         return worldGuardPlugin != null;
     }
@@ -195,9 +202,17 @@ public class ExternalPluginManager
                 .getPluginManager().getPlugin("WorldEdit");
         if(worldEditPlugin != null)
         {
-            logger.info("[BookShelf] WorldEdit found and hooked.");
-            this.usingWorldEdit = true;
-            WorldEdit.getInstance().getEventBus().register(new WorldEditHandler());
+            if(worldEditPlugin.getDescription().getVersion().startsWith("6."))
+            {
+                logger.info("[BookShelf] WorldEdit found and hooked.");
+                this.usingWorldEdit = true;
+                WorldEdit.getInstance().getEventBus()
+                        .register(new WorldEditHandler());
+            }
+            else
+            {
+                logger.info("[BookShelf] WorldEdit is outdated! You must use WorldEdit version 6.0 or later for BookShelf support.");
+            }
         }
         else
             this.usingWorldEdit = false;

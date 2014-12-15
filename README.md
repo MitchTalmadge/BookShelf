@@ -6,7 +6,7 @@ This plugin allows players to store books, maps, and more into those once useles
 
 ### How do I get set up? ###
 
-* This is an Eclipse project. Import it as a Git Project, and export it as a jar (not a runnable jar.)
+* This is a Maven Eclipse project. Import it as a Git Project, and build using Maven.
 
 ### Contribution guidelines ###
 

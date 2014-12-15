@@ -1,0 +1,66 @@
+#+----------------------------------------------------------+
+#| Plugin: BookShelf                                        |
+#| Created by: Pew446                                       |
+#| DevBukkit: http://dev.bukkit.org/server-mods/bookshelf/  |
+#+----------------------------------------------------------+
+
+defaults:
+    town:
+        unlimited:
+            resident: true
+            ally: false
+            outsider: false
+        toggle:
+            resident: true
+            ally: false
+            outsider: false
+        shop:
+            resident: true
+            ally: false
+            outsider: false
+        donate:
+            resident: true
+            ally: false
+            outsider: false
+        name:
+            resident: true
+            ally: false
+            outsider: false
+        open_shelf:
+            resident: true
+            ally: false
+            outsider: false
+        open_shop:
+            resident: true
+            ally: false
+            outsider: false
+    resident:
+        unlimited:
+            friend: true
+            ally: false
+            outsider: false
+        toggle:
+            friend: true
+            ally: false
+            outsider: false
+        shop:
+            friend: true
+            ally: false
+            outsider: false
+        donate:
+            resident: true
+            ally: false
+            outsider: false
+        name:
+            friend: true
+            ally: false
+            outsider: false
+        open_shelf:
+            friend: true
+            ally: false
+            outsider: false
+        open_shop:
+            friend: true
+            ally: false
+            outsider: false
+towns:     

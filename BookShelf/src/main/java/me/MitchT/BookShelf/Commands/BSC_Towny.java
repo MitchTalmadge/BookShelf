@@ -1,7 +1,6 @@
 package me.MitchT.BookShelf.Commands;
 
 import me.MitchT.BookShelf.BookShelf;
-import me.MitchT.BookShelf.ExternalPlugins.TownyCommands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,11 +10,16 @@ import org.bukkit.entity.Player;
 public class BSC_Towny extends BSCommand
 {
     
+    public BSC_Towny(BookShelf plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
-        if(BookShelf.getExternalPluginManager().usingTowny())
-            TownyCommands.onCommand(sender, args, plugin);
+        if(plugin.getExternalPluginManager().usingTowny())
+            plugin.getExternalPluginManager().getTownyCommandHandler().onCommand(sender, args, plugin);
         else
             sender.sendMessage("§cTowny Support is not enabled on this server.");
     }

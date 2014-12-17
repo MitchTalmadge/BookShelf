@@ -38,14 +38,14 @@ import me.MitchT.BookShelf.OldIDEnum;
 public class Version2To3 extends Version
 {
     
-    public Version2To3(Logger logger, ResultSet r)
+    public Version2To3(Logger logger, ResultSet r, BookShelf plugin)
     {
-        super(logger, r);
+        super(logger, r, plugin);
     }
     
     public void close(ResultSet r) throws SQLException
     {
-        BookShelf.close(r);
+        plugin.close(r);
     }
     
     @Override
@@ -68,20 +68,18 @@ public class Version2To3 extends Version
             plugin.runQuery("ALTER TABLE items ADD enumType TEXT;");
             
             logger.info("[BookShelf] Updating table 'items'...");
-            BookShelf.getSQLManager().setAutoCommit(false);
+            plugin.getSQLManager().setAutoCommit(false);
             for(int i = 0; i < typeID.size(); i++)
             {
                 for(Map.Entry<Integer, Integer> entry : typeID.entrySet())
                 {
-                    plugin.runQuery(
-                            "UPDATE items SET enumType='"
-                                    + OldIDEnum.getMaterialById(
-                                            entry.getValue()).name()
-                                    + "' WHERE id=" + entry.getKey());
+                    plugin.runQuery("UPDATE items SET enumType='"
+                            + OldIDEnum.getMaterialById(entry.getValue())
+                                    .name() + "' WHERE id=" + entry.getKey());
                 }
             }
-            BookShelf.getSQLManager().commit();
-            BookShelf.getSQLManager().setAutoCommit(true);
+            plugin.getSQLManager().commit();
+            plugin.getSQLManager().setAutoCommit(true);
             
             plugin.runQuery("UPDATE version SET version=3");
             logger.info("[BookShelf] Update to Version 3 Complete.");

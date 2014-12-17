@@ -28,11 +28,13 @@ public class WorldEditLogger extends AbstractLoggingExtent
         BaseBlock oldBlock = getBlock(position);
         BlockVector location = position.toBlockVector();
         
-            if(oldBlock.getId() == Material.BOOKSHELF.getId() && newBlock.getId() != Material.BOOKSHELF.getId())
-            {
-                    BookListener.instance.breakShelf(new Location(null, location.getBlockX(), location.getBlockY(), location.getBlockZ()),
-                            false);
-            }
+        if(oldBlock.getId() == Material.BOOKSHELF.getId()
+                && newBlock.getId() != Material.BOOKSHELF.getId())
+        {
+            BookListener.instance.breakShelf(
+                    new Location(null, location.getBlockX(), location
+                            .getBlockY(), location.getBlockZ()), false);
+        }
     }
     
 }

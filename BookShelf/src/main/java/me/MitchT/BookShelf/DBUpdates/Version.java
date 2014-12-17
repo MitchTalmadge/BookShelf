@@ -36,17 +36,13 @@ public abstract class Version
 {
     protected ResultSet r;
     protected Logger logger;
-    protected BookShelf plugin = BookShelf.instance;
+    protected BookShelf plugin;
     
-    public Version(Logger logger, ResultSet r)
+    public Version(Logger logger, ResultSet r, BookShelf plugin)
     {
         this.logger = logger;
         this.r = r;
-    }
-    
-    private void close(ResultSet r) throws SQLException
-    {
-        BookShelf.close(r);
+        this.plugin = plugin;
     }
     
     public abstract void doUpdate();

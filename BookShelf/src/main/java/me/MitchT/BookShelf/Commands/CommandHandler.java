@@ -1,5 +1,9 @@
 package me.MitchT.BookShelf.Commands;
 
+import java.lang.reflect.InvocationTargetException;
+
+import me.MitchT.BookShelf.BookShelf;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -33,6 +37,13 @@ import org.bukkit.entity.Player;
  */
 public class CommandHandler
 {
+    private BookShelf plugin;
+
+    public CommandHandler(BookShelf plugin)
+    {
+        this.plugin = plugin;
+    }
+    
     public void onCommand(CommandSender sender, Command command, String label,
             String[] args)
     {
@@ -48,15 +59,35 @@ public class CommandHandler
             
             try
             {
-                BSCommand cmd = enumVal.getCommandClass().newInstance();
-                if(sender instanceof Player)
-                    cmd.onPlayerCommand((Player) sender, command, args);
-                else if(sender instanceof ConsoleCommandSender)
-                    cmd.onConsoleCommand((ConsoleCommandSender) sender,
-                            command, args);
-                else if(sender.getClass().getSimpleName()
-                        .equals("CraftBlockCommandSender"))
-                    cmd.onCommandBlockCommand(sender, command, args);
+                BSCommand cmd;
+                try
+                {
+                    cmd = enumVal.getCommandClass().getDeclaredConstructor(BookShelf.class).newInstance(plugin);
+                    if(sender instanceof Player)
+                        cmd.onPlayerCommand((Player) sender, command, args);
+                    else if(sender instanceof ConsoleCommandSender)
+                        cmd.onConsoleCommand((ConsoleCommandSender) sender,
+                                command, args);
+                    else if(sender.getClass().getSimpleName()
+                            .equals("CraftBlockCommandSender"))
+                        cmd.onCommandBlockCommand(sender, command, args);
+                }
+                catch(IllegalArgumentException e)
+                {
+                    e.printStackTrace();
+                }
+                catch(SecurityException e)
+                {
+                    e.printStackTrace();
+                }
+                catch(InvocationTargetException e)
+                {
+                    e.printStackTrace();
+                }
+                catch(NoSuchMethodException e)
+                {
+                    e.printStackTrace();
+                }
             }
             catch(InstantiationException e)
             {

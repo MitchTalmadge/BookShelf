@@ -3,9 +3,7 @@ package me.MitchT.BookShelf.Commands;
 import java.sql.SQLException;
 
 import me.MitchT.BookShelf.BookShelf;
-import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -13,18 +11,21 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
-import com.palmergames.bukkit.towny.object.Resident;
-
 public class BSC_Display extends BSCommand
 {
     
+    public BSC_Display(BookShelf plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
         Location loc = plugin.getTargetBlock(sender, 10).getLocation();
         if(loc.getBlock().getType() == Material.BOOKSHELF)
         {
-            if(plugin.isOwner(loc, sender))
+            if(plugin.getShelfManager().isOwner(loc, sender))
             {
                 try
                 {
@@ -33,13 +34,12 @@ public class BSC_Display extends BSCommand
                             + loc.getZ() + ";");
                     if(!r.next())
                     {
-                        plugin
-                                .runQuery("INSERT INTO display (x,y,z,bool) VALUES ("
-                                        + loc.getX()
-                                        + ","
-                                        + loc.getY()
-                                        + ","
-                                        + loc.getZ() + ", 1);");
+                        plugin.runQuery("INSERT INTO display (x,y,z,bool) VALUES ("
+                                + loc.getX()
+                                + ","
+                                + loc.getY()
+                                + ","
+                                + loc.getZ() + ", 1);");
                         sender.sendMessage("The bookshelf you are looking at is now a display.");
                         close(r);
                     }
@@ -49,25 +49,21 @@ public class BSC_Display extends BSCommand
                         {
                             close(r);
                             sender.sendMessage("The bookshelf you are looking at is no longer a display.");
-                            plugin
-                                    .runQuery("UPDATE display SET bool=0 WHERE x="
-                                            + loc.getX()
-                                            + " AND y="
-                                            + loc.getY()
-                                            + " AND z="
-                                            + loc.getZ() + ";");
+                            plugin.runQuery("UPDATE display SET bool=0 WHERE x="
+                                    + loc.getX()
+                                    + " AND y="
+                                    + loc.getY()
+                                    + " AND z=" + loc.getZ() + ";");
                         }
                         else
                         {
                             close(r);
                             sender.sendMessage("The bookshelf you are looking at is now a display.");
-                            plugin
-                                    .runQuery("UPDATE display SET bool=1 WHERE x="
-                                            + loc.getX()
-                                            + " AND y="
-                                            + loc.getY()
-                                            + " AND z="
-                                            + loc.getZ() + ";");
+                            plugin.runQuery("UPDATE display SET bool=1 WHERE x="
+                                    + loc.getX()
+                                    + " AND y="
+                                    + loc.getY()
+                                    + " AND z=" + loc.getZ() + ";");
                         }
                     }
                 }

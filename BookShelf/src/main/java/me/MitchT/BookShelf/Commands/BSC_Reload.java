@@ -1,5 +1,7 @@
 package me.MitchT.BookShelf.Commands;
 
+import me.MitchT.BookShelf.BookShelf;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -8,6 +10,11 @@ import org.bukkit.entity.Player;
 public class BSC_Reload extends BSCommand
 {
     
+    public BSC_Reload(BookShelf plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {

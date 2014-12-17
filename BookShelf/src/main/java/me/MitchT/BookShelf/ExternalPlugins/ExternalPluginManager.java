@@ -34,6 +34,8 @@ public class ExternalPluginManager
     private Towny townyPlugin;
     private File townyConfigFile;
     private YamlConfiguration townyConfig;
+    private TownyHandler townyHandler;
+    private TownyCommandHandler townyCommandHandler;
     private boolean usingTowny = false;
     
     private WorldGuardPlugin worldGuardPlugin;
@@ -96,7 +98,7 @@ public class ExternalPluginManager
         if(lwcPlugin != null)
         {
             logger.info("[BookShelf] LWC found and hooked.");
-            this.lwcAPI = new LWCHandler(lwcPlugin);
+            this.lwcAPI = new LWCHandler(lwcPlugin, plugin);
             if(plugin.getConfig().getBoolean("lwc_support.enabled"))
             {
                 this.usingLWC = true;
@@ -147,6 +149,8 @@ public class ExternalPluginManager
             {
                 this.usingTowny = true;
                 townyConfigFile = new File(plugin.getDataFolder(), "towny.yml");
+                this.townyHandler = new TownyHandler(plugin);
+                this.townyCommandHandler = new TownyCommandHandler(plugin);
                 loadTownyConfig();
             }
             else
@@ -230,7 +234,7 @@ public class ExternalPluginManager
     
     public Economy getVaultEconomy()
     {
-        return vaultEconomy;
+        return this.vaultEconomy;
     }
     
     public boolean usingTowny()
@@ -245,7 +249,17 @@ public class ExternalPluginManager
     
     public YamlConfiguration getTownyConfig()
     {
-        return townyConfig;
+        return this.townyConfig;
+    }
+    
+    public TownyHandler getTownyHandler()
+    {
+        return this.townyHandler;
+    }
+    
+    public TownyCommandHandler getTownyCommandHandler()
+    {
+        return this.townyCommandHandler;
     }
     
     public boolean usingLWC()
@@ -255,7 +269,7 @@ public class ExternalPluginManager
     
     public LWCPlugin getLWCPlugin()
     {
-        return lwcPlugin;
+        return this.lwcPlugin;
     }
     
     public LWC getLWCHandler()
@@ -270,7 +284,7 @@ public class ExternalPluginManager
     
     public WorldGuardPlugin getWorldGuardPlugin()
     {
-        return worldGuardPlugin;
+        return this.worldGuardPlugin;
     }
     
     public boolean usingWorldEdit()
@@ -280,7 +294,7 @@ public class ExternalPluginManager
     
     public WorldEditPlugin getWorldEditPlugin()
     {
-        return worldEditPlugin;
+        return this.worldEditPlugin;
     }
     
 }

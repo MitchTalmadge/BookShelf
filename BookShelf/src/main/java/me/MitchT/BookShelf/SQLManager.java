@@ -79,53 +79,32 @@ public class SQLManager
         if(getDbVersion() == 1)
             doDelimiterFix();
         updateDb();
-        logger.info("[BookShelf] Current Database Version: "
-                + getDbVersion());
+        logger.info("[BookShelf] Current Database Version: " + getDbVersion());
         if(isUsingMySQL())
         {
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(128), author VARCHAR(128), lore TEXT, damage INT, enumType TEXT, loc INT, amt INT, pages TEXT, PRIMARY KEY (id));");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS enchant (x INT, y INT, z INT, loc INT, type VARCHAR(64), level INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS maps (x INT, y INT, z INT, loc INT, durability SMALLINT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name VARCHAR(64));");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS donate (x INT, y INT, z INT, bool INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS owners (x INT, y INT, z INT, ownerString TEXT);");
+            runQuery("CREATE TABLE IF NOT EXISTS items (id INT NOT NULL AUTO_INCREMENT, x INT, y INT, z INT, title VARCHAR(128), author VARCHAR(128), lore TEXT, damage INT, enumType TEXT, loc INT, amt INT, pages TEXT, PRIMARY KEY (id));");
+            runQuery("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS enchant (x INT, y INT, z INT, loc INT, type VARCHAR(64), level INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS maps (x INT, y INT, z INT, loc INT, durability SMALLINT);");
+            runQuery("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name VARCHAR(64));");
+            runQuery("CREATE TABLE IF NOT EXISTS donate (x INT, y INT, z INT, bool INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS owners (x INT, y INT, z INT, ownerString TEXT);");
         }
         else
         {
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title TEXT, author TEXT, lore TEXT, damage INT, enumType TEXT, loc INT, amt INT, pages TEXT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS enchant (x INT, y INT, z INT, loc INT, type STRING, level INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS maps (x INT, y INT, z INT, loc INT, durability SMALLINT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name TEXT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS donate (x INT, y INT, z INT, bool INT);");
-            runQuery(
-                    "CREATE TABLE IF NOT EXISTS owners (x INT, y INT, z INT, ownerString TEXT);");
+            runQuery("CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, x INT, y INT, z INT, title TEXT, author TEXT, lore TEXT, damage INT, enumType TEXT, loc INT, amt INT, pages TEXT);");
+            runQuery("CREATE TABLE IF NOT EXISTS copy (x INT, y INT, z INT, bool INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS enable (x INT, y INT, z INT, bool INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS enchant (x INT, y INT, z INT, loc INT, type STRING, level INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS maps (x INT, y INT, z INT, loc INT, durability SMALLINT);");
+            runQuery("CREATE TABLE IF NOT EXISTS shop (x INT, y INT, z INT, bool INT, price INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS display (x INT, y INT, z INT, bool INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS names (x INT, y INT, z INT, name TEXT);");
+            runQuery("CREATE TABLE IF NOT EXISTS donate (x INT, y INT, z INT, bool INT);");
+            runQuery("CREATE TABLE IF NOT EXISTS owners (x INT, y INT, z INT, ownerString TEXT);");
         }
         logger.info("[BookShelf] Database Loaded.");
     }
@@ -169,11 +148,9 @@ public class SQLManager
                 {
                     close(r); //Looks like we are making a new database.
                     logger.info("[BookShelf] Creating Database...");
-                    runQuery(
-                            "CREATE TABLE IF NOT EXISTS version (version INT);");
-                    runQuery(
-                            "INSERT INTO version (version) VALUES("
-                                    + currentDatabaseVersion + ");");
+                    runQuery("CREATE TABLE IF NOT EXISTS version (version INT);");
+                    runQuery("INSERT INTO version (version) VALUES("
+                            + currentDatabaseVersion + ");");
                 }
                 else
                 { //We aren't making a new database, but version doesn't exist.... Let's add it.
@@ -183,10 +160,8 @@ public class SQLManager
                     if(!r.next())
                     {
                         close(r);
-                        runQuery(
-                                "CREATE TABLE IF NOT EXISTS version (version INT);");
-                        runQuery(
-                                "INSERT INTO version (version) VALUES(0);");
+                        runQuery("CREATE TABLE IF NOT EXISTS version (version INT);");
+                        runQuery("INSERT INTO version (version) VALUES(0);");
                     }
                     else
                     {
@@ -218,11 +193,9 @@ public class SQLManager
                 {
                     close(r); //Looks like we are making a new database.
                     logger.info("[BookShelf] Creating Database...");
-                    runQuery(
-                            "CREATE TABLE IF NOT EXISTS version (version INT);");
-                    runQuery(
-                            "INSERT INTO version (version) VALUES("
-                                    + currentDatabaseVersion + ");");
+                    runQuery("CREATE TABLE IF NOT EXISTS version (version INT);");
+                    runQuery("INSERT INTO version (version) VALUES("
+                            + currentDatabaseVersion + ");");
                 }
                 else
                 { //We aren't making a new database, but version doesn't exist.... Let's add it.
@@ -232,10 +205,8 @@ public class SQLManager
                     {
                         close(r);
                         logger.info("[BookShelf] Adding version to Database...");
-                        runQuery(
-                                "CREATE TABLE IF NOT EXISTS version (version INT);");
-                        runQuery(
-                                "INSERT INTO version (version) VALUES(0);");
+                        runQuery("CREATE TABLE IF NOT EXISTS version (version INT);");
+                        runQuery("INSERT INTO version (version) VALUES(0);");
                     }
                     else
                     {
@@ -261,7 +232,7 @@ public class SQLManager
             if(r.next())
                 version = r.getInt("version");
             close(r);
-            DBUpdate updater = new DBUpdate(logger, r);
+            DBUpdate updater = new DBUpdate(logger, r, plugin);
             switch(version)
             {
                 case 0:
@@ -305,9 +276,8 @@ public class SQLManager
                 {
                     String pages = pageStrings.get(i).replaceAll(":", "¬");
                     pages = pages.replaceAll("'", "''");
-                    runQuery(
-                            "UPDATE items SET pages='" + pages + "' WHERE id="
-                                    + ids.get(i) + ";");
+                    runQuery("UPDATE items SET pages='" + pages + "' WHERE id="
+                            + ids.get(i) + ";");
                 }
             }
             
@@ -359,11 +329,11 @@ public class SQLManager
     {
         if(mysqlDB != null)
             return mysqlDB;
-        else 
+        else
             return sqliteDB;
         
     }
-
+    
     public void close(ResultSet r) throws SQLException
     {
         r.close();
@@ -373,7 +343,7 @@ public class SQLManager
             getDatabase().getSynchronized().notify();
         }
     }
-
+    
     public void shutDown()
     {
         getDatabase().close();

@@ -1,7 +1,5 @@
 package me.MitchT.BookShelf.Commands;
 
-import java.sql.SQLException;
-
 import me.MitchT.BookShelf.BookShelf;
 import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 
@@ -17,25 +15,30 @@ import com.palmergames.bukkit.towny.object.Resident;
 public class BSC_Unlimited extends BSCommand
 {
     
+    public BSC_Unlimited(BookShelf plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
         Location loc = plugin.getTargetBlock(sender, 10).getLocation();
         if(loc.getBlock().getType() == Material.BOOKSHELF)
         {
-            if(plugin.isOwner(loc, sender))
+            if(plugin.getShelfManager().isOwner(loc, sender))
             {
-                if(BookShelf.getExternalPluginManager().usingTowny())
+                if(plugin.getExternalPluginManager().usingTowny())
                 {
-                    Resident res = TownyHandler.convertToResident(sender);
-                    if(!TownyHandler.checkCanDoAction(loc.getBlock(), res,
+                    Resident res = plugin.getExternalPluginManager().getTownyHandler().convertToResident(sender);
+                    if(!plugin.getExternalPluginManager().getTownyHandler().checkCanDoAction(loc.getBlock(), res,
                             TownyHandler.UNLIMITED))
                     {
                         sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
                         return;
                     }
                 }
-                if(plugin.isShelfUnlimited(loc))
+                if(plugin.getShelfManager().isShelfUnlimited(loc))
                 {
                     sender.sendMessage("The bookshelf you are looking at is now §6limited.");
                     plugin.runQuery("UPDATE copy SET bool=0 WHERE x="

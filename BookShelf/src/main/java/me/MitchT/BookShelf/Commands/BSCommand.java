@@ -14,15 +14,21 @@ import org.bukkit.entity.Player;
 public abstract class BSCommand
 {
     
-    public BookShelf plugin = BookShelf.instance;
+    public BookShelf plugin;
     protected ResultSet r;
-    protected FileConfiguration config = plugin.getConfig();
+    protected FileConfiguration config;
+    
+    public BSCommand(BookShelf plugin)
+    {
+        this.plugin = plugin;
+        this.config = plugin.getConfig();
+    }
     
     protected void close(ResultSet r)
     {
         try
         {
-            BookShelf.close(r);
+            plugin.close(r);
         }
         catch(SQLException e)
         {

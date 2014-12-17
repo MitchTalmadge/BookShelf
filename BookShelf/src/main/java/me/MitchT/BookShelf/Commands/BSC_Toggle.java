@@ -15,6 +15,11 @@ import com.palmergames.bukkit.towny.object.Resident;
 public class BSC_Toggle extends BSCommand
 {
     
+    public BSC_Toggle(BookShelf plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
@@ -23,25 +28,24 @@ public class BSC_Toggle extends BSCommand
             Location loc = plugin.getTargetBlock(sender, 10).getLocation();
             if(loc.getBlock().getType() == Material.BOOKSHELF)
             {
-                if(plugin.isOwner(loc, sender))
+                if(plugin.getShelfManager().isOwner(loc, sender))
                 {
-                    if(BookShelf.getExternalPluginManager().usingTowny())
+                    if(plugin.getExternalPluginManager().usingTowny())
                     {
-                        Resident res = TownyHandler.convertToResident(sender);
-                        if(!TownyHandler.checkCanDoAction(loc.getBlock(), res,
+                        Resident res = plugin.getExternalPluginManager().getTownyHandler().convertToResident(sender);
+                        if(!plugin.getExternalPluginManager().getTownyHandler().checkCanDoAction(loc.getBlock(), res,
                                 TownyHandler.TOGGLE))
                         {
                             sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
                             return;
                         }
                     }
-                    int result = plugin.toggleBookShelf(loc);
-                    if(result == -1)
-                        sender.sendMessage("§cAn error occured while processing this command. Check server logs.");
-                    if(result == 0)
-                        sender.sendMessage("The bookshelf you are looking at is now §cdisabled.");
-                    else
+                    
+                    boolean enabled = plugin.getShelfManager().toggleShelf(loc);
+                    if(enabled)
                         sender.sendMessage("The bookshelf you are looking at is now §aenabled.");
+                    else
+                        sender.sendMessage("The bookshelf you are looking at is now §cdisabled.");
                 }
                 else
                 {
@@ -66,7 +70,7 @@ public class BSC_Toggle extends BSCommand
                 name += args[i] + " ";
             }
             
-            plugin.toggleBookShelvesByName(name);
+            plugin.getShelfManager().toggleShelvesByName(name);
             sender.sendMessage("All bookshelves with the name §6" + name
                     + "§fhave been toggled.");
         }
@@ -88,7 +92,7 @@ public class BSC_Toggle extends BSCommand
                 name += args[i] + " ";
             }
             
-            plugin.toggleBookShelvesByName(name);
+            plugin.getShelfManager().toggleShelvesByName(name);
             sender.sendMessage("All bookshelves with the name §6" + name
                     + "§fhave been toggled.");
         }
@@ -110,7 +114,7 @@ public class BSC_Toggle extends BSCommand
                 name += args[i] + " ";
             }
             
-            plugin.toggleBookShelvesByName(name);
+            plugin.getShelfManager().toggleShelvesByName(name);
             sender.sendMessage("All bookshelves with the name §6" + name
                     + "§fhave been toggled.");
         }

@@ -35,14 +35,14 @@ import me.MitchT.BookShelf.BookShelf;
 public class Version1To2 extends Version
 {
     
-    public Version1To2(Logger logger, ResultSet r)
+    public Version1To2(Logger logger, ResultSet r, BookShelf plugin)
     {
-        super(logger, r);
+        super(logger, r, plugin);
     }
     
     public void close(ResultSet r) throws SQLException
     {
-        BookShelf.close(r);
+        plugin.close(r);
     }
     
     @Override

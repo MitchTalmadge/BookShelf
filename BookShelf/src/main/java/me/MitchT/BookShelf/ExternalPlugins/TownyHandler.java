@@ -1,6 +1,5 @@
 package me.MitchT.BookShelf.ExternalPlugins;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -65,7 +64,14 @@ public class TownyHandler
     public static final int OPEN_SHOP = 5;
     public static final int DONATE = 6;
     
-    public static Resident convertToResident(Player p)
+    private BookShelf plugin;
+    
+    public TownyHandler(BookShelf plugin)
+    {
+        this.plugin = plugin;
+    }
+    
+    public Resident convertToResident(Player p)
     {
         try
         {
@@ -78,7 +84,7 @@ public class TownyHandler
         }
     }
     
-    public static boolean checkPlotOwnedByResident(TownBlock b, Resident r)
+    public boolean checkPlotOwnedByResident(TownBlock b, Resident r)
     {
         try
         {
@@ -93,7 +99,7 @@ public class TownyHandler
         }
     }
     
-    public static boolean checkCanDoAction(Block b, Resident r, int type)
+    public boolean checkCanDoAction(Block b, Resident r, int type)
     {
         Player p = Bukkit.getPlayer(r.getName());
         String typeString = null;
@@ -347,59 +353,65 @@ public class TownyHandler
         return OUTSIDER;
     }
     
-    public static void setTownPermission(Town t, String permission, Object value)
+    public void setTownPermission(Town t, String permission, Object value)
     {
         String townName = t.getName();
-        if(!BookShelf.getExternalPluginManager().getTownyConfig().contains("towns." + townName))
+        if(!plugin.getExternalPluginManager().getTownyConfig()
+                .contains("towns." + townName))
         {
             saveDefaultConfig(t);
         }
         
-        BookShelf.getExternalPluginManager().getTownyConfig()
+        plugin.getExternalPluginManager().getTownyConfig()
                 .set("towns." + townName + "." + permission, value);
         saveConfig();
     }
     
-    public static Object getTownPermission(Town t, String permission)
+    public Object getTownPermission(Town t, String permission)
     {
         String townName = t.getName();
-        if(!BookShelf.getExternalPluginManager().getTownyConfig().contains("towns." + townName))
+        if(!plugin.getExternalPluginManager().getTownyConfig()
+                .contains("towns." + townName))
         {
             saveDefaultConfig(t);
         }
         
-        Object result = BookShelf.getExternalPluginManager().getTownyConfig().get("towns." + townName + "."
-                + permission);
+        Object result = plugin.getExternalPluginManager().getTownyConfig()
+                .get("towns." + townName + "." + permission);
         if(result == null)
         {
             return getDefaultConfigValue(t, permission);
         }
         
-        return BookShelf.getExternalPluginManager().getTownyConfig()
+        return plugin.getExternalPluginManager().getTownyConfig()
                 .get("towns." + townName + "." + permission);
     }
     
-    public static void setDefaultConfigValue(Town t, String location)
+    public void setDefaultConfigValue(Town t, String location)
     {
         if(location.startsWith("plot"))
         {
             setTownPermission(
                     t,
                     location,
-                    BookShelf.getExternalPluginManager().getTownyConfig().get("defaults."
-                            + "resident"
-                            + location.substring(location.split("_")[1]
-                                    .indexOf(".")
-                                    + location.split("_")[0].length() + 1)));
+                    plugin
+                            .getExternalPluginManager()
+                            .getTownyConfig()
+                            .get("defaults."
+                                    + "resident"
+                                    + location.substring(location.split("_")[1]
+                                            .indexOf(".")
+                                            + location.split("_")[0].length()
+                                            + 1)));
         }
         else
         {
-            setTownPermission(t, location,
-                    BookShelf.getExternalPluginManager().getTownyConfig().get("defaults." + location));
+            setTownPermission(t, location, plugin.getExternalPluginManager()
+                    .getTownyConfig().get("defaults." + location));
         }
     }
     
-    public static Object getDefaultConfigValue(Town t, String location)
+    public Object getDefaultConfigValue(Town t, String location)
     {
         if(location.startsWith("plot"))
         {
@@ -412,16 +424,17 @@ public class TownyHandler
         }
         else
         {
-            return BookShelf.getExternalPluginManager().getTownyConfig().get("defaults." + location);
+            return plugin.getExternalPluginManager().getTownyConfig()
+                    .get("defaults." + location);
         }
     }
     
-    public static void removeTownFromConfig(Town t)
+    public void removeTownFromConfig(Town t)
     {
         saveDefaultConfig(t);
     }
     
-    private static void saveDefaultConfig(Town t)
+    private void saveDefaultConfig(Town t)
     {
         ArrayList<String> level1 = new ArrayList<String>(Arrays.asList("town.",
                 "resident."));
@@ -442,20 +455,30 @@ public class TownyHandler
                 {
                     for(String k : level3a)
                     {
-                        BookShelf.getExternalPluginManager().getTownyConfig().set(
-                                prefix + level1.get(i) + j + k,
-                                BookShelf.getExternalPluginManager().getTownyConfig().get(prefixDef
-                                        + level1.get(i) + j + k));
+                        plugin
+                                .getExternalPluginManager()
+                                .getTownyConfig()
+                                .set(prefix + level1.get(i) + j + k,
+                                        plugin
+                                                .getExternalPluginManager()
+                                                .getTownyConfig()
+                                                .get(prefixDef + level1.get(i)
+                                                        + j + k));
                     }
                 }
                 else
                 {
                     for(String k : level3b)
                     {
-                        BookShelf.getExternalPluginManager().getTownyConfig().set(
-                                prefix + level1.get(i) + j + k,
-                                BookShelf.getExternalPluginManager().getTownyConfig().get(prefixDef
-                                        + level1.get(i) + j + k));
+                        plugin
+                                .getExternalPluginManager()
+                                .getTownyConfig()
+                                .set(prefix + level1.get(i) + j + k,
+                                        plugin
+                                                .getExternalPluginManager()
+                                                .getTownyConfig()
+                                                .get(prefixDef + level1.get(i)
+                                                        + j + k));
                     }
                 }
             }
@@ -463,12 +486,12 @@ public class TownyHandler
         saveConfig();
     }
     
-    public static void saveConfig()
+    public void saveConfig()
     {
-        BookShelf.getExternalPluginManager().saveTownyConfig();
+        plugin.getExternalPluginManager().saveTownyConfig();
     }
     
-    public static boolean checkPlotInAnyTown(TownBlock plot)
+    public boolean checkPlotInAnyTown(TownBlock plot)
     {
         if(plot == null)
             return false;
@@ -478,7 +501,7 @@ public class TownyHandler
         return true;
     }
     
-    public static boolean checkPlotInResidentsTown(TownBlock plot, Resident res)
+    public boolean checkPlotInResidentsTown(TownBlock plot, Resident res)
     {
         if(plot == null)
             return false;
@@ -498,7 +521,7 @@ public class TownyHandler
         return false;
     }
     
-    public static boolean checkPlotIsOwned(TownBlock plot)
+    public boolean checkPlotIsOwned(TownBlock plot)
     {
         if(plot == null)
             return false;

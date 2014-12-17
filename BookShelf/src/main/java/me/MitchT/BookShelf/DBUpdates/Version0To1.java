@@ -38,14 +38,14 @@ import org.bukkit.util.Vector;
 public class Version0To1 extends Version
 {
     
-    public Version0To1(Logger logger, ResultSet r)
+    public Version0To1(Logger logger, ResultSet r, BookShelf plugin)
     {
-        super(logger, r);
+        super(logger, r, plugin);
     }
     
     public void close(ResultSet r) throws SQLException
     {
-        BookShelf.close(r);
+        plugin.close(r);
     }
     
     @Override
@@ -58,12 +58,10 @@ public class Version0To1 extends Version
             plugin.runQuery("ALTER TABLE items ADD damage INT;");
             plugin.runQuery("ALTER TABLE items ADD pages TEXT;");
             
-            if(BookShelf.getSQLManager().isUsingMySQL())
+            if(plugin.getSQLManager().isUsingMySQL())
             {
-                plugin.runQuery(
-                        "ALTER TABLE items MODIFY title VARCHAR(128);");
-                plugin.runQuery(
-                        "ALTER TABLE items MODIFY author VARCHAR(128);");
+                plugin.runQuery("ALTER TABLE items MODIFY title VARCHAR(128);");
+                plugin.runQuery("ALTER TABLE items MODIFY author VARCHAR(128);");
             }
             
             plugin.runQuery("UPDATE version SET version=1");
@@ -71,8 +69,8 @@ public class Version0To1 extends Version
             /* CONVERT PAGES SYSTEM */
             logger.info("[BookShelf] Converting pages.");
             ArrayList<Integer> idlist = new ArrayList<Integer>();
-            r = plugin.runQuery(
-                    "SELECT * FROM items WHERE type=386 OR type=387;");
+            r = plugin
+                    .runQuery("SELECT * FROM items WHERE type=386 OR type=387;");
             while(r.next())
             {
                 idlist.add(r.getInt("id"));
@@ -83,8 +81,8 @@ public class Version0To1 extends Version
                 for(int id : idlist)
                 {
                     ArrayList<String> pagelist = new ArrayList<String>();
-                    r = plugin.runQuery(
-                            "SELECT * FROM pages WHERE id=" + id + ";");
+                    r = plugin.runQuery("SELECT * FROM pages WHERE id=" + id
+                            + ";");
                     while(r.next())
                     {
                         pagelist.add(r.getString("text"));
@@ -99,9 +97,8 @@ public class Version0To1 extends Version
                         pageString = pageString.substring(0,
                                 pageString.length() - 1);
                     pageString = pageString.replaceAll("'", "''");
-                    plugin.runQuery(
-                            "UPDATE items SET pages='" + pageString
-                                    + "' WHERE id=" + id + ";");
+                    plugin.runQuery("UPDATE items SET pages='" + pageString
+                            + "' WHERE id=" + id + ";");
                 }
             }
             
@@ -133,21 +130,17 @@ public class Version0To1 extends Version
             {
                 for(int i = 0; i < idlist.size(); i++)
                 {
-                    plugin.runQuery(
-                            "UPDATE enchant SET x="
-                                    + locationlist.get(i).getBlockX() + ", y="
-                                    + locationlist.get(i).getBlockY() + ", z="
-                                    + locationlist.get(i).getBlockZ()
-                                    + ", loc=" + loclist.get(i) + " WHERE id="
-                                    + idlist.get(i) + ";");
-                    r = plugin.runQuery(
-                            "SELECT * FROM enchant WHERE x="
-                                    + locationlist.get(i).getBlockX()
-                                    + " AND y="
-                                    + locationlist.get(i).getBlockY()
-                                    + " AND z="
-                                    + locationlist.get(i).getBlockZ()
-                                    + " AND loc=" + loclist.get(i) + ";");
+                    plugin.runQuery("UPDATE enchant SET x="
+                            + locationlist.get(i).getBlockX() + ", y="
+                            + locationlist.get(i).getBlockY() + ", z="
+                            + locationlist.get(i).getBlockZ() + ", loc="
+                            + loclist.get(i) + " WHERE id=" + idlist.get(i)
+                            + ";");
+                    r = plugin.runQuery("SELECT * FROM enchant WHERE x="
+                            + locationlist.get(i).getBlockX() + " AND y="
+                            + locationlist.get(i).getBlockY() + " AND z="
+                            + locationlist.get(i).getBlockZ() + " AND loc="
+                            + loclist.get(i) + ";");
                     int currloctokeep = 0;
                     int currleveltokeep = 0;
                     String currtypetokeep = null;
@@ -178,14 +171,17 @@ public class Version0To1 extends Version
             {
                 for(int i = 0; i < loctokeep.size(); i++)
                 {
-                    plugin.runQuery(
-                            "INSERT INTO enchant (x,y,z,loc,type,level) VALUES("
-                                    + locationtokeep.get(i).getBlockX() + ","
-                                    + locationtokeep.get(i).getBlockY() + ","
-                                    + locationtokeep.get(i).getBlockZ() + ","
-                                    + loctokeep.get(i) + ",'"
-                                    + typetokeep.get(i) + "',"
-                                    + leveltokeep.get(i) + ");");
+                    plugin.runQuery("INSERT INTO enchant (x,y,z,loc,type,level) VALUES("
+                            + locationtokeep.get(i).getBlockX()
+                            + ","
+                            + locationtokeep.get(i).getBlockY()
+                            + ","
+                            + locationtokeep.get(i).getBlockZ()
+                            + ","
+                            + loctokeep.get(i)
+                            + ",'"
+                            + typetokeep.get(i)
+                            + "'," + leveltokeep.get(i) + ");");
                 }
             }
             
@@ -216,21 +212,17 @@ public class Version0To1 extends Version
             {
                 for(int i = 0; i < idlist.size(); i++)
                 {
-                    plugin.runQuery(
-                            "UPDATE maps SET x="
-                                    + locationlist.get(i).getBlockX() + ", y="
-                                    + locationlist.get(i).getBlockY() + ", z="
-                                    + locationlist.get(i).getBlockZ()
-                                    + ", loc=" + loclist.get(i) + " WHERE id="
-                                    + idlist.get(i) + ";");
-                    r = plugin.runQuery(
-                            "SELECT * FROM maps WHERE x="
-                                    + locationlist.get(i).getBlockX()
-                                    + " AND y="
-                                    + locationlist.get(i).getBlockY()
-                                    + " AND z="
-                                    + locationlist.get(i).getBlockZ()
-                                    + " AND loc=" + loclist.get(i) + ";");
+                    plugin.runQuery("UPDATE maps SET x="
+                            + locationlist.get(i).getBlockX() + ", y="
+                            + locationlist.get(i).getBlockY() + ", z="
+                            + locationlist.get(i).getBlockZ() + ", loc="
+                            + loclist.get(i) + " WHERE id=" + idlist.get(i)
+                            + ";");
+                    r = plugin.runQuery("SELECT * FROM maps WHERE x="
+                            + locationlist.get(i).getBlockX() + " AND y="
+                            + locationlist.get(i).getBlockY() + " AND z="
+                            + locationlist.get(i).getBlockZ() + " AND loc="
+                            + loclist.get(i) + ";");
                     int currloctokeep = 0;
                     short currdurabilitytokeep = 0;
                     Vector currlocationtokeep = null;
@@ -256,13 +248,17 @@ public class Version0To1 extends Version
             {
                 for(int i = 0; i < loctokeep.size(); i++)
                 {
-                    plugin.runQuery(
-                            "INSERT INTO maps (x,y,z,loc,durability) VALUES("
-                                    + locationtokeep.get(i).getBlockX() + ","
-                                    + locationtokeep.get(i).getBlockY() + ","
-                                    + locationtokeep.get(i).getBlockZ() + ","
-                                    + loctokeep.get(i) + ","
-                                    + durabilitytokeep.get(i) + ");");
+                    plugin.runQuery("INSERT INTO maps (x,y,z,loc,durability) VALUES("
+                            + locationtokeep.get(i).getBlockX()
+                            + ","
+                            + locationtokeep.get(i).getBlockY()
+                            + ","
+                            + locationtokeep.get(i).getBlockZ()
+                            + ","
+                            + loctokeep.get(i)
+                            + ","
+                            + durabilitytokeep.get(i)
+                            + ");");
                 }
             }
             

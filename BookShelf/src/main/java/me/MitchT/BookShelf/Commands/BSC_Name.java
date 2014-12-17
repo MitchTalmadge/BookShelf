@@ -18,13 +18,18 @@ import com.palmergames.bukkit.towny.object.Resident;
 public class BSC_Name extends BSCommand
 {
     
+    public BSC_Name(BookShelf plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
         Location loc = plugin.getTargetBlock(sender, 10).getLocation();
         if(loc.getBlock().getType() == Material.BOOKSHELF)
         {
-            if(plugin.isOwner(loc, sender))
+            if(plugin.getShelfManager().isOwner(loc, sender))
             {
                 String name;
                 String queryName;
@@ -50,12 +55,15 @@ public class BSC_Name extends BSCommand
                         e.printStackTrace();
                     }
                     String name1 = "";
-                    if(BookShelf.getExternalPluginManager().usingVaultEconomy())
+                    if(plugin.getExternalPluginManager().usingVaultEconomy())
                     {
                         for(int i = 0; i < args.length; i++)
                         {
-                            name1 += args[i].replace("%$", price + " "
-                                    + BookShelf.getExternalPluginManager().getVaultEconomy().currencyNamePlural())
+                            name1 += args[i].replace("%$", price
+                                    + " "
+                                    + plugin.getExternalPluginManager()
+                                            .getVaultEconomy()
+                                            .currencyNamePlural())
                                     + " ";
                         }
                     }
@@ -78,10 +86,10 @@ public class BSC_Name extends BSCommand
                     name = ChatColor.translateAlternateColorCodes('&', name);
                     queryName = name.replaceAll("'", "''");
                 }
-                if(BookShelf.getExternalPluginManager().usingTowny())
+                if(plugin.getExternalPluginManager().usingTowny())
                 {
-                    Resident res = TownyHandler.convertToResident(sender);
-                    if(!TownyHandler.checkCanDoAction(loc.getBlock(), res,
+                    Resident res = plugin.getExternalPluginManager().getTownyHandler().convertToResident(sender);
+                    if(!plugin.getExternalPluginManager().getTownyHandler().checkCanDoAction(loc.getBlock(), res,
                             TownyHandler.NAME))
                     {
                         sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
@@ -95,26 +103,21 @@ public class BSC_Name extends BSCommand
                     if(!r.next())
                     {
                         close(r);
-                        plugin
-                                .runQuery("INSERT INTO names (x,y,z,name) VALUES ("
-                                        + loc.getX()
-                                        + ","
-                                        + loc.getY()
-                                        + ","
-                                        + loc.getZ()
-                                        + ", '"
-                                        + queryName
-                                        + "');");
+                        plugin.runQuery("INSERT INTO names (x,y,z,name) VALUES ("
+                                + loc.getX()
+                                + ","
+                                + loc.getY()
+                                + ","
+                                + loc.getZ() + ", '" + queryName + "');");
                         sender.sendMessage("The name of the bookshelf you are looking at has been changed to §6"
                                 + name);
                     }
                     else
                     {
                         close(r);
-                        plugin.runQuery("UPDATE names SET name='"
-                                + queryName + "' WHERE x=" + loc.getX()
-                                + " AND y=" + loc.getY() + " AND z="
-                                + loc.getZ() + ";");
+                        plugin.runQuery("UPDATE names SET name='" + queryName
+                                + "' WHERE x=" + loc.getX() + " AND y="
+                                + loc.getY() + " AND z=" + loc.getZ() + ";");
                         sender.sendMessage("The name of the bookshelf you are looking at has been changed to §6"
                                 + name);
                     }

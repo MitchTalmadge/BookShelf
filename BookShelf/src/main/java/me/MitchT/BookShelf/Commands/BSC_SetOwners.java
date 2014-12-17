@@ -12,21 +12,26 @@ import org.bukkit.entity.Player;
 public class BSC_SetOwners extends BSCommand
 {
     
+    public BSC_SetOwners(BookShelf plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
         Location loc = plugin.getTargetBlock(sender, 10).getLocation();
         if(loc.getBlock().getType() == Material.BOOKSHELF)
         {
-            if(plugin.isOwner(loc, sender))
+            if(plugin.getShelfManager().isOwner(loc, sender))
             {
                 if(!config.getBoolean("use_built_in_ownership"))
                     return;
                 if(args.length >= 1)
                 {
-                    plugin.setOwners(loc, args);
+                    plugin.getShelfManager().setOwners(loc, args);
                     String ownerString = "";
-                    for(String name : plugin.getOwners(loc))
+                    for(String name : plugin.getShelfManager().getOwners(loc))
                     {
                         ownerString += name + ", ";
                     }

@@ -43,15 +43,19 @@ import com.griefcraft.lwc.LWCPlugin;
 public class LWCHandler extends LWC
 {
     
-    public LWCHandler(LWCPlugin plugin)
+    private BookShelf bookShelfPlugin;
+
+    public LWCHandler(LWCPlugin lwcPlugin, BookShelf bookShelfPlugin)
     {
-        super(plugin);
+        super(lwcPlugin);
+        this.bookShelfPlugin = bookShelfPlugin;
     }
     
     @Override
     public boolean isProtectable(Block block)
     {
-        if(block.getType() == Material.BOOKSHELF && BookShelf.getExternalPluginManager().usingLWC())
+        if(block.getType() == Material.BOOKSHELF
+                && bookShelfPlugin.getExternalPluginManager().usingLWC())
             return true;
         else
             return super.isProtectable(block);

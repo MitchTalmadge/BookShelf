@@ -10,6 +10,11 @@ import org.bukkit.entity.Player;
 public class BSC_Edit extends BSCommand
 {
     
+    public BSC_Edit(BookShelf plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {

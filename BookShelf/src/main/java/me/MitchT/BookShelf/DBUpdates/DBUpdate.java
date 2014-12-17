@@ -38,16 +38,18 @@ public class DBUpdate
     private Logger logger;
     private ResultSet r;
     private Version version;
+    private BookShelf plugin;
     
-    public DBUpdate(Logger logger, ResultSet r)
+    public DBUpdate(Logger logger, ResultSet r, BookShelf plugin)
     {
         this.logger = logger;
         this.r = r;
+        this.plugin = plugin;
     }
     
     public void close(ResultSet r) throws SQLException
     {
-        BookShelf.close(r);
+        plugin.close(r);
     }
     
     public void doUpdate(int currentVersion)
@@ -55,15 +57,15 @@ public class DBUpdate
         switch(currentVersion)
         {
             case 0:
-                version = new Version0To1(logger, r);
+                version = new Version0To1(logger, r, plugin);
                 version.doUpdate();
                 break;
             case 1:
-                version = new Version1To2(logger, r);
+                version = new Version1To2(logger, r, plugin);
                 version.doUpdate();
                 break;
             case 2:
-                version = new Version2To3(logger, r);
+                version = new Version2To3(logger, r, plugin);
                 version.doUpdate();
                 break;
         }

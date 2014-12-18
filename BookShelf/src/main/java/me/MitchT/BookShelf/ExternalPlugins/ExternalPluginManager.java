@@ -19,6 +19,32 @@ import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
+/**
+ * 
+ * BookShelf - A Bukkit & Spigot mod allowing the placement of items
+ * into BookShelves. <br>
+ * Copyright (C) 2012-2014 Mitch Talmadge (mitcht@aptitekk.com)<br>
+ * <br>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.<br>
+ * <br>
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.<br>
+ * <br>
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ * 
+ * @author Mitch Talmadge (mitcht@aptitekk.com)
+ */
 public class ExternalPluginManager
 {
     private BookShelf plugin;
@@ -28,7 +54,6 @@ public class ExternalPluginManager
     private boolean usingVaultEconomy = false;
     
     private LWCPlugin lwcPlugin;
-    private LWCHandler lwcAPI;
     private boolean usingLWC = false;
     
     private Towny townyPlugin;
@@ -68,7 +93,7 @@ public class ExternalPluginManager
     
     //SETUP AND INITIALIZERS ----------------------------------------------------------
     
-    private boolean setupEconomy()
+    private void setupEconomy()
     {
         Plugin vaultPlugin = plugin.getServer().getPluginManager()
                 .getPlugin("Vault");
@@ -88,37 +113,34 @@ public class ExternalPluginManager
                 }
             }
         }
-        return this.vaultEconomy != null;
     }
     
-    private boolean setupLWC()
+    private void setupLWC()
     {
-        this.lwcPlugin = (LWCPlugin) plugin.getServer().getPluginManager()
+        Plugin thePlugin = plugin.getServer().getPluginManager()
                 .getPlugin("LWC");
-        if(lwcPlugin != null)
+        if(thePlugin != null)
         {
             logger.info("[BookShelf] LWC found and hooked.");
-            this.lwcAPI = new LWCHandler(lwcPlugin, plugin);
             if(plugin.getConfig().getBoolean("lwc_support.enabled"))
             {
                 this.usingLWC = true;
-                injectLWCHandler();
+                this.lwcPlugin = (LWCPlugin) thePlugin;
+                injectLWCHandler(new LWCHandler(lwcPlugin, plugin));
             }
             else
                 this.usingLWC = false;
         }
-        
-        return lwcPlugin != null;
     }
     
-    private void injectLWCHandler()
+    private void injectLWCHandler(LWCHandler lwcHandler)
     {
         try
         {
             Field lwc = lwcPlugin.getClass().getDeclaredField("lwc");
             lwc.setAccessible(true);
-            lwc.set(lwcPlugin, lwcAPI);
-            lwcAPI.load();
+            lwc.set(lwcPlugin, lwcHandler);
+            lwcHandler.load();
         }
         catch(SecurityException e)
         {
@@ -138,12 +160,13 @@ public class ExternalPluginManager
         }
     }
     
-    private boolean setupTowny()
+    private void setupTowny()
     {
-        this.townyPlugin = (Towny) plugin.getServer().getPluginManager()
+        Plugin thePlugin = plugin.getServer().getPluginManager()
                 .getPlugin("Towny");
-        if(townyPlugin != null)
+        if(thePlugin != null)
         {
+            this.townyPlugin = (Towny) thePlugin;
             logger.info("[BookShelf] Towny found and hooked.");
             if(plugin.getConfig().getBoolean("towny_support.enabled"))
             {
@@ -156,7 +179,6 @@ public class ExternalPluginManager
             else
                 this.usingTowny = false;
         }
-        return townyPlugin != null;
     }
     
     private void loadTownyConfig()
@@ -270,11 +292,6 @@ public class ExternalPluginManager
     public LWCPlugin getLWCPlugin()
     {
         return this.lwcPlugin;
-    }
-    
-    public LWC getLWCHandler()
-    {
-        return this.lwcAPI;
     }
     
     public boolean usingWorldGuard()

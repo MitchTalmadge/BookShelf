@@ -1,6 +1,6 @@
 package me.MitchT.BookShelf.Commands;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 
 import org.bukkit.Location;
@@ -15,7 +15,7 @@ import com.palmergames.bukkit.towny.object.Resident;
 public class BSC_Toggle extends BSCommand
 {
     
-    public BSC_Toggle(BookShelf plugin)
+    public BSC_Toggle(BookShelfPlugin plugin)
     {
         super(plugin);
     }

@@ -1,4 +1,4 @@
-package me.MitchT.BookShelf;
+package me.MitchT.BookShelf.Shelves;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import me.MitchT.BookShelf.BookShelfPlugin;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -14,9 +16,9 @@ import org.bukkit.util.Vector;
 
 public class ShelfManager
 {
-    private BookShelf plugin;
+    private BookShelfPlugin plugin;
     
-    public ShelfManager(BookShelf plugin)
+    public ShelfManager(BookShelfPlugin plugin)
     {
         this.plugin = plugin;
     }

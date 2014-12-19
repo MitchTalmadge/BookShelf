@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -47,7 +47,7 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
  */
 public class ExternalPluginManager
 {
-    private BookShelf plugin;
+    private BookShelfPlugin plugin;
     private Logger logger;
     
     private Economy vaultEconomy;
@@ -69,7 +69,7 @@ public class ExternalPluginManager
     private WorldEditPlugin worldEditPlugin;
     private boolean usingWorldEdit = false;
     
-    public ExternalPluginManager(BookShelf plugin, Logger logger)
+    public ExternalPluginManager(BookShelfPlugin plugin, Logger logger)
     {
         this.plugin = plugin;
         this.logger = logger;

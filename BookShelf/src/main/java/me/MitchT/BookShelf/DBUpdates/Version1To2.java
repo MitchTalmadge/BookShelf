@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 /**
  * 
@@ -35,7 +35,7 @@ import me.MitchT.BookShelf.BookShelf;
 public class Version1To2 extends Version
 {
     
-    public Version1To2(Logger logger, ResultSet r, BookShelf plugin)
+    public Version1To2(Logger logger, ResultSet r, BookShelfPlugin plugin)
     {
         super(logger, r, plugin);
     }

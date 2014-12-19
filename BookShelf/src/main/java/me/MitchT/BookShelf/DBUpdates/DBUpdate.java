@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 /**
  * 
@@ -38,9 +38,9 @@ public class DBUpdate
     private Logger logger;
     private ResultSet r;
     private Version version;
-    private BookShelf plugin;
+    private BookShelfPlugin plugin;
     
-    public DBUpdate(Logger logger, ResultSet r, BookShelf plugin)
+    public DBUpdate(Logger logger, ResultSet r, BookShelfPlugin plugin)
     {
         this.logger = logger;
         this.r = r;

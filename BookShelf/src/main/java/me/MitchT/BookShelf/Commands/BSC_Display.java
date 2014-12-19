@@ -2,7 +2,7 @@ package me.MitchT.BookShelf.Commands;
 
 import java.sql.SQLException;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 public class BSC_Display extends BSCommand
 {
     
-    public BSC_Display(BookShelf plugin)
+    public BSC_Display(BookShelfPlugin plugin)
     {
         super(plugin);
     }

@@ -1,5 +1,5 @@
 name: BookShelf
-main: me.MitchT.BookShelf.BookShelf
+main: me.MitchT.BookShelf.BookShelfPlugin
 version: 3.8
 description: Allows players to store books in bookshelves.
 author: Pew446

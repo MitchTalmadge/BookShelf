@@ -1,6 +1,6 @@
 package me.MitchT.BookShelf.Commands;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 public class BSC_Edit extends BSCommand
 {
     
-    public BSC_Edit(BookShelf plugin)
+    public BSC_Edit(BookShelfPlugin plugin)
     {
         super(plugin);
     }
@@ -18,14 +18,14 @@ public class BSC_Edit extends BSCommand
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
-        if(BookShelf.editingPlayers.contains(sender))
+        if(BookShelfPlugin.editingPlayers.contains(sender))
         {
-            BookShelf.editingPlayers.remove(sender);
+            BookShelfPlugin.editingPlayers.remove(sender);
             sender.sendMessage("You are no longer in shelf editing mode!");
         }
         else
         {
-            BookShelf.editingPlayers.add(sender);
+            BookShelfPlugin.editingPlayers.add(sender);
             sender.sendMessage("You are now in shelf editing mode!");
         }
     }

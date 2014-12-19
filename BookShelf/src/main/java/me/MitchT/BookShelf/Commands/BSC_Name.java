@@ -2,7 +2,7 @@ package me.MitchT.BookShelf.Commands;
 
 import java.sql.SQLException;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 
 import org.bukkit.ChatColor;
@@ -18,7 +18,7 @@ import com.palmergames.bukkit.towny.object.Resident;
 public class BSC_Name extends BSCommand
 {
     
-    public BSC_Name(BookShelf plugin)
+    public BSC_Name(BookShelfPlugin plugin)
     {
         super(plugin);
     }

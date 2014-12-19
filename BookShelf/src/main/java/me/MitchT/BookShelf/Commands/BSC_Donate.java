@@ -2,7 +2,7 @@ package me.MitchT.BookShelf.Commands;
 
 import java.sql.SQLException;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 
 import org.bukkit.Location;
@@ -17,7 +17,7 @@ import com.palmergames.bukkit.towny.object.Resident;
 public class BSC_Donate extends BSCommand
 {
     
-    public BSC_Donate(BookShelf plugin)
+    public BSC_Donate(BookShelfPlugin plugin)
     {
         super(plugin);
     }

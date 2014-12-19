@@ -3,7 +3,7 @@ package me.MitchT.BookShelf.Commands;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -14,11 +14,11 @@ import org.bukkit.entity.Player;
 public abstract class BSCommand
 {
     
-    public BookShelf plugin;
+    public BookShelfPlugin plugin;
     protected ResultSet r;
     protected FileConfiguration config;
     
-    public BSCommand(BookShelf plugin)
+    public BSCommand(BookShelfPlugin plugin)
     {
         this.plugin = plugin;
         this.config = plugin.getConfig();

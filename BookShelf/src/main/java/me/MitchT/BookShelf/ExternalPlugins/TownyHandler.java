@@ -3,7 +3,7 @@ package me.MitchT.BookShelf.ExternalPlugins;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -64,9 +64,9 @@ public class TownyHandler
     public static final int OPEN_SHOP = 5;
     public static final int DONATE = 6;
     
-    private BookShelf plugin;
+    private BookShelfPlugin plugin;
     
-    public TownyHandler(BookShelf plugin)
+    public TownyHandler(BookShelfPlugin plugin)
     {
         this.plugin = plugin;
     }

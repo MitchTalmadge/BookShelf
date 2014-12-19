@@ -12,14 +12,14 @@ import me.MitchT.SimpleSQL.SQLite;
 
 public class SQLManager
 {
-    private BookShelf plugin;
+    private BookShelfPlugin plugin;
     private MySQL mysqlDB;
     private SQLite sqliteDB;
     private Logger logger;
     private ResultSet r;
     private final int currentDatabaseVersion = 3;
     
-    public SQLManager(BookShelf plugin, Logger logger)
+    public SQLManager(BookShelfPlugin plugin, Logger logger)
     {
         this.plugin = plugin;
         this.logger = logger;

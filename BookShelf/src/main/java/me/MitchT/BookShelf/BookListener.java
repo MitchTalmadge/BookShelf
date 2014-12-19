@@ -13,6 +13,8 @@ import java.util.Random;
 import java.util.Set;
 
 import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
+import me.MitchT.BookShelf.Shelves.BookShelf;
+import me.MitchT.BookShelf.Shelves.ShelfType;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -73,26 +75,15 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
  */
 public class BookListener implements Listener
 {
-    public static BookShelf plugin;
+    public static BookShelfPlugin plugin;
     public static BookListener instance;
     
-    public BookListener(BookShelf plugin)
+    public BookListener(BookShelfPlugin plugin)
     {
         BookListener.plugin = plugin;
         BookListener.instance = this;
     }
     
-    private String author;
-    private String title;
-    private String[] pages;
-    private Enchantment etype;
-    private short mapdur = 0;
-    private int elvl = 0;
-    HashMap<Location, Inventory> map = new HashMap<Location, Inventory>();
-    HashMap<Location, InventoryHolder> map2 = new HashMap<Location, InventoryHolder>();
-    HashMap<Player, Location> map3 = new HashMap<Player, Location>();
-    private String lore;
-    private int damage;
     static ResultSet r;
     
     private void close(ResultSet r) throws SQLException
@@ -103,7 +94,7 @@ public class BookListener implements Listener
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onClick(PlayerInteractEvent j)
     {
-        Player p = j.getPlayer();
+        Player player = j.getPlayer();
         if(j.isCancelled())
             return;
         
@@ -120,7 +111,8 @@ public class BookListener implements Listener
                     if(j.getAction() == Action.RIGHT_CLICK_BLOCK)
                     {
                         
-                        Location loc = j.getClickedBlock().getLocation();
+                        Location shelfLocation = j.getClickedBlock()
+                                .getLocation();
                         if(!plugin.getConfig().getBoolean("top-bottom_access"))
                         {
                             if(j.getBlockFace() == BlockFace.UP
@@ -130,470 +122,226 @@ public class BookListener implements Listener
                             }
                         }
                         
-                        if(!plugin.getShelfManager().isShelfShop(loc)
-                                && !plugin.getShelfManager().isShelfUnlimited(loc)
-                                && !plugin.getShelfManager().isShelfDonate(loc))
+                        BookShelf shelf = new BookShelf(shelfLocation);
+                        
+                        if(!shelf.isEnabled())
+                            return;
+                        
+                        if(!shelf.isShelfType(ShelfType.UNLIMITED)
+                                && !shelf.isShelfType(ShelfType.SHOP)
+                                && !shelf.isShelfType(ShelfType.DONATION))
                         {
-                            if(!plugin.getShelfManager().isOwner(loc, p)
-                                    && !p.hasPermission("bookshelf.openshelf"))
+                            if(!shelf.isOwner(player)
+                                    && !player
+                                            .hasPermission("bookshelf.openshelf"))
                             {
-                                p.sendMessage("§cYou are not allowed to open this shelf!");
+                                player.sendMessage("§cYou are not allowed to open this shelf!");
                                 return;
                             }
                         }
                         
-                        try
+                        if(shelf.isShelfType(ShelfType.SHOP)
+                                && plugin.getExternalPluginManager()
+                                        .usingVaultEconomy())
                         {
-                            if(plugin.getShelfManager().isShelfShop(loc)
-                                    && plugin.getExternalPluginManager()
-                                            .usingVaultEconomy())
+                            if(plugin.getExternalPluginManager().usingTowny())
                             {
-                                if(plugin.getExternalPluginManager()
-                                        .usingTowny())
+                                if(!plugin
+                                        .getExternalPluginManager()
+                                        .getTownyHandler()
+                                        .checkCanDoAction(
+                                                j.getClickedBlock(),
+                                                plugin.getExternalPluginManager()
+                                                        .getTownyHandler()
+                                                        .convertToResident(
+                                                                j.getPlayer()),
+                                                TownyHandler.OPEN_SHOP))
                                 {
-                                    if(!plugin.getExternalPluginManager().getTownyHandler().checkCanDoAction(j
-                                            .getClickedBlock(), plugin.getExternalPluginManager().getTownyHandler()
-                                            .convertToResident(j.getPlayer()),
-                                            TownyHandler.OPEN_SHOP))
-                                    {
-                                        j.getPlayer()
-                                                .sendMessage(
-                                                        "§cYou are not allowed to open BookShops here!");
-                                        j.setCancelled(true);
-                                        return;
-                                    }
-                                }
-                                if(plugin.getExternalPluginManager()
-                                        .usingWorldGuard())
-                                {
-                                    RegionManager regionManager = plugin
-                                            .getExternalPluginManager()
-                                            .getWorldGuardPlugin()
-                                            .getRegionManager(
-                                                    j.getPlayer().getWorld());
-                                    if(regionManager != null)
-                                    {
-                                        ApplicableRegionSet set = regionManager
-                                                .getApplicableRegions(j
-                                                        .getClickedBlock()
-                                                        .getLocation());
-                                        if(set.size() > 0)
-                                            if(!set.allows(
-                                                    DefaultFlag.ENABLE_SHOP,
-                                                    plugin
-                                                            .getExternalPluginManager()
-                                                            .getWorldGuardPlugin()
-                                                            .wrapPlayer(
-                                                                    j.getPlayer()))
-                                                    && !set.isOwnerOfAll(plugin
-                                                            .getExternalPluginManager()
-                                                            .getWorldGuardPlugin()
-                                                            .wrapPlayer(
-                                                                    j.getPlayer()))
-                                                    && !j.getPlayer().isOp())
-                                            {
-                                                j.getPlayer()
-                                                        .sendMessage(
-                                                                "§cYou are not allowed to open BookShops here!");
-                                                j.setCancelled(true);
-                                                return;
-                                            }
-                                    }
-                                }
-                            }
-                            else
-                            { //Not a shop or economy is disabled
-                                if(plugin.getExternalPluginManager()
-                                        .usingTowny())
-                                {
-                                    if(!plugin.getExternalPluginManager().getTownyHandler().checkCanDoAction(j
-                                            .getClickedBlock(), plugin.getExternalPluginManager().getTownyHandler()
-                                            .convertToResident(j.getPlayer()),
-                                            TownyHandler.OPEN_SHELF))
-                                    {
-                                        j.getPlayer()
-                                                .sendMessage(
-                                                        "§cYou are not allowed to open BookShelves here!");
-                                        j.setCancelled(true);
-                                        return;
-                                    }
-                                }
-                                if(plugin.getExternalPluginManager()
-                                        .usingWorldGuard())
-                                {
-                                    RegionManager regionManager = plugin
-                                            .getExternalPluginManager()
-                                            .getWorldGuardPlugin()
-                                            .getRegionManager(
-                                                    j.getPlayer().getWorld());
-                                    if(regionManager != null)
-                                    {
-                                        ApplicableRegionSet set = regionManager
-                                                .getApplicableRegions(j
-                                                        .getClickedBlock()
-                                                        .getLocation());
-                                        if(set.size() > 0)
-                                            if(!set.allows(
-                                                    DefaultFlag.CHEST_ACCESS,
-                                                    plugin
-                                                            .getExternalPluginManager()
-                                                            .getWorldGuardPlugin()
-                                                            .wrapPlayer(
-                                                                    j.getPlayer()))
-                                                    && !set.isOwnerOfAll(plugin
-                                                            .getExternalPluginManager()
-                                                            .getWorldGuardPlugin()
-                                                            .wrapPlayer(
-                                                                    j.getPlayer()))
-                                                    && !j.getPlayer().isOp())
-                                            {
-                                                j.getPlayer()
-                                                        .sendMessage(
-                                                                "§cYou are not allowed to open BookShelves here!");
-                                                j.setCancelled(true);
-                                                return;
-                                            }
-                                    }
-                                }
-                            }
-                            //							r = BookShelf.runQuery("SELECT * FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-                            //							if(!r.next())
-                            //							{
-                            //								close(r);
-                            //								BookShelf.runQuery("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+",0);");
-                            //							}
-                            //							else
-                            //							{
-                            //								if(r.getInt("bool") == 1)
-                            //								{
-                            //									close(r);
-                            //									j.getPlayer().setItemInHand(new ItemStack(Material.WATER_BUCKET, 1));
-                            //									j.useItemInHand();
-                            //									return;	
-                            //								}
-                            //								else
-                            //									close(r);
-                            //							}
-                            r = plugin.runQuery("SELECT * FROM enable WHERE x="
-                                    + loc.getX() + " AND y=" + loc.getY()
-                                    + " AND z=" + loc.getZ() + ";");
-                            if(!r.next())
-                            {
-                                int def = 1;
-                                close(r);
-                                if(plugin.getConfig().getBoolean(
-                                        "default_openable"))
-                                {
-                                    def = 1;
-                                }
-                                else
-                                {
-                                    def = 0;
-                                }
-                                plugin.runQuery("INSERT INTO enable (x,y,z,bool) VALUES ("
-                                        + loc.getX()
-                                        + ","
-                                        + loc.getY()
-                                        + ","
-                                        + loc.getZ() + ", " + def + ");");
-                                if(def == 0)
-                                    return;
-                            }
-                            else
-                            {
-                                boolean open = r.getBoolean("bool");
-                                close(r);
-                                if(!open)
-                                {
+                                    j.getPlayer()
+                                            .sendMessage(
+                                                    "§cYou are not allowed to open BookShops here!");
+                                    j.setCancelled(true);
                                     return;
                                 }
                             }
-                        }
-                        catch(SQLException e1)
-                        {
-                            e1.printStackTrace();
-                        }
-                        if(!map.containsKey(j.getClickedBlock().getLocation()))
-                        {
-                            String name = plugin.getConfig().getString(
-                                    "default_shelf_name");
-                            try
+                            if(plugin.getExternalPluginManager()
+                                    .usingWorldGuard())
                             {
-                                r = plugin
-                                        .runQuery("SELECT * FROM names WHERE x="
-                                                + loc.getX()
-                                                + " AND y="
-                                                + loc.getY()
-                                                + " AND z="
-                                                + loc.getZ() + ";");
-                                if(r.next())
-                                    name = r.getString("name");
-                                close(r);
-                            }
-                            catch(SQLException e1)
-                            {
-                                e1.printStackTrace();
-                            }
-                            Inventory inv = Bukkit.createInventory(p, plugin
-                                    .getConfig().getInt("rows") * 9, name);
-                            Block cl = j.getClickedBlock();
-                            int x = cl.getX();
-                            int y = cl.getY();
-                            int z = cl.getZ();
-                            map3.put(j.getPlayer(), loc);
-                            
-                            try
-                            {
-                                boolean isOwner = plugin.getShelfManager().isOwner(loc,
-                                        j.getPlayer());
-                                boolean isOwnerEditing = (isOwner && BookShelf.editingPlayers
-                                        .contains(j.getPlayer()));
-                                if(!plugin.getShelfManager().isShelfUnlimited(loc)
-                                        || isOwnerEditing)
+                                RegionManager regionManager = plugin
+                                        .getExternalPluginManager()
+                                        .getWorldGuardPlugin()
+                                        .getRegionManager(
+                                                j.getPlayer().getWorld());
+                                if(regionManager != null)
                                 {
-                                    map.put(cl.getLocation(), inv);
-                                    map2.put(cl.getLocation(), inv.getHolder());
+                                    ApplicableRegionSet set = regionManager
+                                            .getApplicableRegions(shelfLocation);
+                                    if(set.size() > 0)
+                                        if(!set.allows(
+                                                DefaultFlag.ENABLE_SHOP,
+                                                plugin.getExternalPluginManager()
+                                                        .getWorldGuardPlugin()
+                                                        .wrapPlayer(
+                                                                j.getPlayer()))
+                                                && !set.isOwnerOfAll(plugin
+                                                        .getExternalPluginManager()
+                                                        .getWorldGuardPlugin()
+                                                        .wrapPlayer(
+                                                                j.getPlayer()))
+                                                && !j.getPlayer().isOp())
+                                        {
+                                            j.getPlayer()
+                                                    .sendMessage(
+                                                            "§cYou are not allowed to open BookShops here!");
+                                            j.setCancelled(true);
+                                            return;
+                                        }
                                 }
-                                r = plugin
-                                        .runQuery("SELECT COUNT(*) FROM items WHERE x="
-                                                + x
-                                                + " AND y="
-                                                + y
-                                                + " AND z="
-                                                + z + ";");
-                                if(!r.next())
-                                {
-                                    close(r);
-                                    p.openInventory(inv);
-                                    return;
-                                }
-                                else
-                                {
-                                    close(r);
-                                    r = plugin
-                                            .runQuery("SELECT * FROM items WHERE x="
-                                                    + x
-                                                    + " AND y="
-                                                    + y
-                                                    + " AND z=" + z + ";");
-                                    ArrayList<String> auth = new ArrayList<String>();
-                                    ArrayList<String> titl = new ArrayList<String>();
-                                    ArrayList<String> type = new ArrayList<String>();
-                                    ArrayList<Integer> id = new ArrayList<Integer>();
-                                    ArrayList<Integer> loca = new ArrayList<Integer>();
-                                    ArrayList<Integer> amt = new ArrayList<Integer>();
-                                    ArrayList<String> lore = new ArrayList<String>();
-                                    ArrayList<Integer> dmg = new ArrayList<Integer>();
-                                    ArrayList<String> pages = new ArrayList<String>();
-                                    
-                                    while(r.next())
-                                    {
-                                        auth.add(r.getString("author"));
-                                        titl.add(r.getString("title"));
-                                        id.add(r.getInt("id"));
-                                        type.add(r.getString("enumType"));
-                                        loca.add(r.getInt("loc"));
-                                        amt.add(r.getInt("amt"));
-                                        lore.add(r.getString("lore"));
-                                        dmg.add(r.getInt("damage"));
-                                        pages.add(r.getString("pages"));
-                                    }
-                                    close(r);
-                                    for(int i = 0; i < id.size(); i++)
-                                    {
-                                        if(type.get(i).equals(
-                                                Material.MAP.name()))
-                                        {
-                                            r = plugin
-                                                    .runQuery("SELECT * FROM maps WHERE x="
-                                                            + x
-                                                            + " AND y="
-                                                            + y
-                                                            + " AND z="
-                                                            + z
-                                                            + " AND loc="
-                                                            + loca.get(i) + ";");
-                                            while(r.next())
-                                            {
-                                                mapdur = r
-                                                        .getShort("durability");
-                                            }
-                                            close(r);
-                                            inv.setItem(loca.get(i),
-                                                    generateItemStack(3));
-                                        }
-                                        else if(type.get(i).equals(
-                                                Material.ENCHANTED_BOOK.name()))
-                                        {
-                                            r = plugin
-                                                    .runQuery("SELECT * FROM enchant WHERE x="
-                                                            + x
-                                                            + " AND y="
-                                                            + y
-                                                            + " AND z="
-                                                            + z
-                                                            + " AND loc="
-                                                            + loca.get(i) + ";");
-                                            String enchant = "";
-                                            while(r.next())
-                                            {
-                                                enchant = r.getString("type");
-                                                elvl = r.getInt("level");
-                                            }
-                                            close(r);
-                                            etype = Enchantment
-                                                    .getByName(enchant);
-                                            inv.setItem(loca.get(i),
-                                                    generateItemStack(2));
-                                        }
-                                        else if(type.get(i).equals(
-                                                Material.WRITTEN_BOOK.name())
-                                                || type.get(i).equals(
-                                                        Material.BOOK_AND_QUILL
-                                                                .name()))
-                                        {
-                                            String[] thepages = pages.get(i)
-                                                    .split("¬");
-                                            if(type.get(i).equals(
-                                                    Material.WRITTEN_BOOK
-                                                            .name()))
-                                            {
-                                                Book(titl.get(i), auth.get(i),
-                                                        thepages, lore.get(i),
-                                                        dmg.get(i));
-                                                inv.setItem(loca.get(i),
-                                                        generateItemStack(0));
-                                            }
-                                            else if(type.get(i).equals(
-                                                    Material.BOOK_AND_QUILL
-                                                            .name()))
-                                            {
-                                                Book(titl.get(i), auth.get(i),
-                                                        thepages, lore.get(i),
-                                                        dmg.get(i));
-                                                inv.setItem(loca.get(i),
-                                                        generateItemStack(1));
-                                            }
-                                        }
-                                        else if(BookShelf.allowedItems
-                                                .contains(type.get(i)))
-                                        {
-                                            inv.setItem(
-                                                    loca.get(i),
-                                                    new ItemStack(Material
-                                                            .getMaterial(type
-                                                                    .get(i)),
-                                                            amt.get(i)));
-                                        }
-                                    }
-                                    auth.clear();
-                                    titl.clear();
-                                    type.clear();
-                                    id.clear();
-                                    loca.clear();
-                                    amt.clear();
-                                    p.openInventory(inv);
-                                    
-                                    if(plugin.autoToggle)
-                                    {
-                                        String shelfName = name;
-                                        if(shelfName.endsWith(" "))
-                                            shelfName = shelfName.substring(0,
-                                                    shelfName.length() - 1);
-                                        if(plugin.autoToggleNameList == null
-                                                || plugin.autoToggleNameList
-                                                        .contains(shelfName))
-                                        {
-                                            if(!plugin.autoToggleMap1
-                                                    .containsKey(loc))
-                                            {
-                                                plugin.autoToggleMap1.put(loc,
-                                                        1);
-                                                List<Player> list = new ArrayList<Player>();
-                                                list.add(p);
-                                                plugin.autoToggleMap2.put(loc,
-                                                        list);
-                                            }
-                                            else
-                                            {
-                                                if(!plugin.autoToggleDiffPlayers)
-                                                {
-                                                    int old = plugin.autoToggleMap1
-                                                            .get(loc);
-                                                    plugin.autoToggleMap1
-                                                            .remove(loc);
-                                                    plugin.autoToggleMap1.put(
-                                                            loc, old + 1);
-                                                }
-                                                else if(!plugin.autoToggleMap2
-                                                        .get(loc).contains(p))
-                                                {
-                                                    int old = plugin.autoToggleMap1
-                                                            .get(loc);
-                                                    plugin.autoToggleMap1
-                                                            .remove(loc);
-                                                    plugin.autoToggleMap1.put(
-                                                            loc, old + 1);
-                                                    plugin.autoToggleMap2.get(
-                                                            loc).add(p);
-                                                }
-                                            }
-                                            if(plugin.autoToggleMap1.get(loc) >= plugin.autoToggleFreq)
-                                            {
-                                                plugin.autoToggleMap1
-                                                        .remove(loc);
-                                                plugin.autoToggleMap2
-                                                        .remove(loc);
-                                                if(plugin.autoToggleServerWide)
-                                                {
-                                                    plugin.getShelfManager().toggleShelvesByName(name);
-                                                    if(!name.endsWith(" "))
-                                                        name += " ";
-                                                    System.out
-                                                            .println("(Auto Toggle) All bookshelves with the name "
-                                                                    + name
-                                                                    + "have been toggled.");
-                                                }
-                                                else
-                                                {
-                                                    plugin.getShelfManager().toggleShelf(loc);
-                                                    System.out
-                                                            .println("(Auto Toggle) The bookshelf at ("
-                                                                    + loc.getBlockX()
-                                                                    + ", "
-                                                                    + loc.getBlockY()
-                                                                    + ", "
-                                                                    + loc.getBlockZ()
-                                                                    + ") has been toggled.");
-                                                }
-                                            }
-                                        }
-                                    }
-                                    
-                                }
-                            }
-                            catch(SQLException e)
-                            {
-                                e.printStackTrace();
                             }
                         }
                         else
-                        {
-                            Inventory inv = map.get(j.getClickedBlock()
-                                    .getLocation());
-                            if(inv.getViewers().isEmpty())
-                                return;
-                            Player player = (Player) inv.getViewers().get(0);
-                            map3.put(j.getPlayer(), loc);
-                            if(player.getName() == p.getName())
+                        { //Not a shop or economy is disabled
+                            if(plugin.getExternalPluginManager().usingTowny())
                             {
-                                j.setCancelled(true);
+                                if(!plugin
+                                        .getExternalPluginManager()
+                                        .getTownyHandler()
+                                        .checkCanDoAction(
+                                                j.getClickedBlock(),
+                                                plugin.getExternalPluginManager()
+                                                        .getTownyHandler()
+                                                        .convertToResident(
+                                                                j.getPlayer()),
+                                                TownyHandler.OPEN_SHELF))
+                                {
+                                    j.getPlayer()
+                                            .sendMessage(
+                                                    "§cYou are not allowed to open BookShelves here!");
+                                    j.setCancelled(true);
+                                    return;
+                                }
                             }
-                            else
+                            if(plugin.getExternalPluginManager()
+                                    .usingWorldGuard())
                             {
-                                p.openInventory(inv);
+                                RegionManager regionManager = plugin
+                                        .getExternalPluginManager()
+                                        .getWorldGuardPlugin()
+                                        .getRegionManager(
+                                                j.getPlayer().getWorld());
+                                if(regionManager != null)
+                                {
+                                    ApplicableRegionSet set = regionManager
+                                            .getApplicableRegions(shelfLocation);
+                                    if(set.size() > 0)
+                                        if(!set.allows(
+                                                DefaultFlag.CHEST_ACCESS,
+                                                plugin.getExternalPluginManager()
+                                                        .getWorldGuardPlugin()
+                                                        .wrapPlayer(
+                                                                j.getPlayer()))
+                                                && !set.isOwnerOfAll(plugin
+                                                        .getExternalPluginManager()
+                                                        .getWorldGuardPlugin()
+                                                        .wrapPlayer(
+                                                                j.getPlayer()))
+                                                && !j.getPlayer().isOp())
+                                        {
+                                            j.getPlayer()
+                                                    .sendMessage(
+                                                            "§cYou are not allowed to open BookShelves here!");
+                                            j.setCancelled(true);
+                                            return;
+                                        }
+                                }
                             }
                         }
+                        Inventory inv = shelf.getInventory();
+                        
+                        boolean isOwner = shelf.isOwner(j.getPlayer());
+                        boolean isOwnerEditing = (isOwner && BookShelfPlugin.editingPlayers
+                                .contains(j.getPlayer()));
+                        
+                        player.openInventory(inv);
+                        
+                        if(plugin.autoToggle)
+                        {
+                            String shelfName = shelf.getName();
+                            if(shelfName.endsWith(" "))
+                                shelfName = shelfName.substring(0,
+                                        shelfName.length() - 1);
+                            if(plugin.autoToggleNameList == null
+                                    || plugin.autoToggleNameList
+                                            .contains(shelfName))
+                            {
+                                if(!plugin.autoToggleMap1
+                                        .containsKey(shelfLocation))
+                                {
+                                    plugin.autoToggleMap1.put(shelfLocation, 1);
+                                    List<Player> list = new ArrayList<Player>();
+                                    list.add(player);
+                                    plugin.autoToggleMap2.put(shelfLocation,
+                                            list);
+                                }
+                                else
+                                {
+                                    if(!plugin.autoToggleDiffPlayers)
+                                    {
+                                        int old = plugin.autoToggleMap1
+                                                .get(shelfLocation);
+                                        plugin.autoToggleMap1
+                                                .remove(shelfLocation);
+                                        plugin.autoToggleMap1.put(
+                                                shelfLocation, old + 1);
+                                    }
+                                    else if(!plugin.autoToggleMap2.get(
+                                            shelfLocation).contains(player))
+                                    {
+                                        int old = plugin.autoToggleMap1
+                                                .get(shelfLocation);
+                                        plugin.autoToggleMap1
+                                                .remove(shelfLocation);
+                                        plugin.autoToggleMap1.put(
+                                                shelfLocation, old + 1);
+                                        plugin.autoToggleMap2
+                                                .get(shelfLocation).add(player);
+                                    }
+                                }
+                                if(plugin.autoToggleMap1.get(shelfLocation) >= plugin.autoToggleFreq)
+                                {
+                                    plugin.autoToggleMap1.remove(shelfLocation);
+                                    plugin.autoToggleMap2.remove(shelfLocation);
+                                    if(plugin.autoToggleServerWide)
+                                    {
+                                        plugin.getShelfManager()
+                                                .toggleShelvesByName(shelfName);
+                                        if(!shelfName.endsWith(" "))
+                                            shelfName += " ";
+                                        System.out
+                                                .println("(Auto Toggle) All bookshelves with the name "
+                                                        + shelfName
+                                                        + "have been toggled.");
+                                    }
+                                    else
+                                    {
+                                        plugin.getShelfManager().toggleShelf(
+                                                shelfLocation);
+                                        System.out
+                                                .println("(Auto Toggle) The bookshelf at ("
+                                                        + shelfLocation
+                                                                .getBlockX()
+                                                        + ", "
+                                                        + shelfLocation
+                                                                .getBlockY()
+                                                        + ", "
+                                                        + shelfLocation
+                                                                .getBlockZ()
+                                                        + ") has been toggled.");
+                                    }
+                                }
+                            }
+                        }
+                        
                     }
                 }
             }
@@ -616,179 +364,23 @@ public class BookListener implements Listener
     }
     
     @EventHandler
-    public void onAdd(InventoryCloseEvent u)
+    public void onAdd(InventoryCloseEvent j)
     {
+        if(!(j.getInventory().getHolder() instanceof BookShelf)
+                || j.getViewers().size() > 1)
+        {
+            return;
+        }
         
-        final InventoryCloseEvent j = u;
-        if(!map2.containsValue(j.getInventory().getHolder()))
-        {
-            return;
-        }
-        if(j.getViewers().size() > 1)
-        {
-            return;
-        }
-        if(j.getViewers().get(0) != j.getPlayer())
-        {
-            return;
-        }
-        Location loc = getKey(map2, j.getInventory().getHolder());
-        map.remove(loc);
-        map2.remove(loc);
-        map3.remove(j.getPlayer());
-        ItemStack[] cont = j.getInventory().getContents();
-        int x = loc.getBlockX();
-        int y = loc.getBlockY();
-        int z = loc.getBlockZ();
-        boolean isOwner = plugin.getShelfManager().isOwner(loc, (Player) j.getPlayer());
-        boolean isOwnerEditing = (isOwner && BookShelf.editingPlayers
+        BookShelf shelf = (BookShelf) j.getInventory().getHolder();
+        
+        boolean isOwner = plugin.getShelfManager().isOwner(shelf.getLocation(),
+                (Player) j.getPlayer());
+        boolean isOwnerEditing = (isOwner && BookShelfPlugin.editingPlayers
                 .contains(j.getPlayer()));
-        if(!plugin.getShelfManager().isShelfUnlimited(loc) || isOwnerEditing)
-        {
-            plugin.getSQLManager().setAutoCommit(false);
-            plugin.runQuery("DELETE FROM items WHERE x=" + x + " AND y=" + y
-                    + " AND z=" + z + ";");
-            plugin.runQuery("DELETE FROM enchant WHERE x=" + x + " AND y=" + y
-                    + " AND z=" + z + ";");
-            plugin.runQuery("DELETE FROM maps WHERE x=" + x + " AND y=" + y
-                    + " AND z=" + z + ";");
-            for(int i = 0; i < cont.length; i++)
-            {
-                if(cont[i] != null)
-                {
-                    String type = cont[i].getType().name();
-                    if(cont[i].getType() == Material.BOOK_AND_QUILL
-                            || cont[i].getType() == Material.WRITTEN_BOOK)
-                    {
-                        Book(cont[i]);
-                        String title = getTitle().replaceAll("'", "''");
-                        String author = getAuthor().replaceAll("'", "''");
-                        String lore = "";
-                        if(getLore() != null)
-                            lore = getLore().replaceAll("'", "''");
-                        int damage = getDamage();
-                        String pageString = "";
-                        if(getPages() != null)
-                        {
-                            for(int k = 0; k < getPages().length; k++)
-                            {
-                                pageString += getPages()[k].replaceAll("'",
-                                        "''") + "¬";
-                            }
-                            if(pageString.endsWith("¬"))
-                                pageString = pageString.substring(0,
-                                        pageString.length() - 1);
-                        }
-                        plugin.runQuery("INSERT INTO items (x,y,z,author,title,enumType,loc,amt,lore,damage,pages) VALUES ("
-                                + x
-                                + ","
-                                + y
-                                + ","
-                                + z
-                                + ",'"
-                                + author
-                                + "','"
-                                + title
-                                + "','"
-                                + type
-                                + "',"
-                                + i
-                                + ",1,'"
-                                + lore
-                                + "', "
-                                + damage
-                                + ", '"
-                                + pageString
-                                + "');");
-                    }
-                    else if(cont[i].getType() == Material.ENCHANTED_BOOK)
-                    {
-                        plugin.runQuery("INSERT INTO items (x,y,z,author,title,enumType,loc,amt) VALUES ("
-                                + x
-                                + ","
-                                + y
-                                + ","
-                                + z
-                                + ", 'null', 'null','"
-                                + type
-                                + "',"
-                                + i
-                                + ","
-                                + cont[i].getAmount()
-                                + ");");
-                        EnchantmentStorageMeta book = (EnchantmentStorageMeta) cont[i]
-                                .getItemMeta();
-                        Map<Enchantment, Integer> enchants = book
-                                .getStoredEnchants();
-                        Enchantment enchant = null;
-                        for(Enchantment key : enchants.keySet())
-                        {
-                            enchant = key;
-                        }
-                        Integer lvl = book.getStoredEnchantLevel(enchant);
-                        String type2 = enchant.getName();
-                        plugin.runQuery("INSERT INTO enchant (x,y,z,loc,type,level) VALUES ("
-                                + x
-                                + ","
-                                + y
-                                + ","
-                                + z
-                                + ","
-                                + i
-                                + ",'"
-                                + type2 + "','" + lvl + "');");
-                    }
-                    else if(cont[i].getType() == Material.MAP)
-                    {
-                        ItemStack mapp = cont[i];
-                        int dur = mapp.getDurability();
-                        plugin.runQuery("INSERT INTO items (x,y,z,author,title,enumType,loc,amt) VALUES ("
-                                + x
-                                + ","
-                                + y
-                                + ","
-                                + z
-                                + ", 'null', 'null','"
-                                + type
-                                + "',"
-                                + i
-                                + ","
-                                + cont[i].getAmount()
-                                + ");");
-                        plugin.runQuery("INSERT INTO maps (x,y,z,loc,durability) VALUES ("
-                                + x
-                                + ","
-                                + y
-                                + ","
-                                + z
-                                + ","
-                                + i
-                                + ",'"
-                                + dur
-                                + "');");
-                    }
-                    else if(BookShelf.allowedItems.contains(cont[i].getType()
-                            .name()))
-                    {
-                        plugin.runQuery("INSERT INTO items (x,y,z,author,title,enumType,loc,amt) VALUES ("
-                                + x
-                                + ","
-                                + y
-                                + ","
-                                + z
-                                + ", 'null', 'null','"
-                                + type
-                                + "',"
-                                + i
-                                + ","
-                                + cont[i].getAmount()
-                                + ");");
-                    }
-                }
-            }
-            plugin.getSQLManager().commit();
-            plugin.getSQLManager().setAutoCommit(true);
-        }
+        
+        if(!shelf.isShelfType(ShelfType.UNLIMITED) || isOwnerEditing)
+            shelf.saveInventory();
     }
     
     @EventHandler(priority = EventPriority.MONITOR)
@@ -797,7 +389,7 @@ public class BookListener implements Listener
         if(j.isCancelled())
             return;
         if(j.getBlock().getType() == Material.BOOKSHELF)
-            breakShelf(j.getBlock().getLocation(), true);
+            new BookShelf(j.getBlock().getLocation()).breakShelf(false);
     }
     
     @EventHandler
@@ -812,149 +404,7 @@ public class BookListener implements Listener
                 j.setCancelled(true);
                 return;
             }
-            breakShelf(j.getBlock().getLocation(), true);
-        }
-    }
-    
-    public void breakShelf(Location loc, boolean dropItems)
-    {
-        if(map.containsKey(loc))
-        {
-            Inventory inv = map.get(loc);
-            List<HumanEntity> viewers = inv.getViewers();
-            for(int i = 0; i < viewers.size(); i++)
-            {
-                viewers.get(i).closeInventory();
-            }
-        }
-        try
-        {
-            r = plugin.runQuery("SELECT * FROM items WHERE x="
-                    + loc.getBlockX() + " AND y=" + loc.getBlockY() + " AND z="
-                    + loc.getBlockZ() + ";");
-            ArrayList<String> auth = new ArrayList<String>();
-            ArrayList<String> titl = new ArrayList<String>();
-            ArrayList<String> type = new ArrayList<String>();
-            ArrayList<Integer> id = new ArrayList<Integer>();
-            ArrayList<Integer> amt = new ArrayList<Integer>();
-            ArrayList<Integer> loca = new ArrayList<Integer>();
-            ArrayList<String> lore = new ArrayList<String>();
-            ArrayList<Integer> dmg = new ArrayList<Integer>();
-            ArrayList<String> pages = new ArrayList<String>();
-            while(r.next())
-            {
-                auth.add(r.getString("author"));
-                titl.add(r.getString("title"));
-                id.add(r.getInt("id"));
-                type.add(r.getString("enumType"));
-                amt.add(r.getInt("amt"));
-                loca.add(r.getInt("loc"));
-                lore.add(r.getString("lore"));
-                dmg.add(r.getInt("damage"));
-                pages.add(r.getString("pages"));
-            }
-            close(r);
-            String enchant = "";
-            plugin.getSQLManager().setAutoCommit(false);
-            for(int i = 0; i < id.size(); i++)
-            {
-                if(type.get(i).equals(Material.ENCHANTED_BOOK.name()))
-                {
-                    r = plugin.runQuery("SELECT * FROM enchant WHERE x="
-                            + loc.getBlockX() + " AND y=" + loc.getBlockY()
-                            + " AND z=" + loc.getBlockZ() + " AND loc="
-                            + loca.get(i) + ";");
-                    while(r.next())
-                    {
-                        enchant = r.getString("type");
-                        elvl = r.getInt("level");
-                    }
-                    close(r);
-                    plugin.runQuery("DELETE FROM items WHERE id=" + id.get(i)
-                            + ";");
-                    etype = Enchantment.getByName(enchant);
-                    if(dropItems)
-                        dropItem(generateItemStack(2).clone(), loc);
-                }
-                else if(type.get(i).equals(Material.MAP.name()))
-                {
-                    r = plugin.runQuery("SELECT * FROM maps WHERE x="
-                            + loc.getBlockX() + " AND y=" + loc.getBlockY()
-                            + " AND z=" + loc.getBlockZ() + " AND loc="
-                            + loca.get(i) + ";");
-                    while(r.next())
-                    {
-                        mapdur = r.getShort("durability");
-                    }
-                    close(r);
-                    plugin.runQuery("DELETE FROM items WHERE id=" + id.get(i)
-                            + ";");
-                    if(dropItems)
-                        dropItem(generateItemStack(3).clone(), loc);
-                }
-                else if(type.get(i).equals(Material.WRITTEN_BOOK.name())
-                        || type.get(i).equals(Material.BOOK_AND_QUILL.name()))
-                {
-                    String[] thepages = pages.get(i).split("¬");
-                    
-                    if(type.get(i).equals(Material.WRITTEN_BOOK.name()))
-                    {
-                        Book(titl.get(i), auth.get(i), thepages, lore.get(i),
-                                dmg.get(i));
-                        if(dropItems)
-                            dropItem(generateItemStack(0).clone(), loc);
-                    }
-                    else if(type.get(i).equals(Material.BOOK_AND_QUILL.name()))
-                    {
-                        Book("null", "null", thepages, lore.get(i), dmg.get(i));
-                        if(dropItems)
-                            dropItem(generateItemStack(1).clone(), loc);
-                    }
-                    plugin.runQuery("DELETE FROM items WHERE id=" + id.get(i)
-                            + ";");
-                }
-                else if(BookShelf.allowedItems.contains(type.get(i)))
-                {
-                    plugin.runQuery("DELETE FROM items WHERE id=" + id.get(i)
-                            + ";");
-                    ItemStack stack = new ItemStack(Material.getMaterial(type
-                            .get(i)));
-                    stack.setAmount(amt.get(i));
-                    if(dropItems)
-                        dropItem(stack, loc);
-                }
-            }
-            plugin.runQuery("DELETE FROM copy WHERE x=" + loc.getX()
-                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
-            plugin.runQuery("DELETE FROM shop WHERE x=" + loc.getX()
-                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
-            plugin.runQuery("DELETE FROM donate WHERE x=" + loc.getX()
-                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
-            plugin.runQuery("DELETE FROM names WHERE x=" + loc.getX()
-                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
-            plugin.runQuery("DELETE FROM enable WHERE x=" + loc.getX()
-                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
-            plugin.runQuery("DELETE FROM enchant WHERE x=" + loc.getX()
-                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
-            plugin.runQuery("DELETE FROM maps WHERE x=" + loc.getX()
-                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
-            plugin.runQuery("DELETE FROM owners WHERE x=" + loc.getX()
-                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
-            //BookShelf.runQuery("DELETE FROM display WHERE x="+loc.getX()+" AND y="+loc.getY()+" AND z="+loc.getZ()+";");
-            plugin.getSQLManager().commit();
-            plugin.getSQLManager().setAutoCommit(true);
-        }
-        catch(SQLException e)
-        {
-            e.printStackTrace();
-        }
-        if(plugin.autoToggle)
-        {
-            if(plugin.autoToggleMap1.containsKey(loc))
-            {
-                plugin.autoToggleMap1.remove(loc);
-                plugin.autoToggleMap2.remove(loc);
-            }
+            new BookShelf(j.getBlock().getLocation()).breakShelf(false);
         }
     }
     
@@ -963,7 +413,7 @@ public class BookListener implements Listener
     {
         if((j.getInventory().getType() == InventoryType.CHEST || j
                 .getInventory().getType() == InventoryType.ENDER_CHEST)
-                && !map3.containsKey((Player) j.getWhoClicked()))
+                && !(j.getInventory().getHolder() instanceof BookShelf))
         {
             if(j.getCurrentItem() != null)
             {
@@ -1023,8 +473,9 @@ public class BookListener implements Listener
                 }
                 if(plugin.getConfig().getBoolean(prefix + "records"))
                 {
-                    if(BookShelf.records.contains(j.getCurrentItem().getType())
-                            || BookShelf.records.contains(j.getCursor()
+                    if(BookShelfPlugin.records.contains(j.getCurrentItem()
+                            .getType())
+                            || BookShelfPlugin.records.contains(j.getCursor()
                                     .getType()))
                     {
                         j.setCancelled(true);
@@ -1045,6 +496,7 @@ public class BookListener implements Listener
                 return;
             }
         }
+        
         if(j.getInventory().getType() == InventoryType.MERCHANT)
         {
             if(j.getCurrentItem() == null)
@@ -1105,44 +557,31 @@ public class BookListener implements Listener
                 }
             }
         }
-        String name = null;
-        if(!map3.containsKey((Player) j.getWhoClicked()))
-            return;
-        Location loc = map3.get((Player) j.getWhoClicked());
-        try
+        
+        if(j.getInventory().getHolder() instanceof BookShelf)
         {
-            r = plugin.runQuery("SELECT * FROM names WHERE x=" + loc.getX()
-                    + " AND y=" + loc.getY() + " AND z=" + loc.getZ() + ";");
-            if(r.next())
-                name = r.getString("name");
-            close(r);
-        }
-        catch(SQLException e1)
-        {
-            e1.printStackTrace();
-        }
-        if(j.getInventory().getTitle().equals(name))
-        {
-            boolean isOwner = plugin.getShelfManager().isOwner(loc, (Player) j.getWhoClicked());
-            boolean isOwnerEditing = (plugin.getShelfManager().isOwner(loc,
-                    (Player) j.getWhoClicked()) && BookShelf.editingPlayers
-                    .contains((Player) j.getWhoClicked()));
-            if((isOwner && !plugin.getShelfManager().isShelfShop(loc) && !plugin
-                    .getShelfManager().isShelfUnlimited(loc)) || isOwnerEditing)
+            BookShelf shelf = (BookShelf) j.getInventory().getHolder();
+            Player player = (Player) j.getWhoClicked();
+            
+            boolean isOwner = shelf.isOwner(player);
+            boolean isOwnerEditing = (shelf.isOwner(player) && BookShelfPlugin.editingPlayers
+                    .contains(player));
+            
+            if((isOwner && !shelf.isShelfType(ShelfType.SHOP) && !shelf
+                    .isShelfType(ShelfType.UNLIMITED)) || isOwnerEditing)
             {
                 this.checkAllowed(j);
                 return;
             }
-            if(!plugin.getShelfManager().isShelfShop(loc)
-                    || !plugin.getExternalPluginManager()
-                            .usingVaultEconomy())
+            if(!shelf.isShelfType(ShelfType.SHOP)
+                    || !plugin.getExternalPluginManager().usingVaultEconomy())
             {
-                if(!plugin.getShelfManager().isShelfUnlimited(loc))
+                if(!shelf.isShelfType(ShelfType.UNLIMITED))
                 {
-                    if(plugin.getShelfManager().isShelfDonate(loc))
+                    if(shelf.isShelfType(ShelfType.DONATION))
                     {
-                        int slotamt = (plugin.getConfig().getInt("rows") * 9) - 1;
-                        if(j.getRawSlot() > slotamt)
+                        int amountOfSlots = (plugin.getConfig().getInt("rows") * 9) - 1;
+                        if(j.getRawSlot() > amountOfSlots)
                         {
                             this.checkAllowed(j);
                             return;
@@ -1157,8 +596,8 @@ public class BookListener implements Listener
                 }
                 else
                 {
-                    int slotamt = (plugin.getConfig().getInt("rows") * 9) - 1;
-                    if(j.getRawSlot() <= slotamt)
+                    int amountOfSlots = (plugin.getConfig().getInt("rows") * 9) - 1;
+                    if(j.getRawSlot() <= amountOfSlots)
                     {
                         return;
                     }
@@ -1172,9 +611,9 @@ public class BookListener implements Listener
             }
             else
             {
-                int price = plugin.getShelfManager().getShopPrice(loc);
-                int slotamt = (plugin.getConfig().getInt("rows") * 9) - 1;
-                if(j.getRawSlot() <= slotamt)
+                int shopPrice = shelf.getPrice();
+                int amountOfSlots = (plugin.getConfig().getInt("rows") * 9) - 1;
+                if(j.getRawSlot() <= amountOfSlots)
                 {
                     if(j.getCurrentItem() == null
                             || j.getCurrentItem().getType() == null
@@ -1183,25 +622,25 @@ public class BookListener implements Listener
                         j.setCancelled(true);
                         return;
                     }
-                    Player p = (Player) j.getWhoClicked();
                     
-                    double money = plugin.getExternalPluginManager()
-                            .getVaultEconomy().getBalance(p);
-                    if(money >= price)
+                    double playerBalance = plugin.getExternalPluginManager()
+                            .getVaultEconomy().getBalance(player);
+                    
+                    if(playerBalance >= shopPrice)
                     {
                         plugin.getExternalPluginManager().getVaultEconomy()
-                                .withdrawPlayer(p, price);
-                        p.sendMessage("New balance: §6"
+                                .withdrawPlayer(player, shopPrice);
+                        player.sendMessage("New balance: §6"
                                 + plugin.getExternalPluginManager()
-                                        .getVaultEconomy().getBalance(p)
+                                        .getVaultEconomy().getBalance(player)
                                 + " "
                                 + plugin.getExternalPluginManager()
                                         .getVaultEconomy().currencyNamePlural());
                         return;
                     }
-                    p.sendMessage("§cInsufficient funds! Current balance: §6"
+                    player.sendMessage("§cInsufficient funds! Current balance: §6"
                             + plugin.getExternalPluginManager()
-                                    .getVaultEconomy().getBalance(p)
+                                    .getVaultEconomy().getBalance(player)
                             + " "
                             + plugin.getExternalPluginManager()
                                     .getVaultEconomy().currencyNamePlural());
@@ -1282,8 +721,9 @@ public class BookListener implements Listener
         if(plugin.getConfig().getBoolean("permissions.allow_records") == false
                 || !p.hasPermission("bookshelf.records"))
         {
-            if(BookShelf.records.contains(j.getCurrentItem().getType())
-                    || BookShelf.records.contains(j.getCursor().getType()))
+            if(BookShelfPlugin.records.contains(j.getCurrentItem().getType())
+                    || BookShelfPlugin.records
+                            .contains(j.getCursor().getType()))
             {
                 j.setCancelled(true);
                 return;
@@ -1299,24 +739,14 @@ public class BookListener implements Listener
                 return;
             }
         }
-        if(BookShelf.allowedItems.contains(j.getCurrentItem().getType().name())
-                || BookShelf.allowedItems.contains(j.getCursor().getType()
-                        .name()))
+        if(BookShelfPlugin.allowedItems.contains(j.getCurrentItem().getType()
+                .name())
+                || BookShelfPlugin.allowedItems.contains(j.getCursor()
+                        .getType().name()))
         {
             return;
         }
         j.setCancelled(true);
-    }
-    
-    private void dropItem(ItemStack item, Location loc)
-    {
-        Random gen = new Random();
-        double xs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-        double ys = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-        double zs = gen.nextFloat() * 0.7F + (1.0F - 0.7F) * 0.5D;
-        loc.getWorld().dropItem(
-                new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys,
-                        loc.getZ() + zs), item);
     }
     
     @EventHandler
@@ -1343,7 +773,6 @@ public class BookListener implements Listener
             plugin.runQuery("INSERT INTO owners (x,y,z,ownerString) VALUES ("
                     + loc.getX() + "," + loc.getY() + "," + loc.getZ() + ", '"
                     + j.getPlayer().getName().toLowerCase() + "');");
-            //BookShelf.runQuery("INSERT INTO display (x,y,z,bool) VALUES ("+loc.getX()+","+loc.getY()+","+loc.getZ()+", 0);");
             int def = 1;
             if(plugin.getConfig().getBoolean("default_openable"))
             {
@@ -1447,8 +876,8 @@ public class BookListener implements Listener
         {
             if(j.isCancelled())
                 return;
-            if(BookShelf.allowedItems.contains(j.getItemDrop().getItemStack()
-                    .getType().name()))
+            if(BookShelfPlugin.allowedItems.contains(j.getItemDrop()
+                    .getItemStack().getType().name()))
             {
                 Location loc = plugin.getTargetBlock(p, 10).getLocation();
                 
@@ -1471,185 +900,6 @@ public class BookListener implements Listener
             }
         }
         
-    }
-    
-    public static <T, E> T getKeyByValue(Map<T, E> map, E value)
-    {
-        for(Entry<T, E> entry : map.entrySet())
-        {
-            if(value.equals(entry.getValue()))
-            {
-                return entry.getKey();
-            }
-        }
-        return null;
-    }
-    
-    public void Book(ItemStack bookItem)
-    {
-        BookMeta bookData = (BookMeta) bookItem.getItemMeta();
-        if(bookItem.getType() == Material.WRITTEN_BOOK)
-        {
-            this.author = bookData.getAuthor();
-            if(bookData.hasDisplayName())
-            {
-                this.title = bookData.getDisplayName();
-            }
-            else
-            {
-                this.title = bookData.getTitle();
-            }
-        }
-        else
-        {
-            this.author = "null";
-            if(bookData.hasDisplayName())
-            {
-                this.title = bookData.getDisplayName();
-            }
-            else
-            {
-                this.title = "null";
-            }
-        }
-        List<String> nPages;
-        nPages = bookData.getPages();
-        String[] sPages = null;
-        if(nPages.size() > 0)
-        {
-            sPages = new String[nPages.size()];
-            for(int i = 0; i < nPages.size(); i++)
-            {
-                sPages[i] = nPages.get(i).toString();
-            }
-        }
-        else
-        {
-            sPages = new String[1];
-            sPages[0] = "";
-        }
-        
-        this.pages = sPages;
-        
-        if(bookData.getLore() != null)
-            this.lore = bookData.getLore().get(0);
-        else
-            this.lore = null;
-        this.damage = bookItem.getDurability();
-        
-    }
-    
-    void Book(String title, String author, String[] pages, String lore,
-            int damage)
-    {
-        this.title = title;
-        this.author = author;
-        this.pages = pages;
-        this.lore = lore;
-        this.damage = damage;
-    }
-    
-    public String getAuthor()
-    {
-        return author;
-    }
-    
-    public void setAuthor(String sAuthor)
-    {
-        author = sAuthor;
-    }
-    
-    public String getTitle()
-    {
-        return title;
-    }
-    
-    public String[] getPages()
-    {
-        return pages;
-    }
-    
-    public String getLore()
-    {
-        return lore;
-    }
-    
-    public int getDamage()
-    {
-        return damage;
-    }
-    
-    public ItemStack generateItemStack(int type)
-    {
-        switch(type)
-        {
-            case 0:
-                ItemStack written_book = new ItemStack(Material.WRITTEN_BOOK);
-                BookMeta new_written_book = (BookMeta) written_book
-                        .getItemMeta();
-                
-                new_written_book.setAuthor(author);
-                new_written_book.setTitle(title);
-                new_written_book.setDisplayName(title);
-                if(lore != null && !lore.equals(""))
-                    new_written_book.setLore(Arrays.asList(lore));
-                if(pages != null)
-                {
-                    for(int i = 0; i < pages.length; i++)
-                    {
-                        new_written_book.addPage(pages[i]);
-                    }
-                }
-                else
-                {
-                    new_written_book.addPage("");
-                }
-                written_book.setItemMeta(new_written_book);
-                written_book.setDurability((short) damage);
-                return written_book;
-            case 1:
-                ItemStack baq = new ItemStack(Material.BOOK_AND_QUILL);
-                BookMeta newbaq = (BookMeta) baq.getItemMeta();
-                
-                newbaq.setAuthor(author);
-                newbaq.setTitle(title);
-                if(lore != null && !lore.equals(""))
-                    newbaq.setLore(Arrays.asList(lore));
-                if(!title.equals("null"))
-                {
-                    newbaq.setDisplayName(title);
-                }
-                if(pages != null)
-                {
-                    for(int i = 0; i < pages.length; i++)
-                    {
-                        newbaq.addPage(pages[i]);
-                    }
-                }
-                else
-                {
-                    newbaq.addPage("");
-                }
-                
-                baq.setItemMeta(newbaq);
-                baq.setDurability((short) damage);
-                return baq;
-            case 2:
-                ItemStack enchanted_book = new ItemStack(
-                        Material.ENCHANTED_BOOK);
-                EnchantmentStorageMeta new_enchanted_book = (EnchantmentStorageMeta) enchanted_book
-                        .getItemMeta();
-                
-                new_enchanted_book.addStoredEnchant(etype, elvl, false);
-                enchanted_book.setItemMeta(new_enchanted_book);
-                return enchanted_book;
-            case 3:
-                ItemStack map = new ItemStack(Material.MAP);
-                
-                map.setDurability(mapdur);
-                return map;
-        }
-        return null;
     }
     
 }

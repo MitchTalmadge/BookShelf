@@ -2,7 +2,7 @@ package me.MitchT.BookShelf.Commands;
 
 import java.lang.reflect.InvocationTargetException;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -37,9 +37,9 @@ import org.bukkit.entity.Player;
  */
 public class CommandHandler
 {
-    private BookShelf plugin;
+    private BookShelfPlugin plugin;
 
-    public CommandHandler(BookShelf plugin)
+    public CommandHandler(BookShelfPlugin plugin)
     {
         this.plugin = plugin;
     }
@@ -62,7 +62,7 @@ public class CommandHandler
                 BSCommand cmd;
                 try
                 {
-                    cmd = enumVal.getCommandClass().getDeclaredConstructor(BookShelf.class).newInstance(plugin);
+                    cmd = enumVal.getCommandClass().getDeclaredConstructor(BookShelfPlugin.class).newInstance(plugin);
                     if(sender instanceof Player)
                         cmd.onPlayerCommand((Player) sender, command, args);
                     else if(sender instanceof ConsoleCommandSender)

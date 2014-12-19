@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 import org.bukkit.util.Vector;
 
@@ -38,7 +38,7 @@ import org.bukkit.util.Vector;
 public class Version0To1 extends Version
 {
     
-    public Version0To1(Logger logger, ResultSet r, BookShelf plugin)
+    public Version0To1(Logger logger, ResultSet r, BookShelfPlugin plugin)
     {
         super(logger, r, plugin);
     }

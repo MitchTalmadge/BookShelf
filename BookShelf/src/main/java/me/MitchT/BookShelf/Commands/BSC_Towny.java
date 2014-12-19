@@ -1,6 +1,6 @@
 package me.MitchT.BookShelf.Commands;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 public class BSC_Towny extends BSCommand
 {
     
-    public BSC_Towny(BookShelf plugin)
+    public BSC_Towny(BookShelfPlugin plugin)
     {
         super(plugin);
     }

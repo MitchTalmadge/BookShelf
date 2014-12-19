@@ -9,7 +9,7 @@ package me.MitchT.BookShelf.ExternalPlugins;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -58,14 +58,14 @@ public class TownyCommandHandler
     static ArrayList<String> level3 = new ArrayList<String>(Arrays.asList("on",
             "off"));
     
-    private BookShelf plugin;
+    private BookShelfPlugin plugin;
     
-    public TownyCommandHandler(BookShelf plugin)
+    public TownyCommandHandler(BookShelfPlugin plugin)
     {
         this.plugin = plugin;
     }
     
-    public boolean onCommand(Player sender, String[] args, BookShelf bs)
+    public boolean onCommand(Player sender, String[] args, BookShelfPlugin bs)
     {
         if(args.length == 0)
         {

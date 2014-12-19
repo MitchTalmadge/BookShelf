@@ -6,7 +6,7 @@
 
 package me.MitchT.BookShelf.ExternalPlugins;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -43,9 +43,9 @@ import com.griefcraft.lwc.LWCPlugin;
 public class LWCHandler extends LWC
 {
     
-    private BookShelf bookShelfPlugin;
+    private BookShelfPlugin bookShelfPlugin;
 
-    public LWCHandler(LWCPlugin lwcPlugin, BookShelf bookShelfPlugin)
+    public LWCHandler(LWCPlugin lwcPlugin, BookShelfPlugin bookShelfPlugin)
     {
         super(lwcPlugin);
         this.bookShelfPlugin = bookShelfPlugin;

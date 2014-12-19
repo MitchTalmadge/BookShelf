@@ -1,6 +1,7 @@
 package me.MitchT.BookShelf.ExternalPlugins;
 
-import me.MitchT.BookShelf.BookListener;
+import me.MitchT.BookShelf.BookShelfPlugin;
+import me.MitchT.BookShelf.Shelves.BookShelf;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -31,9 +32,8 @@ public class WorldEditLogger extends AbstractLoggingExtent
         if(oldBlock.getId() == Material.BOOKSHELF.getId()
                 && newBlock.getId() != Material.BOOKSHELF.getId())
         {
-            BookListener.instance.breakShelf(
-                    new Location(null, location.getBlockX(), location
-                            .getBlockY(), location.getBlockZ()), false);
+            new BookShelf(new Location(null, location.getBlockX(), location
+                    .getBlockY(), location.getBlockZ())).breakShelf(true);
         }
     }
     

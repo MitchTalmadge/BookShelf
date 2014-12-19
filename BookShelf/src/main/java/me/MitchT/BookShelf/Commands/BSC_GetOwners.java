@@ -1,6 +1,6 @@
 package me.MitchT.BookShelf.Commands;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 public class BSC_GetOwners extends BSCommand
 {
     
-    public BSC_GetOwners(BookShelf plugin)
+    public BSC_GetOwners(BookShelfPlugin plugin)
     {
         super(plugin);
     }

@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import me.MitchT.BookShelf.Commands.CommandHandler;
 import me.MitchT.BookShelf.ExternalPlugins.ExternalPluginManager;
+import me.MitchT.BookShelf.Shelves.ShelfManager;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -46,8 +47,9 @@ import org.bukkit.util.Vector;
  * 
  * @author Mitch Talmadge (mitcht@aptitekk.com)
  */
-public class BookShelf extends JavaPlugin
+public class BookShelfPlugin extends JavaPlugin
 {
+    private static BookShelfPlugin instance;
     
     private final Logger logger = Logger.getLogger("Minecraft");
     public static ArrayList<Player> editingPlayers = new ArrayList<Player>();
@@ -69,12 +71,12 @@ public class BookShelf extends JavaPlugin
                     Material.MAP.name(), Material.EMPTY_MAP.name()));
     
     /* AUTO TOGGLE (For shaythegoon) */
-    boolean autoToggle = false;
+    public boolean autoToggle = false;
     int autoToggleFreq = 10;
     boolean autoToggleServerWide = false;
     boolean autoToggleDiffPlayers = false;
-    HashMap<Location, Integer> autoToggleMap1 = new HashMap<Location, Integer>();
-    HashMap<Location, List<Player>> autoToggleMap2 = new HashMap<Location, List<Player>>();
+    public HashMap<Location, Integer> autoToggleMap1 = new HashMap<Location, Integer>();
+    public HashMap<Location, List<Player>> autoToggleMap2 = new HashMap<Location, List<Player>>();
     List<?> autoToggleNameList = null;
     
     /* DATABASE */
@@ -84,6 +86,7 @@ public class BookShelf extends JavaPlugin
     @Override
     public void onEnable()
     {
+        instance = this;
         allowedItems.addAll(records);
         saveDefaultConfig();
         
@@ -117,6 +120,11 @@ public class BookShelf extends JavaPlugin
         }
         
         sqlManager.shutDown();
+    }
+    
+    public static BookShelfPlugin getInstance()
+    {
+        return instance;
     }
     
     public boolean onCommand(CommandSender sender, Command command,

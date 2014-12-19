@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 
 /**
  * 
@@ -36,9 +36,9 @@ public abstract class Version
 {
     protected ResultSet r;
     protected Logger logger;
-    protected BookShelf plugin;
+    protected BookShelfPlugin plugin;
     
-    public Version(Logger logger, ResultSet r, BookShelf plugin)
+    public Version(Logger logger, ResultSet r, BookShelfPlugin plugin)
     {
         this.logger = logger;
         this.r = r;

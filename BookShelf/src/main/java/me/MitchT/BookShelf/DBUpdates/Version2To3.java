@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import me.MitchT.BookShelf.BookShelf;
+import me.MitchT.BookShelf.BookShelfPlugin;
 import me.MitchT.BookShelf.OldIDEnum;
 
 /**
@@ -38,7 +38,7 @@ import me.MitchT.BookShelf.OldIDEnum;
 public class Version2To3 extends Version
 {
     
-    public Version2To3(Logger logger, ResultSet r, BookShelf plugin)
+    public Version2To3(Logger logger, ResultSet r, BookShelfPlugin plugin)
     {
         super(logger, r, plugin);
     }

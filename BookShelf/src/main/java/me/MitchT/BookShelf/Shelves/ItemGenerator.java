@@ -69,10 +69,10 @@ public class ItemGenerator
         return baq;
     }
     
-    public static ItemStack generateEnchantedBook(Enchantment enchantment, int level)
+    public static ItemStack generateEnchantedBook(Enchantment enchantment,
+            int level)
     {
-        ItemStack enchanted_book = new ItemStack(
-                Material.ENCHANTED_BOOK);
+        ItemStack enchanted_book = new ItemStack(Material.ENCHANTED_BOOK);
         EnchantmentStorageMeta new_enchanted_book = (EnchantmentStorageMeta) enchanted_book
                 .getItemMeta();
         

@@ -19,7 +19,7 @@ public class BSC_Unlimited extends BSCommand
     {
         super(plugin);
     }
-
+    
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
@@ -30,9 +30,13 @@ public class BSC_Unlimited extends BSCommand
             {
                 if(plugin.getExternalPluginManager().usingTowny())
                 {
-                    Resident res = plugin.getExternalPluginManager().getTownyHandler().convertToResident(sender);
-                    if(!plugin.getExternalPluginManager().getTownyHandler().checkCanDoAction(loc.getBlock(), res,
-                            TownyHandler.UNLIMITED))
+                    Resident res = plugin.getExternalPluginManager()
+                            .getTownyHandler().convertToResident(sender);
+                    if(!plugin
+                            .getExternalPluginManager()
+                            .getTownyHandler()
+                            .checkCanDoAction(loc.getBlock(), res,
+                                    TownyHandler.UNLIMITED))
                     {
                         sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
                         return;

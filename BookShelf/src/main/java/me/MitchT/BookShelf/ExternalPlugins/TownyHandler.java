@@ -394,8 +394,7 @@ public class TownyHandler
             setTownPermission(
                     t,
                     location,
-                    plugin
-                            .getExternalPluginManager()
+                    plugin.getExternalPluginManager()
                             .getTownyConfig()
                             .get("defaults."
                                     + "resident"
@@ -455,12 +454,10 @@ public class TownyHandler
                 {
                     for(String k : level3a)
                     {
-                        plugin
-                                .getExternalPluginManager()
+                        plugin.getExternalPluginManager()
                                 .getTownyConfig()
                                 .set(prefix + level1.get(i) + j + k,
-                                        plugin
-                                                .getExternalPluginManager()
+                                        plugin.getExternalPluginManager()
                                                 .getTownyConfig()
                                                 .get(prefixDef + level1.get(i)
                                                         + j + k));
@@ -470,12 +467,10 @@ public class TownyHandler
                 {
                     for(String k : level3b)
                     {
-                        plugin
-                                .getExternalPluginManager()
+                        plugin.getExternalPluginManager()
                                 .getTownyConfig()
                                 .set(prefix + level1.get(i) + j + k,
-                                        plugin
-                                                .getExternalPluginManager()
+                                        plugin.getExternalPluginManager()
                                                 .getTownyConfig()
                                                 .get(prefixDef + level1.get(i)
                                                         + j + k));

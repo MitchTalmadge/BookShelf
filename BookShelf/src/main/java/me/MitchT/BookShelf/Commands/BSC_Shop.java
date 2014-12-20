@@ -21,7 +21,7 @@ public class BSC_Shop extends BSCommand
     {
         super(plugin);
     }
-
+    
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
@@ -48,16 +48,21 @@ public class BSC_Shop extends BSCommand
                 }
                 if(plugin.getExternalPluginManager().usingTowny())
                 {
-                    Resident res = plugin.getExternalPluginManager().getTownyHandler().convertToResident(sender);
-                    if(!plugin.getExternalPluginManager().getTownyHandler().checkCanDoAction(loc.getBlock(), res,
-                            TownyHandler.SHOP))
+                    Resident res = plugin.getExternalPluginManager()
+                            .getTownyHandler().convertToResident(sender);
+                    if(!plugin
+                            .getExternalPluginManager()
+                            .getTownyHandler()
+                            .checkCanDoAction(loc.getBlock(), res,
+                                    TownyHandler.SHOP))
                     {
                         sender.sendMessage("§cYou do not have permissions to use that command for this plot.");
                     }
                 }
                 try
                 {
-                    if(plugin.getShelfManager().isShelfShop(loc) & !(args.length >= 1))
+                    if(plugin.getShelfManager().isShelfShop(loc)
+                            & !(args.length >= 1))
                     {
                         r = plugin.runQuery("SELECT * FROM names WHERE x="
                                 + loc.getX() + " AND y=" + loc.getY()
@@ -109,8 +114,7 @@ public class BSC_Shop extends BSCommand
                                                     "%$",
                                                     price
                                                             + " "
-                                                            + plugin
-                                                                    .getExternalPluginManager()
+                                                            + plugin.getExternalPluginManager()
                                                                     .getVaultEconomy()
                                                                     .currencyNamePlural())
                                     + "');");
@@ -124,8 +128,7 @@ public class BSC_Shop extends BSCommand
                                                     "%$",
                                                     price
                                                             + " "
-                                                            + plugin
-                                                                    .getExternalPluginManager()
+                                                            + plugin.getExternalPluginManager()
                                                                     .getVaultEconomy()
                                                                     .currencyNamePlural())
                                     + "' WHERE x=" + loc.getX() + " AND y="

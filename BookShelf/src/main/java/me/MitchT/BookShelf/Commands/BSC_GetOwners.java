@@ -16,7 +16,7 @@ public class BSC_GetOwners extends BSCommand
     {
         super(plugin);
     }
-
+    
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {

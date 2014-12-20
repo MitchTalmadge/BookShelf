@@ -38,7 +38,7 @@ import org.bukkit.entity.Player;
 public class CommandHandler
 {
     private BookShelfPlugin plugin;
-
+    
     public CommandHandler(BookShelfPlugin plugin)
     {
         this.plugin = plugin;
@@ -55,6 +55,7 @@ public class CommandHandler
                     .hasPermission("bookshelf." + enumVal.getPermissionName()))
             {
                 sender.sendMessage("§cYou don't have permission to use this command here!");
+                return;
             }
             
             try
@@ -62,7 +63,9 @@ public class CommandHandler
                 BSCommand cmd;
                 try
                 {
-                    cmd = enumVal.getCommandClass().getDeclaredConstructor(BookShelfPlugin.class).newInstance(plugin);
+                    cmd = enumVal.getCommandClass()
+                            .getDeclaredConstructor(BookShelfPlugin.class)
+                            .newInstance(plugin);
                     if(sender instanceof Player)
                         cmd.onPlayerCommand((Player) sender, command, args);
                     else if(sender instanceof ConsoleCommandSender)

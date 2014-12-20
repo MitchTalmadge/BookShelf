@@ -5,10 +5,10 @@ import org.bukkit.inventory.InventoryHolder;
 
 public class VirtualBookShelf implements InventoryHolder
 {
-
+    
     private BookShelf originShelf;
     private Inventory inventory;
-
+    
     public VirtualBookShelf(BookShelf originShelf)
     {
         this.originShelf = originShelf;

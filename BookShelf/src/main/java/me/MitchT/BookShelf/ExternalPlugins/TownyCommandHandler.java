@@ -81,12 +81,14 @@ public class TownyCommandHandler
         {
             if(level0.contains(args[0]))
             {
-                Resident res = plugin.getExternalPluginManager().getTownyHandler().convertToResident(sender);
+                Resident res = plugin.getExternalPluginManager()
+                        .getTownyHandler().convertToResident(sender);
                 if(res.hasTown())
                 {
                     try
                     {
-                        if(!plugin.getExternalPluginManager().getTownyHandler().hasPrivileges(res, res.getTown())
+                        if(!plugin.getExternalPluginManager().getTownyHandler()
+                                .hasPrivileges(res, res.getTown())
                                 && (args[0].equals("town") || args[0]
                                         .equals("resident")))
                         {
@@ -102,22 +104,33 @@ public class TownyCommandHandler
                             {
                                 TownBlock currentPlot = TownyHandler
                                         .getPlotFromResidentCoords(res);
-                                if(!plugin.getExternalPluginManager().getTownyHandler().checkPlotInResidentsTown(
-                                        currentPlot, res))
+                                if(!plugin
+                                        .getExternalPluginManager()
+                                        .getTownyHandler()
+                                        .checkPlotInResidentsTown(currentPlot,
+                                                res))
                                 {
                                     sender.sendMessage("This plot does not belong to §6"
                                             + res.getTown().getName() + "§f.");
                                     return true;
                                 }
-                                if(!plugin.getExternalPluginManager().getTownyHandler().checkPlotIsOwned(currentPlot))
+                                if(!plugin.getExternalPluginManager()
+                                        .getTownyHandler()
+                                        .checkPlotIsOwned(currentPlot))
                                 {
                                     sender.sendMessage("This is not an owned plot.");
                                     return true;
                                 }
-                                if(!plugin.getExternalPluginManager().getTownyHandler().checkPlotOwnedByResident(
-                                        currentPlot, res)
-                                        && !plugin.getExternalPluginManager().getTownyHandler().hasPrivileges(res,
-                                                res.getTown()))
+                                if(!plugin
+                                        .getExternalPluginManager()
+                                        .getTownyHandler()
+                                        .checkPlotOwnedByResident(currentPlot,
+                                                res)
+                                        && !plugin
+                                                .getExternalPluginManager()
+                                                .getTownyHandler()
+                                                .hasPrivileges(res,
+                                                        res.getTown()))
                                 {
                                     sender.sendMessage("You do not have the privileges for this plot!");
                                     return true;
@@ -140,15 +153,24 @@ public class TownyCommandHandler
                                         && level3.contains(args[4]))
                                 { // town set ally unlimited on
                                     if(args[4].equals("on"))
-                                        plugin.getExternalPluginManager().getTownyHandler().setTownPermission(
-                                                res.getTown(), args[0] + "."
-                                                        + plotString + args[3]
-                                                        + "." + args[2], true);
+                                        plugin.getExternalPluginManager()
+                                                .getTownyHandler()
+                                                .setTownPermission(
+                                                        res.getTown(),
+                                                        args[0] + "."
+                                                                + plotString
+                                                                + args[3] + "."
+                                                                + args[2], true);
                                     else if(args[4].equals("off"))
-                                        plugin.getExternalPluginManager().getTownyHandler().setTownPermission(
-                                                res.getTown(), args[0] + "."
-                                                        + plotString + args[3]
-                                                        + "." + args[2], false);
+                                        plugin.getExternalPluginManager()
+                                                .getTownyHandler()
+                                                .setTownPermission(
+                                                        res.getTown(),
+                                                        args[0] + "."
+                                                                + plotString
+                                                                + args[3] + "."
+                                                                + args[2],
+                                                        false);
                                     showPermissions(res, id, sender);
                                 }
                                 else if(chosen.contains(args[2])
@@ -156,12 +178,16 @@ public class TownyCommandHandler
                                 { // town set ally on
                                     for(String s : level1)
                                     {
-                                        plugin.getExternalPluginManager().getTownyHandler().setTownPermission(res
-                                                .getTown(), args[0] + "."
-                                                + plotString + s + "."
-                                                + args[2],
-                                                args[3].equals("on") ? true
-                                                        : false);
+                                        plugin.getExternalPluginManager()
+                                                .getTownyHandler()
+                                                .setTownPermission(
+                                                        res.getTown(),
+                                                        args[0] + "."
+                                                                + plotString
+                                                                + s + "."
+                                                                + args[2],
+                                                        args[3].equals("on") ? true
+                                                                : false);
                                     }
                                     showPermissions(res, id, sender);
                                 }
@@ -172,11 +198,15 @@ public class TownyCommandHandler
                                 {
                                     for(String s2 : level1)
                                     {
-                                        plugin.getExternalPluginManager().getTownyHandler().setTownPermission(res
-                                                .getTown(), args[0] + "."
-                                                + plotString + s2 + "." + s,
-                                                args[2].equals("on") ? true
-                                                        : false);
+                                        plugin.getExternalPluginManager()
+                                                .getTownyHandler()
+                                                .setTownPermission(
+                                                        res.getTown(),
+                                                        args[0] + "."
+                                                                + plotString
+                                                                + s2 + "." + s,
+                                                        args[2].equals("on") ? true
+                                                                : false);
                                     }
                                 }
                                 showPermissions(res, id, sender);
@@ -186,7 +216,8 @@ public class TownyCommandHandler
                             { //town set unlimited on
                                 for(String s : chosen)
                                 {
-                                    plugin.getExternalPluginManager().getTownyHandler()
+                                    plugin.getExternalPluginManager()
+                                            .getTownyHandler()
                                             .setTownPermission(
                                                     res.getTown(),
                                                     args[0] + "." + plotString
@@ -202,10 +233,13 @@ public class TownyCommandHandler
                                 {
                                     for(String s2 : chosen)
                                     {
-                                        plugin.getExternalPluginManager().getTownyHandler().setDefaultConfigValue(
-                                                res.getTown(), args[0] + "."
-                                                        + plotString + s + "."
-                                                        + s2);
+                                        plugin.getExternalPluginManager()
+                                                .getTownyHandler()
+                                                .setDefaultConfigValue(
+                                                        res.getTown(),
+                                                        args[0] + "."
+                                                                + plotString
+                                                                + s + "." + s2);
                                     }
                                 }
                                 showPermissions(res, id, sender);
@@ -269,7 +303,8 @@ public class TownyCommandHandler
                             "§3set §b[level] [type] [on/off]",
                             "§3set §bdefaults" });
                     showPermissions(
-                            plugin.getExternalPluginManager().getTownyHandler().convertToResident((Player) sender), 0,
+                            plugin.getExternalPluginManager().getTownyHandler()
+                                    .convertToResident((Player) sender), 0,
                             sender);
                 }
                 else if(arg.equals("resident"))
@@ -299,7 +334,8 @@ public class TownyCommandHandler
                             "§3set §b[level] [type] [on/off]",
                             "§3set §bdefaults" });
                     showPermissions(
-                            plugin.getExternalPluginManager().getTownyHandler().convertToResident((Player) sender), 1,
+                            plugin.getExternalPluginManager().getTownyHandler()
+                                    .convertToResident((Player) sender), 1,
                             sender);
                 }
                 else if(arg.equals("plot"))
@@ -329,7 +365,8 @@ public class TownyCommandHandler
                             "§3set §b[level] [type] [on/off]",
                             "§3set §bdefaults" });
                     showPermissions(
-                            plugin.getExternalPluginManager().getTownyHandler().convertToResident((Player) sender), 2,
+                            plugin.getExternalPluginManager().getTownyHandler()
+                                    .convertToResident((Player) sender), 2,
                             sender);
                 }
                 else
@@ -340,10 +377,10 @@ public class TownyCommandHandler
         }
     }
     
-    private void showPermissions(Resident res, int type,
-            CommandSender sender)
+    private void showPermissions(Resident res, int type, CommandSender sender)
     {
-        TownBlock block = plugin.getExternalPluginManager().getTownyHandler().getPlotFromResidentCoords(res);
+        TownBlock block = plugin.getExternalPluginManager().getTownyHandler()
+                .getPlotFromResidentCoords(res);
         if(type == 2 && block == null)
         {
             sender.sendMessage("You are not standing on a plot!");
@@ -356,14 +393,16 @@ public class TownyCommandHandler
                 sender.sendMessage("You are not standing on a plot!");
                 return;
             }
-            if(!plugin.getExternalPluginManager().getTownyHandler().checkPlotInAnyTown(block))
+            if(!plugin.getExternalPluginManager().getTownyHandler()
+                    .checkPlotInAnyTown(block))
             {
                 sender.sendMessage("You are not standing on a plot!");
                 return;
             }
             if(type == 2)
             {
-                if(plugin.getExternalPluginManager().getTownyHandler().checkPlotIsOwned(block))
+                if(plugin.getExternalPluginManager().getTownyHandler()
+                        .checkPlotIsOwned(block))
                 {
                     String plotString = TownyHandler
                             .getPlotStringFromCoords(block.getCoord());
@@ -378,10 +417,14 @@ public class TownyCommandHandler
                             String value = "-";
                             try
                             {
-                                if((Boolean) plugin.getExternalPluginManager().getTownyHandler().getTownPermission(
-                                        block.getTown(), "plot." + plotString
-                                                + "." + level1.get(i) + "."
-                                                + s2))
+                                if((Boolean) plugin
+                                        .getExternalPluginManager()
+                                        .getTownyHandler()
+                                        .getTownPermission(
+                                                block.getTown(),
+                                                "plot." + plotString + "."
+                                                        + level1.get(i) + "."
+                                                        + s2))
                                 {
                                     value = s2.substring(0, 1);
                                 }
@@ -422,9 +465,11 @@ public class TownyCommandHandler
                     String value = "-";
                     try
                     {
-                        if((Boolean) plugin.getExternalPluginManager().getTownyHandler().getTownPermission(
-                                res.getTown(), "town." + level1.get(i) + "."
-                                        + s2))
+                        if((Boolean) plugin
+                                .getExternalPluginManager()
+                                .getTownyHandler()
+                                .getTownPermission(res.getTown(),
+                                        "town." + level1.get(i) + "." + s2))
                         {
                             value = s2.substring(0, 1);
                         }
@@ -459,9 +504,11 @@ public class TownyCommandHandler
                     String value = "-";
                     try
                     {
-                        if((Boolean) plugin.getExternalPluginManager().getTownyHandler().getTownPermission(
-                                res.getTown(), "resident." + level1.get(i)
-                                        + "." + s2))
+                        if((Boolean) plugin
+                                .getExternalPluginManager()
+                                .getTownyHandler()
+                                .getTownPermission(res.getTown(),
+                                        "resident." + level1.get(i) + "." + s2))
                         {
                             value = s2.substring(0, 1);
                         }

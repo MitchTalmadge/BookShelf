@@ -14,12 +14,13 @@ public class BSC_Towny extends BSCommand
     {
         super(plugin);
     }
-
+    
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
         if(plugin.getExternalPluginManager().usingTowny())
-            plugin.getExternalPluginManager().getTownyCommandHandler().onCommand(sender, args, plugin);
+            plugin.getExternalPluginManager().getTownyCommandHandler()
+                    .onCommand(sender, args, plugin);
         else
             sender.sendMessage("§cTowny Support is not enabled on this server.");
     }

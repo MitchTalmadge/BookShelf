@@ -380,7 +380,8 @@ public class BookShelf implements InventoryHolder
                     List<String> pages;
                     int damage = 0;
                     
-                    BookMeta bookMeta = (BookMeta) shelfContents[i].getItemMeta();
+                    BookMeta bookMeta = (BookMeta) shelfContents[i]
+                            .getItemMeta();
                     title = (bookMeta.getTitle() != null) ? ((bookMeta
                             .hasDisplayName()) ? bookMeta.getDisplayName()
                             : bookMeta.getTitle()) : "";
@@ -702,5 +703,5 @@ public class BookShelf implements InventoryHolder
                 new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys,
                         loc.getZ() + zs), item);
     }
-
+    
 }

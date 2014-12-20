@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import me.MitchT.BookShelf.BookShelfPlugin;
 
@@ -17,10 +18,12 @@ import org.bukkit.util.Vector;
 public class ShelfManager
 {
     private BookShelfPlugin plugin;
+    private ArrayList<UUID> editingPlayers;
     
     public ShelfManager(BookShelfPlugin plugin)
     {
         this.plugin = plugin;
+        this.editingPlayers = new ArrayList<UUID>();
     }
     
     public boolean isShelfUnlimited(Location shelfLoc)
@@ -87,14 +90,15 @@ public class ShelfManager
     {
         try
         {
-            ResultSet r = plugin.runQuery("SELECT * FROM shop WHERE x=" + shelfLoc.getX() + " AND y="
-                    + shelfLoc.getY() + " AND z=" + shelfLoc.getZ() + ";");
+            ResultSet r = plugin.runQuery("SELECT * FROM shop WHERE x="
+                    + shelfLoc.getX() + " AND y=" + shelfLoc.getY() + " AND z="
+                    + shelfLoc.getZ() + ";");
             if(!r.next())
             {
                 plugin.close(r);
                 plugin.runQuery("INSERT INTO shop (x,y,z,bool,price) VALUES ("
-                        + shelfLoc.getX() + "," + shelfLoc.getY() + "," + shelfLoc.getZ()
-                        + ",0,10);");
+                        + shelfLoc.getX() + "," + shelfLoc.getY() + ","
+                        + shelfLoc.getZ() + ",0,10);");
                 return 10;
             }
             else
@@ -273,8 +277,8 @@ public class ShelfManager
             return true;
         try
         {
-            ResultSet r = plugin.runQuery("SELECT * FROM owners WHERE x=" + x + " AND y=" + y
-                    + " AND z=" + z + ";");
+            ResultSet r = plugin.runQuery("SELECT * FROM owners WHERE x=" + x
+                    + " AND y=" + y + " AND z=" + z + ";");
             if(!r.next())
             {
                 plugin.close(r);
@@ -317,13 +321,19 @@ public class ShelfManager
         
         try
         {
-            ResultSet r = plugin.runQuery("SELECT * FROM owners WHERE x=" + x + " AND y=" + y
-                    + " AND z=" + z + ";");
+            ResultSet r = plugin.runQuery("SELECT * FROM owners WHERE x=" + x
+                    + " AND y=" + y + " AND z=" + z + ";");
             if(!r.next())
             {
                 plugin.close(r);
                 plugin.runQuery("INSERT INTO owners (x, y, z, ownerString) VALUES ("
-                        + x + ", +" + y + ", " + z + ", '" + ownerString
+                        + x
+                        + ", +"
+                        + y
+                        + ", "
+                        + z
+                        + ", '"
+                        + ownerString
                         + "');");
             }
             else
@@ -349,8 +359,8 @@ public class ShelfManager
     {
         try
         {
-            ResultSet r = plugin.runQuery("SELECT * FROM owners WHERE x=" + x + " AND y=" + y
-                    + " AND z=" + z + ";");
+            ResultSet r = plugin.runQuery("SELECT * FROM owners WHERE x=" + x
+                    + " AND y=" + y + " AND z=" + z + ";");
             if(!r.next())
             {
                 plugin.close(r);
@@ -365,7 +375,13 @@ public class ShelfManager
                         .substring(0, ownerString.length() - 1);
                 
                 plugin.runQuery("INSERT INTO owners (x, y, z, ownerString) VALUES ("
-                        + x + ", +" + y + ", " + z + ", '" + ownerString
+                        + x
+                        + ", +"
+                        + y
+                        + ", "
+                        + z
+                        + ", '"
+                        + ownerString
                         + "');");
             }
             else
@@ -393,9 +409,9 @@ public class ShelfManager
                     newOwnerString = newOwnerString.substring(0,
                             newOwnerString.length() - 1);
                 
-                plugin.runQuery("UPDATE owners SET ownerString='" + newOwnerString
-                        + "' WHERE x=" + x + " AND y=" + y + " AND z=" + z
-                        + ";");
+                plugin.runQuery("UPDATE owners SET ownerString='"
+                        + newOwnerString + "' WHERE x=" + x + " AND y=" + y
+                        + " AND z=" + z + ";");
             }
         }
         catch(SQLException e)
@@ -417,8 +433,8 @@ public class ShelfManager
         }
         try
         {
-            ResultSet r = plugin.runQuery("SELECT * FROM owners WHERE x=" + x + " AND y=" + y
-                    + " AND z=" + z + ";");
+            ResultSet r = plugin.runQuery("SELECT * FROM owners WHERE x=" + x
+                    + " AND y=" + y + " AND z=" + z + ";");
             if(!r.next())
             {
                 plugin.close(r);
@@ -443,9 +459,9 @@ public class ShelfManager
                     newOwnerString = newOwnerString.substring(0,
                             newOwnerString.length() - 1);
                 
-                plugin.runQuery("UPDATE owners SET ownerString='" + newOwnerString
-                        + "' WHERE x=" + x + " AND y=" + y + " AND z=" + z
-                        + ";");
+                plugin.runQuery("UPDATE owners SET ownerString='"
+                        + newOwnerString + "' WHERE x=" + x + " AND y=" + y
+                        + " AND z=" + z + ";");
             }
         }
         catch(SQLException e)
@@ -463,8 +479,8 @@ public class ShelfManager
     {
         try
         {
-            ResultSet r = plugin.runQuery("SELECT * FROM owners WHERE x=" + x + " AND y=" + y
-                    + " AND z=" + z + ";");
+            ResultSet r = plugin.runQuery("SELECT * FROM owners WHERE x=" + x
+                    + " AND y=" + y + " AND z=" + z + ";");
             if(!r.next())
             {
                 plugin.close(r);
@@ -484,6 +500,24 @@ public class ShelfManager
             e.printStackTrace();
         }
         return new String[] { "Unknown Owners!" };
+    }
+    
+    public ArrayList<UUID> getEditingPlayersList()
+    {
+        return this.editingPlayers;
+    }
+    
+    public boolean playerIsEditing(Player player)
+    {
+        return this.editingPlayers.contains(player.getUniqueId());
+    }
+    
+    public void setPlayerEditing(Player player, boolean editing)
+    {
+        if(editing && !playerIsEditing(player))
+            this.editingPlayers.add(player.getUniqueId());
+        else if(!editing && playerIsEditing(player))
+            this.editingPlayers.remove(player.getUniqueId());
     }
     
 }

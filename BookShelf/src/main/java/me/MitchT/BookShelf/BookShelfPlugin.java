@@ -52,7 +52,6 @@ public class BookShelfPlugin extends JavaPlugin
     private static BookShelfPlugin instance;
     
     private final Logger logger = Logger.getLogger("Minecraft");
-    public static ArrayList<Player> editingPlayers = new ArrayList<Player>();
     private CommandHandler commandHandler;
     private ExternalPluginManager externalPluginManager;
     private ShelfManager shelfManager;

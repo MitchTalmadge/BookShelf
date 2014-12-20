@@ -44,7 +44,7 @@ public class LWCHandler extends LWC
 {
     
     private BookShelfPlugin bookShelfPlugin;
-
+    
     public LWCHandler(LWCPlugin lwcPlugin, BookShelfPlugin bookShelfPlugin)
     {
         super(lwcPlugin);

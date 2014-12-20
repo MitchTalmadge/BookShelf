@@ -14,18 +14,18 @@ public class BSC_Edit extends BSCommand
     {
         super(plugin);
     }
-
+    
     @Override
     public void onPlayerCommand(Player sender, Command command, String[] args)
     {
-        if(BookShelfPlugin.editingPlayers.contains(sender))
+        if(plugin.getShelfManager().playerIsEditing(sender))
         {
-            BookShelfPlugin.editingPlayers.remove(sender);
+            plugin.getShelfManager().setPlayerEditing(sender, false);
             sender.sendMessage("You are no longer in shelf editing mode!");
         }
         else
         {
-            BookShelfPlugin.editingPlayers.add(sender);
+            plugin.getShelfManager().setPlayerEditing(sender, true);
             sender.sendMessage("You are now in shelf editing mode!");
         }
     }

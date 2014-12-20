@@ -248,11 +248,12 @@ public class BookListener implements Listener
                         }
                         
                         boolean isOwner = shelf.isOwner(player);
-                        boolean isOwnerEditing = (isOwner && BookShelfPlugin.editingPlayers
-                                .contains(player));
+                        boolean isOwnerEditing = (isOwner && plugin
+                                .getShelfManager().playerIsEditing(player));
                         
                         Inventory inv;
-                        if(!isOwnerEditing && shelf.isShelfType(ShelfType.UNLIMITED))
+                        if(!isOwnerEditing
+                                && shelf.isShelfType(ShelfType.UNLIMITED))
                             inv = shelf.generateVirtualInventory();
                         else
                             inv = shelf.getInventory();
@@ -361,7 +362,8 @@ public class BookListener implements Listener
     @EventHandler
     public void onAdd(InventoryCloseEvent j)
     {
-        if(j.getInventory().getHolder() instanceof BookShelf && j.getInventory().getViewers().size() == 1)
+        if(j.getInventory().getHolder() instanceof BookShelf
+                && j.getInventory().getViewers().size() == 1)
         {
             BookShelf shelf = (BookShelf) j.getInventory().getHolder();
             shelf.saveInventory();
@@ -398,7 +400,8 @@ public class BookListener implements Listener
     {
         if((j.getInventory().getType() == InventoryType.CHEST || j
                 .getInventory().getType() == InventoryType.ENDER_CHEST)
-                && !((j.getInventory().getHolder() instanceof BookShelf) || (j.getInventory().getHolder() instanceof VirtualBookShelf)))
+                && !((j.getInventory().getHolder() instanceof BookShelf) || (j
+                        .getInventory().getHolder() instanceof VirtualBookShelf)))
         {
             if(j.getCurrentItem() != null)
             {
@@ -560,8 +563,8 @@ public class BookListener implements Listener
             Player player = (Player) j.getWhoClicked();
             
             boolean isOwner = shelf.isOwner(player);
-            boolean isOwnerEditing = (shelf.isOwner(player) && BookShelfPlugin.editingPlayers
-                    .contains(player));
+            boolean isOwnerEditing = (shelf.isOwner(player) && plugin
+                    .getShelfManager().playerIsEditing(player));
             
             if((isOwner && !shelf.isShelfType(ShelfType.SHOP) && !shelf
                     .isShelfType(ShelfType.UNLIMITED)) || isOwnerEditing)

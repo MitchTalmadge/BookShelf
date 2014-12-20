@@ -3,26 +3,19 @@ package me.MitchT.BookShelf;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 
 import me.MitchT.BookShelf.ExternalPlugins.TownyHandler;
 import me.MitchT.BookShelf.Shelves.BookShelf;
 import me.MitchT.BookShelf.Shelves.ShelfType;
+import me.MitchT.BookShelf.Shelves.VirtualBookShelf;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -39,9 +32,6 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
@@ -256,11 +246,16 @@ public class BookListener implements Listener
                                 }
                             }
                         }
-                        Inventory inv = shelf.getInventory();
                         
-                        boolean isOwner = shelf.isOwner(j.getPlayer());
+                        boolean isOwner = shelf.isOwner(player);
                         boolean isOwnerEditing = (isOwner && BookShelfPlugin.editingPlayers
-                                .contains(j.getPlayer()));
+                                .contains(player));
+                        
+                        Inventory inv;
+                        if(!isOwnerEditing && shelf.isShelfType(ShelfType.UNLIMITED))
+                            inv = shelf.generateVirtualInventory();
+                        else
+                            inv = shelf.getInventory();
                         
                         player.openInventory(inv);
                         
@@ -366,21 +361,11 @@ public class BookListener implements Listener
     @EventHandler
     public void onAdd(InventoryCloseEvent j)
     {
-        if(!(j.getInventory().getHolder() instanceof BookShelf)
-                || j.getViewers().size() > 1)
+        if(j.getInventory().getHolder() instanceof BookShelf && j.getInventory().getViewers().size() == 1)
         {
-            return;
-        }
-        
-        BookShelf shelf = (BookShelf) j.getInventory().getHolder();
-        
-        boolean isOwner = plugin.getShelfManager().isOwner(shelf.getLocation(),
-                (Player) j.getPlayer());
-        boolean isOwnerEditing = (isOwner && BookShelfPlugin.editingPlayers
-                .contains(j.getPlayer()));
-        
-        if(!shelf.isShelfType(ShelfType.UNLIMITED) || isOwnerEditing)
+            BookShelf shelf = (BookShelf) j.getInventory().getHolder();
             shelf.saveInventory();
+        }
     }
     
     @EventHandler(priority = EventPriority.MONITOR)
@@ -413,7 +398,7 @@ public class BookListener implements Listener
     {
         if((j.getInventory().getType() == InventoryType.CHEST || j
                 .getInventory().getType() == InventoryType.ENDER_CHEST)
-                && !(j.getInventory().getHolder() instanceof BookShelf))
+                && !((j.getInventory().getHolder() instanceof BookShelf) || (j.getInventory().getHolder() instanceof VirtualBookShelf)))
         {
             if(j.getCurrentItem() != null)
             {
@@ -558,9 +543,20 @@ public class BookListener implements Listener
             }
         }
         
-        if(j.getInventory().getHolder() instanceof BookShelf)
+        if(j.getInventory().getHolder() instanceof BookShelf
+                || j.getInventory().getHolder() instanceof VirtualBookShelf)
         {
-            BookShelf shelf = (BookShelf) j.getInventory().getHolder();
+            BookShelf shelf;
+            if(j.getInventory().getHolder() instanceof BookShelf)
+            {
+                shelf = (BookShelf) j.getInventory().getHolder();
+            }
+            else
+            {
+                shelf = ((VirtualBookShelf) j.getInventory().getHolder())
+                        .getOriginShelf();
+            }
+            
             Player player = (Player) j.getWhoClicked();
             
             boolean isOwner = shelf.isOwner(player);

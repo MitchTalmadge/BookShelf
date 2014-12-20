@@ -198,13 +198,28 @@ public class BookShelf implements InventoryHolder
         return this.shopPrice;
     }
     
+    public Inventory generateVirtualInventory()
+    {
+        VirtualBookShelf owner = new VirtualBookShelf(this);
+        owner.setInventory(getInventory(owner));
+        return owner.getInventory();
+    }
+    
     public Inventory getInventory()
     {
-        if(this.shelfInventory == null)
+        return getInventory(null);
+    }
+    
+    private Inventory getInventory(VirtualBookShelf owner)
+    {
+        if(owner != null || this.shelfInventory == null)
         {
-            this.shelfInventory = Bukkit.createInventory(
-                    (this.isShelfType(ShelfType.UNLIMITED)) ? null : this,
+            Inventory inventory = Bukkit.createInventory(
+                    (owner != null) ? owner : this,
                     plugin.getConfig().getInt("rows") * 9, this.shelfName);
+            
+            if(owner == null)
+                this.shelfInventory = inventory;
             
             try
             {
@@ -216,7 +231,7 @@ public class BookShelf implements InventoryHolder
                 if(!r.next())
                 {
                     plugin.close(r);
-                    return this.shelfInventory;
+                    return inventory;
                 }
                 else
                 {
@@ -263,7 +278,7 @@ public class BookShelf implements InventoryHolder
                                 mapDurability = r.getShort("durability");
                             }
                             plugin.close(r);
-                            shelfInventory.setItem(itemInvLocation.get(i),
+                            inventory.setItem(itemInvLocation.get(i),
                                     ItemGenerator.generateMap(mapDurability));
                         }
                         else if(itemType.get(i).equals(
@@ -286,7 +301,7 @@ public class BookShelf implements InventoryHolder
                             }
                             plugin.close(r);
                             enchantment = Enchantment.getByName(enchantType);
-                            shelfInventory.setItem(itemInvLocation.get(i),
+                            inventory.setItem(itemInvLocation.get(i),
                                     ItemGenerator.generateEnchantedBook(
                                             enchantment, enchantLevel));
                         }
@@ -299,7 +314,7 @@ public class BookShelf implements InventoryHolder
                             if(itemType.get(i).equals(
                                     Material.WRITTEN_BOOK.name()))
                             {
-                                shelfInventory.setItem(itemInvLocation.get(i),
+                                inventory.setItem(itemInvLocation.get(i),
                                         ItemGenerator.generateWrittenBook(
                                                 itemAuthor.get(i),
                                                 itemTitle.get(i),
@@ -309,7 +324,7 @@ public class BookShelf implements InventoryHolder
                             else if(itemType.get(i).equals(
                                     Material.BOOK_AND_QUILL.name()))
                             {
-                                shelfInventory.setItem(itemInvLocation.get(i),
+                                inventory.setItem(itemInvLocation.get(i),
                                         ItemGenerator.generateBookAndQuill(
                                                 itemAuthor.get(i),
                                                 itemTitle.get(i),
@@ -320,7 +335,7 @@ public class BookShelf implements InventoryHolder
                         else if(BookShelfPlugin.allowedItems.contains(itemType
                                 .get(i)))
                         {
-                            shelfInventory.setItem(
+                            inventory.setItem(
                                     itemInvLocation.get(i),
                                     new ItemStack(Material.getMaterial(itemType
                                             .get(i)), itemAmount.get(i)));
@@ -332,6 +347,7 @@ public class BookShelf implements InventoryHolder
             {
                 e.printStackTrace();
             }
+            return inventory;
         }
         return this.shelfInventory;
     }
@@ -686,4 +702,5 @@ public class BookShelf implements InventoryHolder
                 new Location(loc.getWorld(), loc.getX() + xs, loc.getY() + ys,
                         loc.getZ() + zs), item);
     }
+
 }

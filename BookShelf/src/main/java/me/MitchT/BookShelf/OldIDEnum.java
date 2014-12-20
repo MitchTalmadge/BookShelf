@@ -4,7 +4,6 @@ import org.bukkit.Material;
 
 import com.google.common.collect.HashBiMap;
 
-// Thanks, Adam753!
 /**
  * 
  * BookShelf - A Bukkit & Spigot mod allowing the placement of items

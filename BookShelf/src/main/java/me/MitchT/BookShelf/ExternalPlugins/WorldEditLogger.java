@@ -32,9 +32,12 @@ public class WorldEditLogger extends AbstractLoggingExtent
         if(oldBlock.getId() == Material.BOOKSHELF.getId()
                 && newBlock.getId() != Material.BOOKSHELF.getId())
         {
-            new BookShelf(new Location(null, location.getBlockX(),
-                    location.getBlockY(), location.getBlockZ()))
-                    .breakShelf(true);
+            BookShelfPlugin
+                    .getInstance()
+                    .getShelfScheduler()
+                    .addShelfToPurgationQueue(
+                            new Location(null, location.getBlockX(), location
+                                    .getBlockY(), location.getBlockZ()));
         }
     }
     

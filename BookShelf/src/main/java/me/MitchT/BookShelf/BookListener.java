@@ -376,7 +376,7 @@ public class BookListener implements Listener
         if(j.isCancelled())
             return;
         if(j.getBlock().getType() == Material.BOOKSHELF)
-            new BookShelf(j.getBlock().getLocation()).breakShelf(false);
+            new BookShelf(j.getBlock().getLocation()).breakShelf();
     }
     
     @EventHandler
@@ -391,7 +391,7 @@ public class BookListener implements Listener
                 j.setCancelled(true);
                 return;
             }
-            new BookShelf(j.getBlock().getLocation()).breakShelf(false);
+            new BookShelf(j.getBlock().getLocation()).breakShelf();
         }
     }
     

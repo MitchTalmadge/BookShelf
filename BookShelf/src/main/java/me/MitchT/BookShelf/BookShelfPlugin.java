@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import me.MitchT.BookShelf.Commands.CommandHandler;
 import me.MitchT.BookShelf.ExternalPlugins.ExternalPluginManager;
 import me.MitchT.BookShelf.Shelves.ShelfManager;
+import me.MitchT.BookShelf.Shelves.ShelfScheduler;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -55,6 +56,7 @@ public class BookShelfPlugin extends JavaPlugin
     private CommandHandler commandHandler;
     private ExternalPluginManager externalPluginManager;
     private ShelfManager shelfManager;
+    private ShelfScheduler shelfScheduler;
     
     public final static ArrayList<String> records = new ArrayList<String>(
             Arrays.asList(Material.RECORD_3.name(), Material.RECORD_4.name(),
@@ -93,6 +95,7 @@ public class BookShelfPlugin extends JavaPlugin
         this.shelfManager = new ShelfManager(this);
         this.externalPluginManager = new ExternalPluginManager(this, logger);
         this.commandHandler = new CommandHandler(this);
+        this.shelfScheduler = new ShelfScheduler(this);
         
         setupAutoToggle();
         
@@ -146,6 +149,11 @@ public class BookShelfPlugin extends JavaPlugin
     public ShelfManager getShelfManager()
     {
         return shelfManager;
+    }
+    
+    public ShelfScheduler getShelfScheduler()
+    {
+        return shelfScheduler;
     }
     
     public ResultSet runQuery(String query)

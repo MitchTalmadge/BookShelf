@@ -144,21 +144,16 @@ public class BookShelf implements InventoryHolder
             else
             {
                 this.shelfName = r.getString("name");
-                plugin.close(r);
             }
+            plugin.close(r);
             
             //Check Owners
             r = plugin.runQuery("SELECT * FROM owners WHERE x="
                     + shelfLocation.getX() + " AND y=" + shelfLocation.getY()
                     + " AND z=" + shelfLocation.getZ() + ";");
-            if(!r.next())
-            {
-                plugin.close(r);
-            }
-            else
+            if(r.next())
             {
                 String ownerString = r.getString("ownerString").toLowerCase();
-                plugin.close(r);
                 
                 String[] splitOwners = ownerString.split("§");
                 for(String owner : splitOwners)
@@ -166,6 +161,7 @@ public class BookShelf implements InventoryHolder
                     this.shelfOwners.add(owner);
                 }
             }
+            plugin.close(r);
         }
         catch(SQLException e)
         {
@@ -531,16 +527,10 @@ public class BookShelf implements InventoryHolder
         return this.shelfOwners;
     }
     
-    public void breakShelf(boolean placeIntoQueue)
+    public void breakShelf()
     {
-        if(shelfInventory != null)
-        {
-            List<HumanEntity> viewers = shelfInventory.getViewers();
-            for(HumanEntity viewer : viewers)
-            {
-                viewer.closeInventory();
-            }
-        }
+        closeInventories();
+        
         try
         {
             ResultSet r = plugin.runQuery("SELECT * FROM items WHERE x="
@@ -588,12 +578,9 @@ public class BookShelf implements InventoryHolder
                         enchantLevel = r.getInt("level");
                     }
                     plugin.close(r);
-                    plugin.runQuery("DELETE FROM items WHERE id="
-                            + itemID.get(i) + ";");
                     enchantment = Enchantment.getByName(enchantType);
-                    if(!placeIntoQueue)
-                        dropItem(ItemGenerator.generateEnchantedBook(
-                                enchantment, enchantLevel), shelfLocation);
+                    dropItem(ItemGenerator.generateEnchantedBook(enchantment,
+                            enchantLevel), shelfLocation);
                 }
                 else if(itemType.get(i).equals(Material.MAP.name()))
                 {
@@ -609,11 +596,8 @@ public class BookShelf implements InventoryHolder
                         mapDurability = r.getShort("durability");
                     }
                     plugin.close(r);
-                    plugin.runQuery("DELETE FROM items WHERE id="
-                            + itemID.get(i) + ";");
-                    if(!placeIntoQueue)
-                        dropItem(ItemGenerator.generateMap(mapDurability),
-                                shelfLocation);
+                    dropItem(ItemGenerator.generateMap(mapDurability),
+                            shelfLocation);
                 }
                 else if(itemType.get(i).equals(Material.WRITTEN_BOOK.name())
                         || itemType.get(i).equals(
@@ -623,33 +607,26 @@ public class BookShelf implements InventoryHolder
                     
                     if(itemType.get(i).equals(Material.WRITTEN_BOOK.name()))
                     {
-                        if(!placeIntoQueue)
-                            dropItem(ItemGenerator.generateWrittenBook(
-                                    itemAuthor.get(i), itemTitle.get(i),
-                                    itemLore.get(i), itemPagesSplit,
-                                    itemDamage.get(i)), shelfLocation);
+                        dropItem(ItemGenerator.generateWrittenBook(
+                                itemAuthor.get(i), itemTitle.get(i),
+                                itemLore.get(i), itemPagesSplit,
+                                itemDamage.get(i)), shelfLocation);
                     }
                     else if(itemType.get(i).equals(
                             Material.BOOK_AND_QUILL.name()))
                     {
-                        if(!placeIntoQueue)
-                            dropItem(ItemGenerator.generateBookAndQuill(
-                                    itemAuthor.get(i), itemTitle.get(i),
-                                    itemLore.get(i), itemPagesSplit,
-                                    itemDamage.get(i)), shelfLocation);
+                        dropItem(ItemGenerator.generateBookAndQuill(
+                                itemAuthor.get(i), itemTitle.get(i),
+                                itemLore.get(i), itemPagesSplit,
+                                itemDamage.get(i)), shelfLocation);
                     }
-                    plugin.runQuery("DELETE FROM items WHERE id="
-                            + itemID.get(i) + ";");
                 }
                 else if(BookShelfPlugin.allowedItems.contains(itemType.get(i)))
                 {
-                    plugin.runQuery("DELETE FROM items WHERE id="
-                            + itemID.get(i) + ";");
                     ItemStack stack = new ItemStack(
                             Material.getMaterial(itemType.get(i)));
                     stack.setAmount(itemAmount.get(i));
-                    if(!placeIntoQueue)
-                        dropItem(stack, shelfLocation);
+                    dropItem(stack, shelfLocation);
                 }
             }
             plugin.runQuery("DELETE FROM copy WHERE x=" + shelfLocation.getX()
@@ -676,6 +653,9 @@ public class BookShelf implements InventoryHolder
             plugin.runQuery("DELETE FROM owners WHERE x="
                     + shelfLocation.getX() + " AND y=" + shelfLocation.getY()
                     + " AND z=" + shelfLocation.getZ() + ";");
+            plugin.runQuery("DELETE FROM items WHERE x=" + shelfLocation.getX()
+                    + " AND y=" + shelfLocation.getY() + " AND z="
+                    + shelfLocation.getZ() + ";");
             plugin.getSQLManager().commit();
             plugin.getSQLManager().setAutoCommit(true);
         }
@@ -689,6 +669,17 @@ public class BookShelf implements InventoryHolder
             {
                 plugin.autoToggleMap1.remove(shelfLocation);
                 plugin.autoToggleMap2.remove(shelfLocation);
+            }
+        }
+    }
+    
+    public void closeInventories()
+    {
+        if(this.shelfInventory != null)
+        {
+            for(HumanEntity viewer : this.shelfInventory.getViewers())
+            {
+                viewer.closeInventory();
             }
         }
     }

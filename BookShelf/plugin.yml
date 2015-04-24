@@ -1,8 +1,8 @@
 name: BookShelf
 main: me.MitchT.BookShelf.BookShelfPlugin
-version: 3.8
+version: 3.9
 description: Allows players to store books in bookshelves.
-author: Pew446
+author: MitchTalmadge
 dev-url: http://dev.bukkit.org/server-mods/BookShelf
 softdepend: [Vault,Towny,LWC,WorldEdit,WorldGuard]
 commands:

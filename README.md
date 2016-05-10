@@ -11,7 +11,7 @@ This plugin allows players to store books, maps, and more into those once useles
 ### Contribution Guidelines ###
 
 * I encourage the community to contribute! If you find a bug in this plugin and know how to fix it, or you have a cool feature that you want to implement, let me know! Please though, save yourself some time and don't submit a pull request until you have first let me know of what you plan to do. I may already be working on that bug/feature! :)
-* 
+
 ### How do I get set up? ###
 
 * This is a Maven Eclipse project. Import it as a Git Project, and build using Maven.

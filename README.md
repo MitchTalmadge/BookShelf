@@ -1,6 +1,7 @@
 # README #
 
 This plugin allows players to store books, maps, and more into those once useless bookshelves - just like chests!
+Official Plugin URL: http://dev.bukkit.org/bukkit-plugins/bookshelf/
 
 * This Repository contains the code for the Bukkit/Spigot Plugin [BookShelf](http://dev.bukkit.org/bukkit-plugins/bookshelf/) created by Mitch Talmadge. It is licensed under GPL V2.0
 
